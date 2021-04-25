@@ -46,6 +46,18 @@ nohup plink \
   > ChrMerge.log.txt 2>&1 &   
 ```
 
+## filter autosome of ukb db
+
+```{bash}
+nohup plink \
+  --bfile /work/biobank/ukb_data/diabetes/train \
+  --autosome \
+  --make-bed \
+  --out train.autosome \
+  > filterUKBautosome.log.txt 2>&1 &
+```
+
+
 ## QC
 
 ```{bash}
@@ -84,7 +96,7 @@ nohup ldpred coord \
   --ssf /work/biobank/ukb_data/diabetes/p800k.csv \
   --ssf-format CUSTOM \
   --N 500000 \
-  --vgf /work/biobank/ukb_data/diabetes/train \
+  --vgf train.autosome \
   --out coord.xy.result \
   > coord.xy.log.txt 2>&1 & 
 ```
