@@ -1,0 +1,136 @@
+---
+title: "searchHumanIGRPmimic"
+author: "xyz"
+date: "2021/1/19"
+output: html_document
+---
+
+### get mouse and human IGRP protein 206-214
+
+[mouse](https://www.uniprot.org/uniprot/Q9Z186)
+
+[human](https://www.uniprot.org/uniprot/Q9NQR9)
+
+```{r}
+library(Biostrings)
+library(stringr)
+mouse <- readAAStringSet(
+  "Q9Z186Mouse.fasta"
+)
+# VYLKTNVFL
+str_sub(as.character(mouse[[1]]),206,214)
+human <- readAAStringSet(
+  "Q9Z186Mouse.fasta"
+)
+human<-readAAStringSet(
+  "Q9NQR9.fasta"
+)
+# TYLKTNLFL
+str_sub(as.character(human[[1]]),206,214)
+
+aln<-c(mouse,human)
+writeXStringSet(aln,"humanMouse.fasta")
+aln<-muscle::muscle(aln)
+write.phylip(aln,"humanMouse.aln.phylip")
+# draw aligned sequence by endscript
+```
+
+### search in microbe protein database
+
+```{bash}
+cd ~/TEDDY/mcmics
+seqkit grep database.fasta -s -i -m 2 --threads 32 -p TYLKTNLFL >result.fasta
+# on server
+cd /work/omicsbio/lizhang12
+seqkit head 737protien_min50.fasta -n 10000 > ../yixiong/test.fasta
+# raise error may because file too large 
+# seqkit grep ../yixiong/test.fasta -s -i -m 2 -p TYLKTNLFL > ../yixiong/result.fasta
+mkdir ../yixiong/splitedFasta
+nohup seqkit split 737protien_min50.fasta \
+  -s 10000 \
+  -O ../yixiong/splitedFasta \
+  > ../yixiong/split.log.txt \
+  2>&1 &
+
+# some of the small fasta files still raise error
+# for example
+# ../yixiong/splitedFasta/737protien_min50.part_006.fasta
+nohup ls ../yixiong/splitedFasta/*.fasta | xargs -n1 -P20 bash -c \
+  'seqkit grep $0 -s -i -m 2 -p TYLKTNLFL -o $0.results.fasta' \
+  &> ../yixiong/search.log.txt \
+  2>&1 &
+  
+# combine all result files
+seqkit seq ../yixiong/splitedFasta/*.results.fasta \
+  -o ../yixiong/splitedFasta/allResults.fasta
+# mv all result files
+mkdir ../yixiong/searchResultsFile
+mv ../yixiong/splitedFasta/*.results.fasta ../yixiong/searchResultsFile
+mv ../yixiong/splitedFasta/allResults.fasta ../yixiong/searchResultsFile
+# format  type     num_seqs    sum_len  min_len  avg_len  max_len
+# FASTA   Protein     8,289  3,100,361       50      374    4,598
+seqkit stats ../yixiong/searchResultsFile/allResults.fasta
+```
+
+### change sequence name to report bug
+
+```{r}
+library(Biostrings)
+reads<-readAAStringSet("737protien_min50.part_006.fasta")
+names(reads)<-paste0("Protein",1:length(reads))
+writeXStringSet(reads,"protienRaiseBug.fasta")
+```
+
+### use seqkit locate
+
+```{bash}
+# same error
+# panic: runtime error: slice bounds out of range [:-1]
+seqkit locate ../yixiong/splitedFasta/737protien_min50.part_006.fasta \
+  -i -m 2 -P -p TYLKTNLFL
+  
+seqkit locate ../yixiong/searchResultsFile/allResults.fasta \
+  -i -m 2 -p TYLKTNLFL \
+  -o ../yixiong/searchResultsFile/allResults.location.txt
+```
+
+### use fixed seqkit
+
+```{bash}
+cd /work/omicsbio/yixiong
+cp /scratch/yixiong/exchange/seqkit .
+chmod +x seqkit
+# pid 80896
+nohup ls splitedFasta/*.fasta | xargs -n1 -P20 bash -c \
+  './seqkit grep $0 -s -i -m 2 -p TYLKTNLFL -o $0.results.faa' \
+  &> search.log.txt \
+  2>&1 &
+mkdir fixedSearchResultsFile
+mv splitedFasta/*.faa fixedSearchResultsFile
+./seqkit seq fixedSearchResultsFile/*.faa \
+  -o fixedSearchResultsFile/allResults.fasta
+# format  type     num_seqs    sum_len  min_len  avg_len  max_len
+# FASTA   Protein     4,600  1,464,998       50    318.5    4,598
+./seqkit stats fixedSearchResultsFile/allResults.fasta
+./seqkit locate fixedSearchResultsFile/allResults.fasta \
+  -i -m 2 -p TYLKTNLFL \
+  -o fixedSearchResultsFile/allResults.location.txt
+```
+
+### Fixed seqkit still has bug
+
+#### change sequence name to report bug
+
+```{r}
+library(Biostrings)
+reads<-readAAStringSet("allResults.fasta")
+names(reads)<-paste0("Protein",1:length(reads))
+writeXStringSet(reads,"allResultsRaiseBug.fasta")
+```
+
+```{bash}
+./seqkit locate allResultsRaiseBug.fasta \
+  -i -m 2 -p TYLKTNLFL \
+  -o allResultsRaiseBug.location.txt
+```
+

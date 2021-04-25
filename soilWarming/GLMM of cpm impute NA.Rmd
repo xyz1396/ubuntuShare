@@ -1,0 +1,133 @@
+---
+title: "GLMM of cpm"
+author: "xyz"
+date: "2021/2/4"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### read data
+
+```{r}
+library(tidyverse)
+cpm<-read.table("CPM/merge_all_samples_cpm.tsv",sep = "\t",header = T)
+colnames(cpm)[1]<-"KO"
+colnames(cpm)[-1]<-str_sub(colnames(cpm)[-1],1,-22)
+cpm[1,1]<-"Unknown"
+cpm<-cpm[rowSums(cpm[,-1])>0,]
+# cpm[,-1]<-prop.table(as.matrix(cpm[,-1]),2)
+row.names(cpm)<-cpm$KO
+cpm<-as.data.frame(t(cpm[,-1]))
+meta<-read.csv("summary of environmental data.csv")
+meta<-meta[match(rownames(cpm),meta$Sample_name),]
+```
+
+### impute NA
+
+```{r}
+library(mice)
+pdf("missing value summary.pdf",width = 16,height = 9)
+md.pattern(meta,rotate.names=T)
+dev.off()
+# too much NA in root_biomass
+# 8 NA in heterotrophic, autotrophic and total_soil_respiration
+# total_soil_respiration equal to the sum of heterotrophic and autotrophic
+(meta$Autotrophic+meta$Heterotrophic)-meta$total_soil_respiration
+
+meta2<-meta[,colnames(meta)!="root_biomass"]
+meta2<-mice(meta2, maxit = 5, m = 5, seed = 1)
+stripplot(meta2, Autotrophic, pch = 19, xlab = "Imputation number")
+stripplot(meta2, Heterotrophic, pch = 19, xlab = "Imputation number")
+meta2<-complete(meta2)
+```
+
+### test K00001
+
+```{r}
+library(glmmTMB)
+
+meta2$year<-meta2$year-min(meta2$year)
+# cannot treat as time series
+# meta2$year<-factor(meta2$year,levels = 0:max(meta2$year))
+df<-cbind(KO=cpm$K00001,meta2)
+# all precipitation is normal
+
+model <-
+  glmmTMB(
+    formula = KO ~ 1 + year+warm + clip + NO3.N + NH4.N +
+      TN + TC + pH + FlTotl + FlC4 + FlC3 + plant.richness + 
+      moisture_samplingmonth +
+      annual_moisture + precipitation_annual_cm + SPEI + temperature_annual +
+      ER_annualmean + GPP_annualmean +
+      NEE_annualmean + Autotrophic + Heterotrophic +
+      (1 | block),
+    data = df,
+  )
+results<-summary(model)$coefficients$cond
+```
+
+### wrap in function
+
+```{r}
+# scale
+cpm2<-scale(cpm)
+ix <-
+  !(
+    colnames(meta2) %in% c("Sample_name", "block", 
+                           "plot", "year", "Precipitation", 
+                           "Clip","Warm", "warm", "precip", "clip")
+  )
+meta2[,ix]<-scale(meta2[,ix])
+getGlmmResult <- function(ko) {
+  df <- cbind(KO = cpm2[, ko], meta2)
+  model <-
+    glmmTMB(
+      formula = KO ~ 1 + year + Warm + Clip + NO3.N + NH4.N +
+        TN + TC + pH + FlTotl + FlC4 + FlC3 + plant.richness +
+        moisture_samplingmonth +
+        annual_moisture + precipitation_annual_cm + SPEI + temperature_annual +
+        ER_annualmean + GPP_annualmean +
+        NEE_annualmean + Autotrophic + Heterotrophic
+      # too much NA will be produced considering block as a condition
+      # + (1 | block)
+      ,
+      data = df,
+      family = gaussian()
+    )
+  results <- summary(model)$coefficients$cond
+  results <- cbind(KO = ko, ENV = rownames(results), results)
+  return(results)
+}
+# test
+View(getGlmmResult("K00002"))
+# test 20 KO
+results<-lapply(colnames(cpm)[1:20],getGlmmResult)
+# get all
+results<-lapply(colnames(cpm),getGlmmResult)
+saveRDS(results,"glmmResult.rds")
+```
+
+#### tidy results
+
+```{r}
+library(KEGGREST)
+results2<-as.data.frame(do.call(rbind,results))
+rownames(results2)<-NULL
+write.csv(results2,"glmmResultOriginal.csv",row.names = F)
+results2<-dplyr::filter(results2,ENV !="(Intercept)")
+results2<-cbind(results2,qOrFDR=p.adjust(results2$`Pr(>|z|)`,"BH"))
+# get KO annotation
+# KO<-keggList("ko")
+# KO2Pthway<-keggLink("pathway", "ko")
+# KO.df<-data.frame(id=names(KO),term=KO)
+saveRDS(KO.df,"KO.df.rds")
+KOannotation <- readRDS("KO.df.rds")
+row.names(KOannotation) <- NULL
+KOannotation$id <- str_sub(KOannotation$id, 4)
+results2 <- cbind(Annotation=KOannotation$term[match(results2$KO,KOannotation$id)],results2)
+write.csv(results2,"glmmResultWithKOAnnotationAndFDR.csv",row.names = F)
+```
+

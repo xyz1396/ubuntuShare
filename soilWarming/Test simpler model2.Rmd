@@ -1,0 +1,174 @@
+---
+title: "Test simpler model"
+author: "Yi Xiong"
+date: "2021/3/17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### read data
+
+```{r}
+library(tidyverse)
+library(mice)
+cpm<-read.table("CPM/merge_all_samples_cpm.tsv",sep = "\t",header = T)
+colnames(cpm)[1]<-"KO"
+colnames(cpm)[-1]<-str_sub(colnames(cpm)[-1],1,-22)
+cpm[1,1]<-"Unknown"
+cpm<-cpm[rowSums(cpm[,-1])>0,]
+# cpm[,-1]<-prop.table(as.matrix(cpm[,-1]),2)
+row.names(cpm)<-cpm$KO
+cpm<-as.data.frame(t(cpm[,-1]))
+meta<-read.csv("summary of environmental data.csv")
+meta<-meta[match(rownames(cpm),meta$Sample_name),]
+# each block have 2 plots (S) with data of 2009,
+# 2 plots (N) with data of 2010 - 2016
+# the treatment of the same plot is the same
+# only in 2 plots (S) "Clip" is "Cliping"
+# 4*(2*1+2*7)= 64
+View(meta[meta$block=="B1",])
+
+meta2<-meta[,colnames(meta)!="root_biomass"]
+meta2<-mice(meta2, maxit = 5, m = 5, seed = 1)
+meta2<-complete(meta2)
+
+meta2$year<-meta2$year-min(meta2$year)
+meta3<-meta2
+# ar1 (auto regression) model need time to be factor
+meta3$year<-as.factor(meta3$year)
+```
+
+### test model
+
+```{r}
+library(glmmTMB)
+# scale
+cpm2<-scale(cpm)
+ix <-
+  !(
+    colnames(meta2) %in% c("Sample_name", "block", 
+                           "plot", "year", "Precipitation", 
+                           "Clip","Warm", "warm", "precip", "clip")
+  )
+meta2[, ix] <- scale(meta2[, ix])
+
+formula1 <- formula(KO ~ ar1(year + 0| block) + warm)
+formula2 <- formula(KO ~ year + warm + (1 | block))
+
+getSummary <- function(abundanceCPM,metadata,ko,formula) {
+  df <- cbind(KO = abundanceCPM[, ko], metadata)
+  model <-
+    glmmTMB(
+      formula = formula,
+      data = df,
+      family = gaussian()
+    )
+  results <- summary(model)
+  return(results)
+}
+
+a<-getSummary(cpm2,meta3,"K00002",formula1)
+getSummary(cpm2,meta2,"K00002",formula2)[["AICtab"]]
+
+getGlmmResult <- function(abundanceCPM,metadata,ko,formula) {
+  results<-getSummary(abundanceCPM,metadata,ko,formula)
+  AIC<-results[["AICtab"]][["AIC"]]
+  coefficients<-results[["coefficients"]][["cond"]]
+  ENV <- rownames(coefficients)
+  rownames(coefficients)<-NULL
+  results <- cbind(KO = ko, ENV = ENV,AIC=AIC,coefficients)
+  return(results)
+}
+
+getGlmmResult(cpm2,meta3,"K00002",formula1)
+getGlmmResult(cpm2,meta2,"K00002",formula2)
+```
+
+### Parallel by foreach
+
+```{r}
+library(foreach)
+library(doParallel)
+
+# wrap function to decrease parameters
+getGlmmResult <- function(abundanceCPM, metadata, formula) {
+  abundanceCPM <- abundanceCPM
+  metadata <- metadata
+  formula <- formula
+  getSummary <- function(abundanceCPM, metadata, ko, formula) {
+    df <- cbind(KO = abundanceCPM[, ko], metadata)
+    model <-
+      glmmTMB(formula = formula,
+              data = df,
+              family = gaussian())
+    results <- summary(model)
+    return(results)
+  }
+  getGlmmResult <- function(ko) {
+    results <- getSummary(abundanceCPM, metadata, ko, formula)
+    AIC <- results[["AICtab"]][["AIC"]]
+    coefficients <- results[["coefficients"]][["cond"]]
+    ENV <- rownames(coefficients)
+    rownames(coefficients) <- NULL
+    results <- cbind(KO = ko,
+                     ENV = ENV,
+                     AIC = AIC,
+                     coefficients)
+    return(results)
+  }
+  return(getGlmmResult)
+}
+
+
+getGlmmResult(cpm2,meta3,formula1)("K00002")
+
+getGlmmResultArModel<-getGlmmResult(cpm2,meta3,formula1)
+getGlmmResultNormalModel<-getGlmmResult(cpm2,meta2,formula2)
+
+getGlmmResultArModel("K00002")
+
+cl<- makeCluster(detectCores()-1)
+registerDoParallel(cl)
+results1 <- foreach(KO = colnames(cpm), 
+                    .packages = c("glmmTMB"),
+                    .export = c("getSummary")) %dopar%
+  getGlmmResultArModel(KO)
+stopCluster(cl)
+saveRDS(results1,"glmmAR1Result.rds")
+
+registerDoParallel(cl)
+results2 <- foreach(KO = colnames(cpm), 
+                    .packages = c("glmmTMB"),
+                    .export = c("getSummary")) %dopar%
+  getGlmmResultNormalModel(KO)
+stopCluster(cl)
+saveRDS(results2,"glmmNormalResult.rds")
+```
+
+#### tidy results
+
+```{r}
+results3<-as.data.frame(do.call(rbind,results1))
+# 184.5739
+mean(as.numeric(results3$AIC),na.rm = T)
+rownames(results3)<-NULL
+results3<-dplyr::filter(results3,ENV !="(Intercept)")
+results3<-cbind(results3,qOrFDR=p.adjust(results3$`Pr(>|z|)`,"BH"))
+KOannotation <- readRDS("KO.df.rds")
+row.names(KOannotation) <- NULL
+KOannotation$id <- str_sub(KOannotation$id, 4)
+results3 <- cbind(Annotation=KOannotation$term[match(results3$KO,KOannotation$id)],results3)
+write.csv(results3,"glmmArModelWithKOAnnotationAndFDR.csv",row.names = F)
+
+results3<-as.data.frame(do.call(rbind,results2))
+# 184.646
+mean(as.numeric(results3$AIC),na.rm = T)
+rownames(results3)<-NULL
+results3<-dplyr::filter(results3,ENV !="(Intercept)")
+results3<-cbind(results3,qOrFDR=p.adjust(results3$`Pr(>|z|)`,"BH"))
+results3 <- cbind(Annotation=KOannotation$term[match(results3$KO,KOannotation$id)],results3)
+write.csv(results3,"glmmNormalModelWithKOAnnotationAndFDR.csv",row.names = F)
+```

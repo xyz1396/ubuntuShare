@@ -1,0 +1,84 @@
+---
+title: "Get annotation of enriched KO"
+author: "xyz"
+date: "2021/1/14"
+output: html_document
+---
+
+```{r}
+library(KEGGREST)
+library(tidyverse)
+
+KO <- keggList("ko")
+KO.df <- data.frame(id = names(KO), term = KO)
+saveRDS(KO.df, "KO.df.rds")
+KOannotation <- readRDS("KO.df.rds")
+row.names(KOannotation) <- NULL
+KOannotation$id <- str_sub(KOannotation$id, 4)
+```
+### Anaerostipes
+
+```{r}
+library(readxl)
+Anaerostipes <- read_xlsx("g__Anaerostipes_ko_2enrich.tsv.xlsx")
+AnaerostipesKOannotation <-
+  right_join(KOannotation, Anaerostipes, by = c("id" = "koID"))
+# The unknown KO id is from Metagenome
+# for example [Lack_3'-end][KO:K01572 K01605 K01615][COG:COG1883]
+View(AnaerostipesKOannotation[is.na(AnaerostipesKOannotation$term), ])
+AnaerostipesKOannotation <-
+  AnaerostipesKOannotation[!is.na(AnaerostipesKOannotation$term), ]
+# K00574 cfa; cyclopropane-fatty-acyl-phospholipid synthase [EC:2.1.1.79]
+# K19709 ydiF; acetate CoA-transferase [EC:2.8.3.8]
+df<-AnaerostipesKOannotation[str_detect(AnaerostipesKOannotation$term, "\\b(fatty|acetate|butyrate)\\b"), ]
+View(df)
+write.csv(df,"important Anaerostipes KOannotation.csv",row.names = F)
+```
+
+```{r}
+Bacteroides <- read_xlsx("g__Bacteroides_ko_2enrich.tsv.xlsx")
+BacteroidesKOannotation <-
+  right_join(KOannotation, Bacteroides, by = c("id" = "koID"))
+# nothing
+View(BacteroidesKOannotation[str_detect(BacteroidesKOannotation$term,
+                                        "\\b(fatty|acetate|butyrate)\\b"),])
+```
+
+### map module id
+
+```{r}
+library(xlsx)
+all11group<-read_xlsx("supplementary_compare_all_combine.xlsx")
+names(all11group)[1]<-"group number"
+fattyAcid<-all11group[str_detect(all11group$function_des,
+                           regex("\\b(fatty|acetate|butyrate)\\b",
+                                 ignore_case = T)),]
+sulfate<-all11group[str_detect(all11group$function_des,
+                           regex("\\b(sulfate)\\b",
+                                 ignore_case = T)),]
+aminoAcid<-all11group[str_detect(all11group$function_des,
+                           regex("\\b(Valine|Isoleucine|Leucine)\\b",
+                                 ignore_case = T)),]
+fattyAcid<-as.data.frame(fattyAcid)
+sulfate<-as.data.frame(sulfate)
+aminoAcid<-as.data.frame(aminoAcid)
+write.xlsx(fattyAcid,
+           "allCombineImportantMapID.xlsx",
+           "fattyAcid",
+           row.names = F)
+write.xlsx(
+  sulfate,
+  "allCombineImportantMapID.xlsx",
+  "sulfate",
+  row.names = F,
+  append = T
+)
+write.xlsx(
+  aminoAcid,
+  "allCombineImportantMapID.xlsx",
+  "aminoAcid",
+  row.names = F,
+  append = T
+)
+```
+

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+
+<title>IMG</title>
+
+<meta charset="UTF-8">
+<meta name="description" content="Integrated Microbial Genomes" />
+<meta name="keywords" content="gene,genome,metagenome,microbe,microbial,img,jgi, virus" />
+
+
+
+<!--  -->
+<link rel="stylesheet" type="text/css" href="https://img.jgi.doe.gov/css/jgi.css" />
+<link rel="stylesheet" type="text/css" href="https://img.jgi.doe.gov/css/div-v33.css" />
+<link rel="stylesheet" type="text/css" href="https://img.jgi.doe.gov/css/menu-abc.css" />
+<link rel="stylesheet" type="text/css" href="https://img.jgi.doe.gov/css/img-v33.css" />
+<link rel="icon" href="https://img.jgi.doe.gov/images/favicon.ico"/>
+<link rel="SHORTCUT ICON" href="https://img.jgi.doe.gov/images/favicon.ico" />
+
+<!-- Individual YUI CSS files -->
+<link rel="stylesheet" type="text/css" href="/../yui282/yui/build/autocomplete/assets/skins/sam/autocomplete.css" />
+<link rel="stylesheet" type="text/css" href="/../yui282/yui/build/paginator/assets/skins/sam/paginator.css">
+<link rel="stylesheet" type="text/css" href="/../yui282/yui/build/datatable/assets/skins/sam/datatable.css">
+<link rel="stylesheet" type="text/css" href="/../yui282/yui/build/container/assets/skins/sam/container.css" />
+<link rel="stylesheet" type="text/css" href="/../yui282/yui/build/progressbar/assets/skins/sam/progressbar.css">
+<link rel="stylesheet" type="text/css" href="/../yui282/yui/build/button/assets/skins/sam/button.css" />
+<link rel="stylesheet" type="text/css" href="/../yui282/yui/build/tabview/assets/skins/sam/tabview.css" />
+
+<style type="text/css">
+#myAutoComplete {
+    width:25em; /* set width here or else widget will expand to fit its container */
+    padding-bottom:2em;
+}
+</style>
+
+<!-- Individual YUI JS files -->
+<script type="text/javascript" src="/../yui282/yui/build/yahoo-dom-event/yahoo-dom-event.js"></script> 
+<script type="text/javascript" src="/../yui282/yui/build/connection/connection-min.js"></script> 
+<script type="text/javascript" src="/../yui282/yui/build/dragdrop/dragdrop-min.js"></script>
+<script type="text/javascript" src="/../yui282/yui/build/history/history-min.js"></script>
+<script type="text/javascript" src="/../yui282/yui/build/element/element-min.js"></script>
+<script type="text/javascript" src="/../yui282/yui/build/paginator/paginator-min.js"></script>
+<script type="text/javascript" src="/../yui282/yui/build/datasource/datasource-min.js"></script>
+<script type="text/javascript" src="/../yui282/yui/build/datatable/datatable-min.js"></script>
+<script type="text/javascript" src="/../yui282/yui/build/json/json-min.js"></script>
+<script type="text/javascript" src="/../yui282/yui/build/animation/animation-min.js"></script>
+<script type="text/javascript" src="/../yui282/yui/build/container/container-min.js"></script>
+<script type="text/javascript" src="/../yui282/yui/build/progressbar/progressbar-min.js"></script>
+<script type="text/javascript" src="/../yui282/yui/build/dom/dom-min.js"></script>
+<script type="text/javascript" src="/../yui282/yui/build/button/button-min.js"></script>
+<script type="text/javascript" src="/../yui282/yui/build/tabview/tabview-min.js"></script>
+
+<script type="text/javascript" src="/../yui282/yui/build/element/element-min.js"></script>
+
+<script type="text/javascript" src="/../yui282/yui/build/autocomplete/autocomplete-min.js"></script>
+<script type="text/javascript" src="https://img.jgi.doe.gov/mer/../js/header.js"></script>
+
+
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-15689341-4']);
+  _gaq.push(['_setDomainName', 'jgi.doe.gov']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-15689341-4', 'auto');
+ga('send', 'pageview');
+
+</script>
+
+</head>
+
+<body id="body_frame" class="yui-skin-sam">
+
+
+
+
+<header id="jgi-header">
+<div id="jgi-logo">
+<a href="/" title="DOE Joint Genome Institute - IMG/ER">
+<img width="480" height="70" src="https://img.jgi.doe.gov//images/logo-JGI-IMG-ER.png" alt="DOE Joint Genome Institute's IMG/ER logo"/>
+</a>
+</div>
+<nav class="jgi-nav">
+    <ul>
+    <li><a href="http://jgi.doe.gov">JGI Home</a></li>
+    <li><a href="main.cgi?section=Questions">Contact Us</a></li>
+    </ul>
+</nav>
+</header>
+
+
+    <div id="myclear"></div>
+    <div id='menu'>
+<ul id='nav'>
+    <li title='IMG Landing Page'><a href="/"> Home </a>
+    </li>
+    <li title='IMG Data Marts'><a href="main.cgi"> IMG/MER </a>
+    <ul>
+        <li class="sub" title='IMG only public data'><a href="/m/"><img class='menuimg' src='../../images/img_ico.png'/> IMG/M </a>
+        </li>
+        <li class="sub" title='IMG ER Expert Review'><a href="/mer/"><img class='menuimg' src='../../images/img_m_ico.png'/> IMG/M ER </a>
+        </li>
+        <li class="sub" title='IMG ABC biosynthetic gene clusters and novel secondary metabolites'><a href="/abc/"><img class='menuimg' src='../../images/abc_favicon.ico'/> IMG ABC </a>
+        </li>
+        <li class="sub" title='IMG Viral'><a href="/vr/"><img class='menuimg' src='../../images/img_ico.png'/> IMG VR </a>
+        </li>
+        <li class="sub" title='Proportal - Beta'><a href="/proportal/"> IMG Proportal - Beta </a>
+        </li>
+        <li class="sub" title='Data set submission'><a href="https://img.jgi.doe.gov/submit/"><img class='menuimg' src='../../images/favicon.ico'/> Submit Data Set </a>
+        </li>
+    </ul>
+    </li>
+    <li ><a href="main.cgi?section=GenomeSearch&page=searchForm"> Find Genomes </a>
+    <ul>
+        <li class="sub2" ><a href="main.cgi?section=TreeFile&page=txs&type=taxonomy"> Genome Browser <img class='subarrow' src='../../images/ArrowNav.gif'/></a>
+        <ul>
+           <li class="sub3" ><a href="main.cgi?section=TreeFile&page=txs&type=taxonomy"><img class='menuimg' src='../../images/browse_icon.png'/> Genomes by Taxonomy </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=TreeFile&page=txs&type=ecosystem"><img class='menuimg' src='../../images/browse_icon.png'/> Genomes by Ecosystem </a>
+            </li>
+        </ul>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=GenomeSearch&page=searchForm"><img class='menuimg' src='../../images/binocular.png'/> Genome Search </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=ScaffSearch&page=searchForm"><img class='menuimg' src='../../images/binocular.png'/> Scaffold Search </a>
+        </li>
+        <li class="sub2" ><a href="main.cgi?section=MetagenomeBins&page=info"> Metagenome Bins <img class='subarrow' src='../../images/ArrowNav.gif'/></a>
+        <ul>
+           <li class="sub3" ><a href="main.cgi?section=MetagenomeBinSearch&page=searchForm"><img class='menuimg' src='../../images/browse_icon.png'/> Bin Search </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=MetagenomeBins&page=bins&type=taxonomy"><img class='menuimg' src='../../images/browse_icon.png'/> Bins by Taxonomy </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=MetagenomeBins&page=bins&type=ecosystem"><img class='menuimg' src='../../images/browse_icon.png'/> Bins by Ecosystem </a>
+            </li>
+        </ul>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=TaxonDeleted"> Deleted Genomes </a>
+        </li>
+    </ul>
+    </li>
+    <li ><a href="main.cgi?section=GeneSearch&page=searchForm"> Find Genes </a>
+    <ul>
+        <li class="sub" ><a href="main.cgi?section=GeneSearch&page=searchForm"><img class='menuimg' src='../../images/binocular.png'/> Gene Search </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=GeneCassetteSearch&page=form"><img class='menuimg' src='../../images/binocular.png'/> Cassette Search </a>
+        </li>
+        <li class="sub2" ><a href="main.cgi?section=FindGenesBlast&page=geneSearchBlast"> BLAST <img class='subarrow' src='../../images/ArrowNav.gif'/></a>
+        <ul>
+           <li class="sub3" ><a href="main.cgi?section=FindGenesBlast&page=geneSearchBlast"> Selected Genomes </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=WorkspaceBlast&page=16form"> RNA </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=WorkspaceBlast&page=viralform"> Virus </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=WorkspaceBlast&page=spacersform"> CRISPR Spacers </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=WorkspaceBlast&page=isolateform"> All Genomes* </a>
+            </li>
+        </ul>
+        </li>
+        <li class="sub2" ><a href="main.cgi?section=GeneCassetteProfiler&page=genetools"> Phylogenetic Profilers <img class='subarrow' src='../../images/ArrowNav.gif'/></a>
+        <ul>
+           <li class="sub3" ><a href="main.cgi?section=PhylogenProfiler&page=phyloProfileForm"> Single Genes </a>
+            </li>
+           <li class="sub3" title='Genome Gene Best Homologs'><a href="main.cgi?section=GenomeGeneOrtholog"> Genome Gene Best Hmlgs </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=GeneCassetteProfiler&page=geneContextPhyloProfiler2"> Gene Cassettes </a>
+            </li>
+        </ul>
+        </li>
+    </ul>
+    </li>
+    <li ><a href="main.cgi?section=FindFunctions&page=findFunctions"> Find Functions </a>
+    <ul>
+        <li class="sub" ><a href="main.cgi?section=FindFunctions&page=findFunctions"><img class='menuimg' src='../../images/binocular.png'/> Function Search </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=AllPwayBrowser&page=allPwayBrowser"><img class='menuimg' src='../../images/binocular.png'/> Search Pathways </a>
+        </li>
+        <li class="sub" title='Secondary Metabolism in IMG ABC Data Mart'><a href="https://img.jgi.doe.gov/abc/"><img class='menuimg' src='../../images/abc_favicon.ico'/> Secondary Metabolism </a>
+        </li>
+        <li class="sub2" ><a href="main.cgi?section=FindFunctions&page=ffoAllCogCategories"><img class='menuimg' src='../../images/cog.png'/> COG <img class='subarrow' src='../../images/ArrowNav.gif'/></a>
+        <ul>
+           <li class="sub3" ><a href="main.cgi?section=FindFunctions&page=ffoAllCogCategories"> COG Browser </a>
+            </li>
+           <li class="sub3" title='List of COG IDs'><a href="main.cgi?section=FindFunctions&page=cogList"> COG List </a>
+            </li>
+           <li class="sub3" title='List of COG IDs with Gene Count (This is SLOW)'><a href="main.cgi?section=FindFunctions&page=cogList&stats=1"> COG List w/ Stats </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=FindFunctions&page=cogid2cat"> COG ID to Categories </a>
+            </li>
+        </ul>
+        </li>
+        <li class="sub2" ><a href="main.cgi?section=FindFunctions&page=ffoAllKogCategories"><img class='menuimg' src='../../images/kog.png'/> KOG <img class='subarrow' src='../../images/ArrowNav.gif'/></a>
+        <ul>
+           <li class="sub3" ><a href="main.cgi?section=FindFunctions&page=ffoAllKogCategories"> KOG Browser </a>
+            </li>
+           <li class="sub3" title='List of KOG Ids'><a href="main.cgi?section=FindFunctions&page=kogList"> KOG List </a>
+            </li>
+           <li class="sub3" title='List of KOG Ids with Gene Count (This is SLOW)'><a href="main.cgi?section=FindFunctions&page=kogList&stats=1"> KOG List w/ Stats </a>
+            </li>
+        </ul>
+        </li>
+        <li class="sub2" ><a href="main.cgi?section=FindFunctions&page=pfamCategories"><img class='menuimg' src='../../images/pfam.png'/> Pfam <img class='subarrow' src='../../images/ArrowNav.gif'/></a>
+        <ul>
+           <li class="sub3" ><a href="main.cgi?section=FindFunctions&page=pfamCategories"> Pfam Browser </a>
+            </li>
+           <li class="sub3" title='List of Pfam Ids'><a href="main.cgi?section=FindFunctions&page=pfamList"> Pfam List </a>
+            </li>
+           <li class="sub3" title='List of Pfam Ids with Gene Count (This is SLOW)'><a href="main.cgi?section=FindFunctions&page=pfamList&stats=1"> Pfam List w/ Stats </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=FindFunctions&page=pfamListClans"> Pfam Clans </a>
+            </li>
+        </ul>
+        </li>
+        <li class="sub2" ><a href="main.cgi?section=TigrBrowser&page=tigrBrowser"><img class='menuimg' src='../../images/tigrfam.png'/> TIGRfam <img class='subarrow' src='../../images/ArrowNav.gif'/></a>
+        <ul>
+           <li class="sub3" ><a href="main.cgi?section=TigrBrowser&page=tigrBrowser"> TIGRfam Roles </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=TigrBrowser&page=tigrfamList"> TIGRfam List </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=TigrBrowser&page=tigrfamList&stats=1"> TIGRfam List w/ Stats </a>
+            </li>
+        </ul>
+        </li>
+        <li class="sub2" ><a href="main.cgi?section=FindFunctions&page=ffoAllKeggPathways&view=brite"><img class='menuimg' src='../../images/kegg.png'/> KEGG <img class='subarrow' src='../../images/ArrowNav.gif'/></a>
+        <ul>
+           <li class="sub3" ><a href="main.cgi?section=KeggPathwayDetail&page=koList"> KO List </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=KeggPathwayDetail&page=koList&stats=1"> KO List w/ Stats </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=KeggPathwayDetail&page=keggmodulelist"> KEGG Module List </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=KeggPathwayDetail&page=keggmodulelist&stats=1"> KEGG Module List w/ Stats </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=FindFunctions&page=ffoAllKeggPathways&view=brite"> Orthology KO Terms </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=FindFunctions&page=ffoAllKeggPathways&view=ko"> Pathways via KO Terms </a>
+            </li>
+        </ul>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=FindFunctions&page=enzymeList"><img class='menuimg' src='../../images/kegg-ec.png'/> Enzyme </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=MetaCyc"> MetaCyc </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=Interpro"><img class='menuimg' src='../../images/interpro.png'/> InterPro Browser </a>
+        </li>
+    </ul>
+    </li>
+    <li ><a href="main.cgi?section=CompareGenomes&page=compareGenomes"> Compare Genomes </a>
+    <ul>
+        <li class="sub" ><a href="main.cgi?section=CompareGenomes&page=compareGenomes"> Genome Statistics </a>
+        </li>
+        <li class="sub2" ><a href="main.cgi?section=AbundanceProfiles&page=topPage"> Abundance Profiles <img class='subarrow' src='../../images/ArrowNav.gif'/></a>
+        <ul>
+           <li class="sub3" ><a href="main.cgi?section=AbundanceProfiles&page=mergedForm"> Overview (All Functions) </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=AbundanceProfileSearch"> Search </a>
+            </li>
+        </ul>
+        </li>
+        <li class="sub2" ><a href="main.cgi?section=MetagPhyloDist&page=top"> Phylogenetic Dist. <img class='subarrow' src='../../images/ArrowNav.gif'/></a>
+        <ul>
+           <li class="sub3" ><a href="main.cgi?section=MetagPhyloDist&page=form"> Metagenomes vs Genomes </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=GenomeHits"> Genome vs Metagenomes </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=RadialPhyloTree"><img class='menuimg' src='../../images/radialtree_ico.png'/> Radial Tree </a>
+            </li>
+        </ul>
+        </li>
+        <li class="sub2" title='ANI'><a href="main.cgi?section=ANI"> Avg Nucleotide Ident. <img class='subarrow' src='../../images/ArrowNav.gif'/></a>
+        <ul>
+           <li class="sub3" ><a href="main.cgi?section=ANI&page=pairwise"> Pairwise ANI </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=ANI&page=doSameSpeciesPlot"> Same Species Plot </a>
+            </li>
+           <li class="sub3" ><a href="main.cgi?section=ANI&page=overview"> ANI Clusters </a>
+            </li>
+        </ul>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=DotPlot&page=plot"><img class='menuimg' src='../../images/dotplot_icon.png'/> Dot Plot </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=EgtCluster&page=topPage"> Genome Clustering </a>
+        </li>
+    </ul>
+    </li>
+    <li ><a href="main.cgi?section=ImgStatsOverview#tabview=tab3"> OMICS </a>
+    <ul>
+        <li class="sub" ><a href="main.cgi?section=IMGProteins&page=proteomics"> Protein </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=RNAStudies&page=rnastudies"> RNASeq </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=Methylomics&page=methylomics"> Methylation </a>
+        </li>
+    </ul>
+    </li>
+    <li title='My saved data Genes, Functions, Scaffolds, Genomes, etc...'><a href="main.cgi?section=Workspace"> Workspace </a>
+    <ul>
+        <li class="sub" ><a href="main.cgi?section=WorkspaceGenomeSet&page=home"> Genome Sets </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=WorkspaceGeneSet&page=home"> Gene Sets </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=WorkspaceScafSet&page=home"> Scaffold Sets </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=WorkspaceFuncSet&page=home"> Function Sets </a>
+        </li>
+        <li class="sub" title='View and Create ADG'><a href="main.cgi?section=WorkspaceAdg"> Analysis Data Group </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=Workspace&page=job"> My Jobs </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=Workspace&page=genome_search_history"> Genome Search History </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=Workspace&page=gene_search_history"> Gene Search History </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=Workspace&page=scaffold_search_history"> Scaffold Search History </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=Workspace&page=bin_search_history"> Bin Search History </a>
+        </li>
+    </ul>
+    </li>
+    <li ><a href="main.cgi?section=MyIMG"> My IMG </a>
+    <ul>
+        <li class="sub" ><a href="main.cgi?section=MyIMG&page=home"> MyIMG Home </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=MyIMG&page=myAnnotationsForm"> Annotations </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=MyIMG&page=preferences"> Preferences </a>
+        </li>
+        <li class="sub" ><a href="main.cgi?section=Caliban&logout=1"><img class='menuimg' src='../../images/door-open-out.png'/> Logout </a>
+        </li>
+    </ul>
+    </li>
+    <li class="rightmenu"><a href="/help.html"> Help </a>
+    </li>
+</ul>
+
+        </div> <!-- end menu div -->
+<div id="myclear"></div>
+<div id="container">        
+    <noscript>
+    <!-- style="display: block" overrides the default of css display: none -->
+    <div id="error_content_js"
+        class="error_frame shadow"
+        style="display: block">
+        <img src='https://img.jgi.doe.gov/mer/images/announcementsIcon.gif'/>
+        Your browser does not have JavaScript enabled. Please enable JavaScript to view IMG data
+        accurately.
+     </div>
+</noscript>
+
+<div id="error_content"
+    class="error_frame shadow"
+    style="display: none">
+</div>
+
+
+<div id="message_content_file" class="message_frame shadow" style="display: none" >
+    
+</div> 
+
+
+
+
+    <div id="content_other">
+    <div>
+<div class='abcbox' id=jgissologin style="padding-left:10px; ">
+<h3>JGI Single Sign On</h3>
+<p>
+IMG/MER requires login.
+</p>
+<input class="smdefbutton" type="button" name="jgi_sso" value="JGI SSO Sign In"
+            title='Sign in with your JGI SSO Account'
+           onclick="window.location.href='https://signon.jgi.doe.gov/'" />
+ 
+</div>
+
+<div class='abcbox' style="padding-top: 100px; padding-left: 50px;">
+<img src="https://img.jgi.doe.gov/images/or-icon.gif" >
+</div>
+
+<div class='abcbox' style="padding-left: 50px;">
+<h3>IMG Public</h3>
+<p>
+The public IMG site has limited features and tools.
+<p>
+<input class="smdefbutton" style="margin-top: 10px;" type="button" name="jgi_sso" value="IMG Public"
+            title='Continue to Public IMG' onClick="window.location.href='https://img.jgi.doe.gov/m/'" />
+</div>
+
+<p>
+<a href='https://img.jgi.doe.gov/systemreqs.html'><b>IMG System Requirements</b> </a>
+</p>
+
+<!-- 
+<p>
+
+<span style="font-weight: bold;font-size:16px;color:green">
+ <img src="/images/policyupdtateicon.jpg" 
+    style="vertical-align:middle"
+    alt="policy update"
+    height="42" width="42"> 
+Updated JGI/IMG Communication Policy
+</span> 
+&nbsp;&nbsp;&nbsp;&nbsp;
+<input class="smdefbutton" 
+    type="button" 
+    name="policy" 
+    value="View Policy" 
+    title="View JGI/IMG policy in new window" 
+    onclick="window.open('/cgi-bin/m/main.cgi?section=Questions&page=viewPolicy', '_blank')">
+</p>
+ -->
+ 
+</div>   
+    </div> <!-- end of content div  -->
+        <div id="myclear"></div>
+    
+    </div> <!-- end of container div  -->
+    <br>
+<br>
+
+<link rel="stylesheet" href="/css/footer-v50.css" /> 
+
+
+<div class="divider1"></div>
+
+<div class="flex-footer" id="jgi-tools-footer">
+
+  <!--start of 4 part section-->
+  <div class="tools-link">
+    <div class="system-bullet">
+      <a target="_self" href="https://gold.jgi.doe.gov/" class="textlink">Genomes OnLine Database (GOLD)</a> - a resource for sequencing projects and associated metadata.
+    </div>
+  </div>
+  <div class="tools-link">
+    <div class="system-bullet">
+      <a target="_self" href="https://genome.jgi.doe.gov" class="textlink">JGI Genome Portal</a> - unified access to all JGI genomic datasets.
+    </div>
+  </div>
+  <div class="tools-link">
+    <div class="system-bullet">
+      <a target="_self" href="https://genome.jgi.doe.gov/programs/fungi/index.jsf" class="textlink">Mycocosm</a> - access to data, visualization, and analysis tools for comparative genomics of fungi.
+    </div>
+  </div>
+  <div class="tools-link">
+    <div class="system-bullet">
+      <a target="_self" href="http://phytozome.jgi.doe.gov" class="textlink">Phytozome</a> - a hub for accessing, visualizing and analyzing plant genomes.
+    </div>
+  </div>
+  
+  <!--end of 4 part section-->
+  <div class="clear"></div>
+  
+</div>
+
+<footer id="jgi-img-footer">
+  <div class="home-left">
+    <ul>
+      <li>
+    <a href="main.cgi?section=Questions" style="color:black;">Contact Us</a>
+    <a href="http://jgi.doe.gov/disclaimer/" style="color:black; padding-left:10px;">Disclaimer</a>
+    <br>
+    <a href="http://jgi.doe.gov/accessibility-section-508-statement/" style="color:black;">Accessibility/Section 508</a>
+    <br>&copy;1997-2019 The Regents of the University of California<br>
+    <span style="font-size:9px;">Version 5.2 Mar. 2020 <br> jgi-img-web-2  gemini2_shared 5.016000 2020-10-23-18.07.01
+</span>
+      </li>
+    </ul>
+  </div>      
+  <div class="home-middle">
+    <ul>
+      <li>
+    <a href="https://groups.google.com/a/lbl.gov/forum/?hl=en&amp;fromgroups#!forum/img-user-forum">
+      <img src="/images/img-user-forum.png" style="width:24px;height:24px;" alt="IMG User Forum"></a>
+    <a href="https://groups.google.com/a/lbl.gov/forum/?hl=en&amp;fromgroups#!forum/img-user-forum">IMG User Forum</a>
+    <br>Where users can view documents, FAQ and ask questions.
+      </li>
+    </ul>
+  </div>
+  <div class="home-right">
+    <ul>
+      <li>
+    <a href="http://science.energy.gov/">
+      <img alt="DOE logo" name="doe_sc_logo" src="/images/DOE_logo.png">
+    </a>
+      </li>
+    </ul>
+  </div>
+  <div class="clear"></div>
+</footer>
+
+
+
+<script type='text/javascript'>
+    var e0 = document.getElementById( "loading" );
+    if(e0 == null || e0 == undefined ) {
+     // do nothing for now
+    } else {
+        var oldHTML = e0.innerHTML;
+        if(oldHTML.indexOf("ajax-loader") != -1) {
+            e0.innerHTML = " loaded. ";
+        }
+    }
+</script>    
+
+<script  type="text/javascript">
+        messageFile('xml.cgi?section=MessageFile');
+</script>
+
+
+
+
+

@@ -1,0 +1,397 @@
+---
+title: "caculate subset combination correlation"
+author: "xyz"
+date: "2021/2/19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### read data
+
+```{r}
+library(readxl)
+library(tidyverse)
+phy<-read.csv("../CellWallComponent.csv")
+gene<-read.csv("../GeneExpressionData.csv")
+# check
+sum(phy$id==gene$id)
+phy2<-separate(phy,id,c("GeneType","Stage","Repeat"),sep = "-")
+gene2<-separate(gene,id,c("GeneType","Stage","Repeat"),sep = "-")
+
+# merge repeats
+phy2<-group_by(phy2,GeneType,Stage)
+phy2<-summarise_all(phy2[,-3],mean)
+gene2<-group_by(gene2,GeneType,Stage)
+gene2<-summarise_all(gene2[,-3],mean)
+```
+
+### Wrap gini function
+
+```{r}
+library(rsgcc)
+library(qvalue)
+
+getGiniMatrix<-function(mat){
+  results <- cor.matrix(
+  t(mat),
+  cpus = 11,
+  cormethod = "GCC",
+  style = "all.pairs",
+  pernum = 2000,
+  sigmethod = "two.sided",
+  output = "matrix"
+)
+  return(results)
+}
+
+getPhy2Gene<-function(mat,fileName){
+  results<-getGiniMatrix(mat)
+  r<-results$corMatrix
+  # first 11 are genes, 15 are physiology
+  r<-r[12:26,1:11]
+  r <- cbind(r, physiology = rownames(r))
+  r.gini <-
+    pivot_longer(as.data.frame(r),
+                 -physiology,
+                 names_to = "gene",
+                 values_to = "r")
+  
+  p<-results$pvalueMatrix
+  p<-p[12:26,1:11]
+  p <- cbind(as.data.frame(p), physiology = rownames(p))
+  p.gini <-
+    pivot_longer(as.data.frame(p),
+                 -physiology,
+                 names_to = "gene",
+                 values_to = "p")
+  q<-qvalue(p.gini$p,lambda=0)
+  results.gini <- cbind(r.gini, p = p.gini$p, qOrFdr = q$qvalues)
+  write.csv(results.gini, fileName, row.names = F)
+}
+
+getGene2Gene<-function(mat,fileName){
+  results<-getGiniMatrix(mat)
+  r<-results$corMatrix[12:26,12:26]
+  r <- cbind(r, physiology = rownames(r))
+  r.gini <-
+    pivot_longer(as.data.frame(r),
+                 -physiology,
+                 names_to = "physiology2",
+                 values_to = "r")
+  
+  p<-results$pvalueMatrix[12:26,12:26]
+  p <- cbind(as.data.frame(p), physiology = rownames(p))
+  p.gini <-
+    pivot_longer(as.data.frame(p),
+                 -physiology,
+                 names_to = "physiology2",
+                 values_to = "p")
+  q<-qvalue(p.gini$p,lambda=0)
+  results.gini <- cbind(r.gini, p = p.gini$p, qOrFdr = q$qvalues)
+  write.csv(results.gini, fileName, row.names = F)
+}
+```
+
+### N(GE) vs N + 1(CW)
+
+V3 vs E4 + 
+E4 vs R3 + 
+S1 vs S2 + 
+S2 vs S3
+
+```{r}
+getSub <- function(df, subs) {
+  df2 <- data.frame()
+  for (i in subs) {
+    df2 <- rbind(df2, dplyr::filter(df, Stage == i))
+  }
+  return(df2)
+}
+
+gene3<-getSub(gene2,c("V3","E4","S1","S2"))
+phy3 <- getSub(phy2,c("E4","R3","S2","S3"))
+sum(gene3$GeneType==phy3$GeneType)
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"N(GE) vs N + 1(CW)Physiology2Gene.mergeRepeats.gini.csv")
+```
+
+### N(GE) vs N + 2(CW): 
+
+V3 vs R3 + 
+S1 vs S3
+
+```{r}
+gene3<-getSub(gene2,c("V3","S1"))
+phy3 <- getSub(phy2,c("R3","S3"))
+sum(gene3$GeneType==phy3$GeneType)
+
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"N(GE) vs N + 2(CW)Physiology2Gene.mergeRepeats.gini.csv")
+```
+
+###	Stages only NGE vs NCW:
+
+-	V3 vs V3 + 
+-	E4 vs E4 + 
+-	R3 vs R3
+
+```{r}
+gene3<-getSub(gene2,c("V3","E4","R3"))
+phy3 <- getSub(phy2,c("V3","E4","R3"))
+sum(gene3$GeneType==phy3$GeneType)
+
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"Stages only NGE vs NCW.mergeRepeats.gini.csv")
+```
+
+### Stages only	NGE vs N+1CW:
+
+-	V3 vs E4 + 
+-	E4 vs R3
+
+```{r}
+gene3<-getSub(gene2,c("V3","E4"))
+phy3 <- getSub(phy2,c("E4","R3"))
+sum(gene3$GeneType==phy3$GeneType)
+
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"Stages only	NGE vs N+1CW.mergeRepeats.gini.csv")
+```
+
+### Stages only	NGE vs N+2CW:
+
+V3 vs R3
+
+```{r}
+gene3<-getSub(gene2,c("V3"))
+phy3 <- getSub(phy2,c("R3"))
+sum(gene3$GeneType==phy3$GeneType)
+
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"Stages only	NGE vs N+2CW.mergeRepeats.gini.csv")
+```
+
+### Stage pairs NGE vs N+1CW: 
+
+-	V3 vs E4
+
+```{r}
+gene3<-getSub(gene2,c("V3"))
+phy3 <- getSub(phy2,c("E4"))
+sum(gene3$GeneType==phy3$GeneType)
+
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"Stage pairs NGE vs N+1CW V3 vs E4.mergeRepeats.gini.csv")
+```
+
+
+### Stage pairs NGE vs N+1CW: 
+
+-	E4 vs R3
+
+```{r}
+gene3<-getSub(gene2,c("E4"))
+phy3 <- getSub(phy2,c("R3"))
+sum(gene3$GeneType==phy3$GeneType)
+
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"Stage pairs NGE vs N+1CW E4 vs R3 .mergeRepeats.gini.csv")
+```
+
+### Segments only; NvsN; N(GE) vs N(CW):
+ 
+S1 vs S1 + 
+S2 vs S2 + 
+S3 vs S3 
+
+```{r}
+gene3<-getSub(gene2,c("S1","S2","S3"))
+phy3 <- getSub(phy2,c("S1","S2","S3"))
+sum(gene3$GeneType==phy3$GeneType)
+
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"Segments only; NvsN; N(GE) vs N(CW).mergeRepeats.gini.csv")
+```
+
+### Segments only; N(GE) vs N+1(CW); 
+
+S1 vs S2 + 
+S2 vs S3
+
+```{r}
+gene3<-getSub(gene2,c("S1","S2"))
+phy3 <- getSub(phy2,c("S2","S3"))
+sum(gene3$GeneType==phy3$GeneType)
+
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"Segments only; N(GE) vs N+1(CW).mergeRepeats.gini.csv")
+```
+
+### Segments only; N(GE) vs N+2 (CW): 
+
+S1 vs S3
+
+```{r}
+gene3<-getSub(gene2,c("S1"))
+phy3 <- getSub(phy2,c("S3"))
+sum(gene3$GeneType==phy3$GeneType)
+
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"Segments only; N(GE) vs N+2 (CW).mergeRepeats.gini.csv")
+```
+
+
+### 3-5) Genotypes only (AP13, VS16, A4) 
+
+#### A4
+
+##### N(GE) vs N(CW): 
+
+V3 vs V3 + 
+E4 vs E4 + 
+R3 vs R3 + 
+S1 vs S1 + 
+S2 vs S2 + 
+S3 vs S3
+
+```{r}
+geneA4<-dplyr::filter(gene2,GeneType=="A4")
+phyA4<-dplyr::filter(phy2,GeneType=="A4")
+sum(geneA4$GeneType==phyA4$GeneType)
+sum(geneA4$Repeat==phyA4$Repeat)
+mat<-cbind(geneA4[,-1:-2],phyA4[,-1:-2])
+getPhy2Gene(mat,"Genotypes only; A4; N(GE) vs N(CW).mergeRepeats.gini.csv")
+```
+
+##### N(GE) vs N + 1(CW)
+
+V3 vs E4 + 
+E4 vs R3 + 
+S1 vs S2 + 
+S2 vs S3
+
+```{r}
+gene3<-getSub(geneA4,c("V3","E4","S1","S2"))
+phy3 <- getSub(phyA4,c("E4","R3","S2","S3"))
+sum(gene3$GeneType==phy3$GeneType)
+
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"Genotypes only; A4; N(GE) vs N + 1(CW).mergeRepeats.gini.csv")
+```
+
+##### N(GE) vs N + 2(CW): 
+
+V3 vs R3 + 
+S1 vs S3
+
+```{r}
+gene3<-getSub(geneA4,c("V3","S1"))
+phy3 <- getSub(phyA4,c("R3","S3"))
+sum(gene3$GeneType==phy3$GeneType)
+
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"Genotypes only; A4; N(GE) vs N + 2(CW).mergeRepeats.gini.csv")
+```
+
+#### AP13
+
+##### N(GE) vs N(CW): 
+
+V3 vs V3 + 
+E4 vs E4 + 
+R3 vs R3 + 
+S1 vs S1 + 
+S2 vs S2 + 
+S3 vs S3
+
+```{r}
+geneAP13<-dplyr::filter(gene2,GeneType=="AP13")
+phyAP13<-dplyr::filter(phy2,GeneType=="AP13")
+sum(geneAP13$GeneType==phyAP13$GeneType)
+sum(geneAP13$Repeat==phyAP13$Repeat)
+mat<-cbind(geneAP13[,-1:-2],phyAP13[,-1:-2])
+getPhy2Gene(mat,"Genotypes only; AP13; N(GE) vs N(CW).mergeRepeats.gini.csv")
+```
+
+##### N(GE) vs N + 1(CW)
+
+V3 vs E4 + 
+E4 vs R3 + 
+S1 vs S2 + 
+S2 vs S3
+
+```{r}
+gene3<-getSub(geneAP13,c("V3","E4","S1","S2"))
+phy3 <- getSub(phyAP13,c("E4","R3","S2","S3"))
+sum(gene3$GeneType==phy3$GeneType)
+
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"Genotypes only; AP13; N(GE) vs N + 1(CW).mergeRepeats.gini.csv")
+```
+
+##### N(GE) vs N + 2(CW): 
+
+V3 vs R3 + 
+S1 vs S3
+
+```{r}
+gene3<-getSub(geneAP13,c("V3","S1"))
+phy3 <- getSub(phyAP13,c("R3","S3"))
+sum(gene3$GeneType==phy3$GeneType)
+
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"Genotypes only; AP13; N(GE) vs N + 2(CW).mergeRepeats.gini.csv")
+```
+
+#### VS16
+
+##### N(GE) vs N(CW): 
+
+V3 vs V3 + 
+E4 vs E4 + 
+R3 vs R3 + 
+S1 vs S1 + 
+S2 vs S2 + 
+S3 vs S3
+
+```{r}
+geneVS16<-dplyr::filter(gene2,GeneType=="VS16")
+phyVS16<-dplyr::filter(phy2,GeneType=="VS16")
+sum(geneVS16$GeneType==phyVS16$GeneType)
+sum(geneVS16$Repeat==phyVS16$Repeat)
+mat<-cbind(geneVS16[,-1:-2],phyVS16[,-1:-2])
+getPhy2Gene(mat,"Genotypes only; VS16; N(GE) vs N(CW).mergeRepeats.gini.csv")
+```
+
+##### N(GE) vs N + 1(CW)
+
+V3 vs E4 + 
+E4 vs R3 + 
+S1 vs S2 + 
+S2 vs S3
+
+```{r}
+gene3<-getSub(geneVS16,c("V3","E4","S1","S2"))
+phy3 <- getSub(phyVS16,c("E4","R3","S2","S3"))
+sum(gene3$GeneType==phy3$GeneType)
+
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"Genotypes only; VS16; N(GE) vs N + 1(CW).mergeRepeats.gini.csv")
+```
+
+##### N(GE) vs N + 2(CW): 
+
+V3 vs R3 + 
+S1 vs S3
+
+```{r}
+gene3<-getSub(geneVS16,c("V3","S1"))
+phy3 <- getSub(phyVS16,c("R3","S3"))
+sum(gene3$GeneType==phy3$GeneType)
+
+mat<-cbind(gene3[,-1:-2],phy3[,-1:-2])
+getPhy2Gene(mat,"Genotypes only; VS16; N(GE) vs N + 2(CW).mergeRepeats.gini.csv")
+```

@@ -1,0 +1,107 @@
+---
+title: "dsm1313 proteins convert to 743B"
+author: "xyz"
+date: "2020/10/20"
+output: html_document
+---
+
+
+  [Clostridium thermocellum DSM 1313 genome](https://www.ncbi.nlm.nih.gov/nuccore/CP002416.1)  
+  
+  [Clostridium cellulovorans 743B, complete genome](https://www.ncbi.nlm.nih.gov/nuccore/CP002160)  
+
+```{r scan conda env}
+library(reticulate)
+# conda create -n blast blast=2.10.1 -c bioconda
+# To use the function from your .bashrc, you must get bash to run it instead
+system("bash -c 'source ~/miniconda3/etc/profile.d/conda.sh;
+       conda activate blast;
+       blastp -version'")
+conda_list()
+# set conda env
+use_python("/home/xyz/miniconda3/envs/openCOBRA/bin/python")
+```
+
+```{python get gene id in dsm1313}
+import cobra.test
+import cobra.io
+import pandas as pd
+dsm=cobra.io.read_sbml_model("../../cellulose_repaired.xml")
+gene=[gene.id for gene in dsm.genes]
+```
+
+### blast
+
+```{r}
+system('nohup /home/xyz/miniconda3/envs/blast/bin/blastp -query ../dsm1313.fasta -subject ../b743.fasta -outfmt 6 -out "dsm1313 proteins convert to 743B.txt" &>"dsm1313 proteins convert to 743B.log"')
+```
+
+### output the best hit of gene in dsm1313 model
+
+```{r}
+library(tidyverse)
+df<-read.table("dsm1313 proteins convert to 743B.txt")
+# 1	qseqid	Query Seq-id (ID of your sequence)
+# 2	sseqid	Subject Seq-id (ID of the database hit)
+# 3	pident	Percentage of identical matches
+# 4	length	Alignment length
+# 5	mismatch	Number of mismatches
+# 6	gapopen	Number of gap openings
+# 7	qstart	Start of alignment in query
+# 8	qend	End of alignment in query
+# 9	sstart	Start of alignment in subject (database hit)
+# 10	send	End of alignment in subject (database hit)
+# 11	evalue	Expectation value (E-value)
+# 12	bitscore	Bit score
+
+# get variable from python env
+gene<-py$gene
+# 601 genes in dsm1313 model
+length(gene)
+# 597 genes blasted in 743B model
+sum(unique(df$V1) %in% gene)
+# Clo1313_1588 glycoside hydrolase family 13 domain protein
+# Clo1313_1353 4Fe-4S ferredoxin iron-sulfur binding domain protein
+# Clo1313_1355 thiamine pyrophosphate TPP-binding domain-containing protein
+# Clo1313_2018 phenylalanyl-tRNA synthetase, alpha subunit
+setdiff(gene,df$V1)
+# filter out genes in dsm1313 model
+df<-df[df$V1 %in% py$gene,]
+# filter out genes in 743B model's best match
+df2<-arrange(df,V2,desc(V12))
+df2<-distinct(df2, V2, .keep_all = TRUE)
+# filter out genes in dsm1313 model's best match
+df2<-arrange(df2,V1,desc(V12))
+df2<-distinct(df2, V1, .keep_all = TRUE)
+# filter genes in dsm1313 without best match
+df3<-df[df$V1 %in% setdiff(df$V1,df2$V1),]
+df3<-arrange(df3,V1,desc(V12))
+df3<-distinct(df3, V1, .keep_all = TRUE)
+# genes in 743B model have 2 match
+# "Clocel_2840" "Clocel_0888" "Clocel_1562" "Clocel_1745" "Clocel_3591"
+df3$V2[df3$V2 %in% df2$V2]
+# output results
+df4<-rbind(df2,df3)
+colnames(df4)[1:2] <- c("dsm1313","743B")
+write.csv(df4[,1:2],"dsm1313 to 743B.csv",row.names =F)
+# output variable to python env
+py$genedf<-df4[,1:2]
+```
+
+```{python gene convert and sbml model output}
+dsm1313=list(genedf.dsm1313)
+b743=list(genedf['743B'])
+for i,gene in enumerate(dsm.genes):
+    id = gene.id
+    if id in dsm1313:
+        dsm.genes[i].id=b743[dsm1313.index(id)]
+dsm.genes[1:10]
+# https://cobrapy.readthedocs.io/en/latest/faq.html#How-do-I-rename-reactions-or-metabolites?
+dsm.repair()
+# bug: ids are not converted totally in xml file, gene id in gene_reaction_rule is not converted
+cobra.io.write_sbml_model(dsm,filename="dsm1313_to_743B.xml")
+```
+
+
+
+

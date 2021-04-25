@@ -1,0 +1,46 @@
+---
+title: "GLMM of cpm"
+author: "xyz"
+date: "2021/2/4"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+cpm<-read.table("CPM/merge_all_samples_cpm.tsv",sep = "\t",header = T)
+colnames(cpm)[1]<-"KO"
+colnames(cpm)[-1]<-str_sub(colnames(cpm)[-1],1,-22)
+cpm[1,1]<-"Unknown"
+cpm<-cpm[rowSums(cpm[,-1])>0,]
+# cpm[,-1]<-prop.table(as.matrix(cpm[,-1]),2)
+row.names(cpm)<-cpm$KO
+cpm<-as.data.frame(t(cpm[,-1]))
+meta<-read.csv("summary of environmental data.csv")
+meta<-meta[match(rownames(cpm),meta$Sample_name),]
+```
+
+```{r}
+library(glmmTMB)
+
+df<-cbind(KO=cpm$K00001,meta[,colSums(is.na(meta))==0])
+# all precipitation is normal
+# df<-df[,c(-2,-4,-6)]
+df$year<-df$year-min(df$year)
+model3 <-
+  glmmTMB(
+    formula = KO ~ 1 + warm + clip + NO3.N + NH4.N +
+      TN + TC + pH + FlTotl + FlC4 + FlC3 + FlC3 + plant.richness + 
+      moisture_samplingmonth +
+      annual_moisture + precipitation_annual_cm + SPEI + temperature_annual +
+      ER_annualmean + GPP_annualmean +
+      NEE_annualmean +
+      (1 | block),
+    data = df,
+    control = glmmTMBControl(parallel = 11)
+  )
+```
+

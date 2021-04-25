@@ -1,0 +1,99 @@
+---
+title: "Protein cluster taxonomy heatmap2.Rmd"
+author: "Yi Xiong"
+date: "2021/3/31"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## read data
+
+```{r cars}
+library(tidyverse)
+library(readxl)
+df1 <-
+  read_xlsx("SuppTable 5 Protein Family Annotation.xlsx", skip = 2)
+df3<-df1[df1$`KEGG KO`!="NA",]
+# longest lineage is 7
+max(str_count(df3$Taxonomy,";"))
+rankTaxon <-
+  separate(df3[,"Taxonomy"], Taxonomy, sep = ";", into = as.character(1:7))
+colnames(rankTaxon) <-
+  c("Kingdom",
+    "Phylum",
+    "Class",
+    "Order",
+    "Family",
+    "Genus",
+    "Species")
+df3<-cbind(df3,rankTaxon)
+df3[is.na(df3)]<-""
+# Family
+sort(table(df3$Family))
+# Genus
+sort(table(df3$Genus))
+
+df4<-df3[df3$Genus!="",]
+df4<-df4[df4$Genus!="unknown",]
+
+df5<-df4[,c("KEGG KO","Genus","Number of Proteins")]
+df5<-separate_rows(df5, `KEGG KO`, sep = ",", convert = FALSE)
+```
+
+## get KO annotation
+
+```{r}
+KOannotation <- readRDS("../../soilWarming/KO.df.rds")
+row.names(KOannotation) <- NULL
+KOannotation$id <- str_sub(KOannotation$id, 4)
+df6 <-
+  add_column(df5,
+             Annotation = KOannotation$term[match(df5$`KEGG KO`, KOannotation$id)],
+             .after = "KEGG KO")
+df6<-df6[!is.na(df6$Annotation),]
+# filter annotation with EC number
+df6<-df6[str_detect(df6$Annotation,"EC:"),]
+
+df6<-group_by(df6,Annotation,Genus)
+df6<-summarise(df6,ProteinCount=sum(`Number of Proteins`))
+
+# get top 50 Annotation by number of Proteins
+topAnnotation<-df6[,-2]
+topAnnotation<-group_by(topAnnotation,Annotation)
+topAnnotation<-summarise(topAnnotation,ProteinCount=sum(`ProteinCount`))
+topAnnotation<-arrange(topAnnotation,desc(ProteinCount))$Annotation[1:50]
+```
+
+```{r}
+drawDf<-df6[df6$Annotation %in% topAnnotation,]
+
+# Bacteroides  Bifidobacterium      Akkermansia Faecalibacterium     Ruminococcus 
+# 45           43                   39          38                   31 
+sort(table(drawDf$Genus),decreasing = T)[1:5]
+
+# dacC, dacA, dacD; serine-type D-Ala-D-Ala carboxypeptidase (penicillin-binding protein 5/6)
+# gph; phosphoglycolate phosphatase
+# E3.4.21.102, prc, ctpA; carboxyl-terminal processing protease
+# galM, GALM; aldose 1-epimerase
+# K08303; putative protease
+sort(table(drawDf$Annotation),decreasing = T)[1:5]
+
+p<-ggplot(drawDf, aes(x = Genus, y = Annotation, color = log10(ProteinCount))) +
+  geom_point(size=5)+
+  scale_color_gradient(low = "blue", high = "red") +
+  theme(text = element_text(size = 15)) +
+  scale_y_discrete(
+    labels = function(x)
+      str_wrap(x, width = 160)
+  )+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+p+ggsave("KO.pdf",width = 20,height = 10)
+```
+
+
+
+
+
+

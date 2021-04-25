@@ -1,0 +1,39 @@
+---
+title: "adjust lambda"
+author: "Yi Xiong"
+date: "2021/3/20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(stringr)
+library(qvalue)
+fileName<-dir("old/")
+fileName<-fileName[str_detect(fileName,"csv")]
+
+adjustLambda <- function(fileName) {
+  df <- read.csv(paste0("old/",fileName))
+  p <- df$p
+  tryCatch({
+    df$qOrFdr <- qvalue(p)$qvalues
+    print(paste(fileName,"is good"))
+  },
+  error = function(e){
+    print(paste(fileName,e))
+    # can not change df in function
+    # df$qOrFdr <- qvalue(p, lambda = seq(0, max(p) - 1E-2, 1E-2))$qvalues
+  })
+  write.csv(df, paste0("adjusted/", fileName), row.names = F)
+}
+# test
+adjustLambda(fileName[2])
+
+sink("adjust lambda log.txt")
+a <- lapply(fileName,adjustLambda)
+sink()
+```
+

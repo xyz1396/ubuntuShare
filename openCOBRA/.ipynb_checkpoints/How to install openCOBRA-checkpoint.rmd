@@ -1,0 +1,22 @@
+---
+title: "How to install openCOBRA"
+author: "xyz"
+date: "2020/8/16"
+output: html_document
+---
+
+[access jupyter notebook running on vm](https://stackoverflow.com/questions/38545198/access-jupyter-notebook-running-on-vm)  
+
+[Conda environments not showing up in Jupyter Notebook](https://stackoverflow.com/questions/39604271/conda-environments-not-showing-up-in-jupyter-notebook)
+
+```{bash install jupyter}
+conda install jupyter
+conda install jupyterlab
+conda install nb_conda_kernels
+conda create -n openCOBRA cobra
+conda activate openCOBRA
+# you should install ipykernel in any environment you want to import
+conda install ipykernel
+```
+
+

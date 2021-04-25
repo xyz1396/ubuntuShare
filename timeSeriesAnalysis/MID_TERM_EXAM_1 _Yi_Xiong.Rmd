@@ -1,0 +1,515 @@
+---
+title: "MID-TERM EXAM-1"
+author: "Yi Xiong"
+date: "2021/3/8"
+output: 
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1.(20pts) Following the developments in Module 2.2, prove that the standard error in the estimation of the sample mean is $O(\frac{1}{\sqrt{n}})$ and that of the sample variance is $O(\frac{1}{\sqrt{n}})$
+  
+Let $x\sim N(\mu,\sigma^{2})$
+  
+  Assume $\mu$ is not known, $\sigma^{2}$ is known  
+  Estimator $\hat {x}=\phi(x_{1},x_{2},...,x_{n})$  
+  
+$$
+\begin{aligned}
+Var(\hat{x}(n))&=E(\hat{x}(n)-\mu)^{2} \\
+  &=E[(\frac{1}{n}\sum^{n}_{i=1}x_{i})-\mu]^{2} \\
+  &=E[\frac{1}{n}\sum^{n}_{i=1}(x_{i}-\mu)]^{2} \\
+  &=\frac{1}{n^{2}}\sum^{n}_{i=1}E(x_{i}-\mu)^{2} \\
+  &=\frac{\sigma^{2}}{n}\\
+\\
+SE\;for\;\hat{x}(n)&=\sqrt{\frac{\sigma^{2}}{n}}
+  =\frac{\sigma}{\sqrt{n}}=O(\frac{1}{\sqrt{n}})
+\end{aligned}
+$$
+  
+Assume $\mu$ is known, $\sigma^{2}$ is not known  
+  
+$$
+\begin{aligned}
+Var(\hat\sigma^{2})=E[\hat\sigma^{2}-\sigma^{2}]^{2}
+\end{aligned}
+$$
+  
+  Let $y_{i}=x_{i}-\mu$, $y_{i}\sim N(\mu,\sigma^{2})$, $E(y_{i})=0$, 
+  $E(y_{i}^{2})=\sigma^{2}$  
+  
+$$
+\begin{aligned}
+Var(\hat\sigma^{2})&=E[\frac{1}{n}\sum^{n}_{i=1}(y^{2}_{i}-\sigma^{2})]^{2} \\
+  &=\frac{1}{n^{2}}
+    \{\sum^{n}_{i=1}(y_{i}-\sigma^{2})^{2}
+      +2\sum_{i<j}(y^{2}_{i}-\sigma^{2})(y^{2}_{j}-\sigma^{2}) \} \\
+    &\because y_{i}\;are\;IID \; \\
+  &=\frac{1}{n^{2}}\sum^{n}_{i=1}E(y^{2}_{i}-\sigma^{2})^{2} \\
+  &=\frac{1}{n^{2}}\sum^{n}_{i=1}[E(y^{4}_{i})-2E(y^{2}_{i})\sigma^{2}+\sigma^{4}] \\
+  &=\frac{1}{n^{2}}\sum^{n}_{i=1}[3\sigma^{4}-2\sigma^{4}+\sigma^{4}] \\
+  &=\frac{1}{n^{2}}\sum^{n}_{i=1}2\sigma^{4} \\
+  &=\frac{2\sigma^{4}}{n} \\
+\\
+SE\;for\;Var(\hat\sigma^{2})&=\sqrt{\frac{2\sigma^{4}}{n}}
+  =\frac{\sqrt{2\sigma^{4}}}{\sqrt{n}}=O(\frac{1}{\sqrt{n}})
+\end{aligned}
+$$
+
+# 2.(20pts) Download two time series from the website that exhibit seasonality and trend.  
+  
+  [http://www.statsci.org/datasets.html](http://www.statsci.org/datasets.html)
+  
+  Zurich Monthly Sunspot Numbers 1749 - 1983 (seasonality)  
+  
+  [T11.1](http://lib.stat.cmu.edu/datasets/Andrews/T11.1)
+  
+  Mauna Loa Carbon Dioxide (trend)  
+  
+  [MLCO2.DAT](http://www.statsci.org/data/books/timeslab.zip)
+  
+## a. (5pts) Plot the original series, x~t~ 
+
+```{r}
+# Zurich Monthly Sunspot
+
+library(ggplot2)
+df<-read.table("T11.1")
+x<-c(t(df[,5:16]))
+t<-1:length(x)
+df<-data.frame(x=t,y=x)
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  xlab("t")+
+  ylab(expression(x[t]))
+p
+
+# MLCO2.DAT
+
+co<-scan("MLCO2.DAT",skip =2)
+t2<-1:length(co)
+df<-data.frame(x=t2,y=co)
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  xlab("t")+
+  ylab(expression(x[t]))
+  # scale_x_continuous(breaks = scales::pretty_breaks(n = 100))
+p
+```
+
+## b. (5pts) Plot y~t~ after removing the seasonality from x~t~  
+  
+  The solar cycle or solar magnetic activity cycle is a nearly periodic 11-year change in the Sun's activity measured in terms of variations in the number of observed sunspots on the solar surface.  
+  
+    
+  $\bigtriangledown x_{t}=x_{t}-x_{t-d}$ does not contain the seasonal part
+  
+  
+```{r}
+
+# to fit the cycle
+
+# f = function(t, a, b, c, d) {
+#   a * sin(2 * pi / b * t + c) + d
+# }
+# fit <-
+#   nls(y ~ f(x, a, b, c, d),
+#       data = df,
+#       start = list(
+#         a = 75,
+#         b = 132,
+#         c = 70,
+#         d = 75
+#       ))
+# fitResult <- summary(fit)
+# a <- fitResult[["coefficients"]]["a", "Estimate"]
+# b <- fitResult[["coefficients"]]["b", "Estimate"]
+# c <- fitResult[["coefficients"]]["c", "Estimate"]
+# d <- fitResult[["coefficients"]]["d", "Estimate"]
+# f = function(t) {
+#   a * sin(2 * pi / b * t + c) + d
+# }
+# p + stat_function(fun = f,
+#                   color = "darkred",
+#                   size = 1)
+
+# remove the seasonality of sunpot data
+
+n <- length(x)
+sunCycle<-11*12
+x1<-x[1:(n - sunCycle)]
+x2<-x[(1 + sunCycle):(n)]
+y<-x2-x1
+df<-data.frame(x=1:(n - sunCycle),y=y)
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  xlab("t")+
+  ylab(expression(y[t]))
+p
+
+# remove the seasonality of co2
+
+n <- length(co)
+coCycle<-12
+x1<-co[1:(n - coCycle)]
+x2<-co[(1 + coCycle):n]
+y2<-x2-x1
+df<-data.frame(x=1:(n - coCycle),y=y2)
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  xlab("t")+
+  ylab(expression(y[t]))
+p
+```
+
+## c. (5pts) Plot z~t~ after removing the trend in y~t~   
+  
+  Remove linear trend  
+  $\xi_{t}=\bigtriangledown\mu_{t}=\mu_{t}-\mu_{t-1}$
+  
+```{r}
+# Remove linear trend of sunplot data
+
+n <- length(y)
+x1<-y[1:(n - 1)]
+x2<-y[(1 + 1):(n)]
+z<-x2-x1
+df<-data.frame(x=1:(n - 1),y=z)
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  xlab("t")+
+  ylab(expression(z[t]))
+p
+
+# Remove linear trend of co2 data
+
+n <- length(y2)
+x1<-y2[1:(n - 1)]
+x2<-y2[(1 + 1):(n)]
+z2<-x2-x1
+df<-data.frame(x=1:(n - 1),y=z2)
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  xlab("t")+
+  ylab(expression(z[t]))
+p
+```
+
+## d. (5pts) Compute the ACF for z~t~
+
+```{r}
+# autocorrelation of sunpot data
+n <- length(z)
+getCov <- function(k) {
+  z1 <- z[1:(n - k)]
+  z2 <- z[(1 + k):(n)]
+  cov(z1, z2)
+}
+k <- 0:floor(3 / 4 * n)
+cov1 <- sapply(k, getCov)
+dfCov<-data.frame(k=k,AutoCove=cov1)
+head(dfCov)
+p <- cov1 / cov1[1]
+dfP <- data.frame(k = k, p = p)
+head(dfP)
+dfP2 <- as.data.frame(spline(dfP$k, dfP$p, n = 200))
+p2 <- ggplot(dfP, aes(x = k, y = p)) +
+  geom_point()+
+  # geom_line(data = dfP2, aes(x = x, y = y)) +
+  xlab(expression(k)) +
+  ylab(expression(rho[k]))
+p2
+
+# autocorrelation of co2 data
+
+n <- length(z2)
+getCov <- function(k) {
+  x1 <- z2[1:(n - k)]
+  x2 <- z2[(1 + k):(n)]
+  cov(x1, x2)
+}
+k <- 0:floor(1 / 2 * n)
+cov1 <- sapply(k, getCov)
+dfCov<-data.frame(k=k,AutoCove=cov1)
+head(dfCov)
+p <- cov1 / cov1[1]
+dfP <- data.frame(k = k, p = p)
+head(dfP)
+dfP2 <- as.data.frame(spline(dfP$k, dfP$p, n = 200))
+p2 <- ggplot(dfP, aes(x = k, y = p)) +
+  geom_point()+
+  # geom_line(data = dfP2, aes(x = x, y = y)) +
+  xlab(expression(k)) +
+  ylab(expression(rho[k]))
+p2
+```
+
+# 3.  (20pts) Follow the developments in Modules in Part 4: 
+
+## a. (5pts) Derive an expression for the ACF for MA (2) model
+
+### MA(q) definition
+
+$$
+\begin{aligned}
+y_{t}&=\mu+\sum^{q}_{j=0}\theta_{j}\epsilon_{t-j},
+\;q\geqslant 1\;and \; \theta_{0}=1
+\end{aligned}	
+$$
+
+### MA(2) definition
+
+$$
+\begin{aligned}
+y_{t}&=\mu+\epsilon_{t}+\theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}
+\end{aligned}	
+$$
+
+### Autocovariance of MA(q)
+
+$$
+\begin{aligned}
+\gamma_{0}&=E(y_{t}-\mu)^{2}\\
+&=[\sum^{q}_{j=0}\theta_{j}^{2}]\sigma^{2}
+\end{aligned}	
+$$
+
+
+$$
+\begin{aligned}
+\gamma_{j}&=E[(y_{t}-\mu)(y_{t-j}-\mu)]\\
+\gamma_{j}&=\left\{
+	\begin{array}{ll}
+	  (\theta_{j}+\theta_{j+1}\theta_{1}+\theta_{j+2}\theta_{2}+...+\theta_{q}
+	  \theta_{q-j})\sigma^{2}\;for\;1\leqslant j\leqslant q\\
+	  0 \;\; for\; j>q
+	\end{array}\right.
+\end{aligned}	
+$$
+
+### Autocovariance of MA(2)
+
+$$
+\begin{aligned}
+\gamma_{0}=(1+\theta^{2}_{1}+\theta^{2}_{2})\sigma^{2}\\
+\gamma_{1}=(\theta_{1}+\theta_{2}\theta_{1})\sigma^{2} \\
+\gamma_{2}=\theta_{2}\sigma^{2}\\
+\gamma_{j}=0,\;j\geqslant3
+\end{aligned}
+$$
+
+### Autocorrelation of MA(2)
+
+$$
+\begin{aligned}
+\rho_{1}=\frac{(\theta_{1}+\theta_{2}\theta_{1})\sigma^{2}}
+  {(1+\theta^{2}_{1}+\theta^{2}_{2})\sigma^{2}}\\
+\rho_{2}=  \frac{\theta_{2}\sigma^{2}}
+  {(1+\theta^{2}_{1}+\theta^{2}_{2})\sigma^{2}}\\
+\rho_{j}=0,\;j\geqslant3
+\end{aligned}
+$$
+
+
+## b. (5pts) Derive an expression for the ACF for AR (2). Apply this to: $y_{t}=-0.6t_{t-1}+  0.3y_{t-2} + \varepsilon_{t}$ 
+
+### definition
+
+$$
+\begin{aligned}
+y_{t}=c+\phi_{1}y_{t-1}+\phi_{2}y_{t-2}+\epsilon_{t}
+\end{aligned}	
+$$
+
+### For stationarity:
+
+$$
+\begin{aligned}
+&\lambda^{2}-\phi_{1}\lambda-\phi_{2}=0\\
+&\lambda=\frac{\phi_{1}\pm\sqrt{\phi^{2}_{1}+4\phi2}}{2}\\
+&|\lambda|<1
+\end{aligned}	
+$$
+
+### Autocovariance
+
+$$
+\begin{aligned}
+y_{t}-\mu=\phi_{1}(y_{t-1}-\mu)+\phi_{2}(y_{t-2}-\mu)+\epsilon_{t}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+\gamma_{0}&=E[(y_{t}-\mu)(y_{t}-\mu)]\\
+  &=E[\phi_{1}(y_{t}-\mu)(y_{t-1}-\mu)]\\
+    &+E[\phi_{2}(y_{t}-\mu)(y_{t-2}-\mu)]\\
+    &+E[(y_{t}-\mu)\epsilon_{t}]\\
+  &=\phi_{1}\gamma_{1}+\phi_{2}\gamma_{2}+\sigma^{2}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+for \;j&\geqslant1\\
+\\
+\gamma_{j}&=E[(y_{t}-\mu)(y_{t-j}-\mu)]\\
+  &=E[\phi_{1}(y_{t-1}-\mu)(y_{t-j}-\mu)]\\
+    &+E[\phi_{2}(y_{t-2}-\mu)(y_{t-j}-\mu)]\\
+    &+E[(y_{t-j}-\mu)\epsilon_{t}]\\
+  &=\phi_{1}\gamma_{1}+\phi_{2}\gamma_{2}
+\end{aligned}	
+$$
+
+### Autocorrelation
+
+$$
+\begin{aligned}
+for \;j&\geqslant1\\
+\\
+\rho_{j}&=\frac{\gamma_{j}}{\gamma_{0}}\\
+  &=\theta_{1}\frac{\gamma_{j-1}}{\gamma_{0}}+
+    \theta_{2}\frac{\gamma_{j-2}}{\gamma_{0}}\\
+  &=\phi_{1}\rho_{j-1}+\phi_{2}\rho_{j-2}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+\rho_{1}&=\phi_{1}\rho_{0}+\phi_{2}\rho_{-1}\\
+  \rho_{1}&=\frac{\phi_{1}}{1-\phi_{2}}\\
+\rho_{2}&=\phi_{1}\rho_{1}+\phi_{2}\rho_{0}\\
+  &=\phi_{1}\rho_{1}+\phi_{2}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+\gamma_{0}=\frac{(1-\phi_{2})\sigma^{2}}{(1+\phi_{2})
+  [(1-\phi_{2})^{2}-\phi^{2}_{1}]}
+\end{aligned}	
+$$
+
+### Summary
+
+$$
+\begin{aligned}
+\rho_{1}&=\frac{\phi_{1}}{1-\phi_{2}}\\
+\rho_{2}&=\phi_{1}\rho_{1}+\phi_{2}\\
+\rho_{j}&=\phi_{1}\rho_{j-1}+\phi_{2}\rho_{j-2} \;\; for \; j\geqslant 3
+\end{aligned}	
+$$
+
+### for $y_{t}=-0.6t_{t-1}+  0.3y_{t-2} + \varepsilon_{t}$  
+  
+$\rho_{1}$  
+  
+```{r}
+q1 <- -0.6
+q2 <- 0.3
+p1<-q1/(1-q2)
+p1
+
+p2<-q1*p1+q2
+p2
+
+pj<-c(p1,p2)
+for (j in 3:100){
+  pj<-c(pj,q1*pj[j-1]+q2*pj[j-2])
+}
+pj<-c(1,pj)
+head(pj)
+```
+
+
+## c. (5pts) Plot the ACF 
+
+```{r}
+df<-data.frame(x = 1:length(pj), y = pj)
+p <- ggplot(df, aes(x = x, y = y)) +
+  geom_line() +
+  xlab(expression(k)) +
+  ylab(expression(rho[k]))
+p
+```
+
+## d. (5pts) Derive an expression for the ACF of ARMA (1,2) 
+
+#### definition
+
+$$
+\begin{aligned}
+y_{t}=c+\phi_{1}y_{t-1}+\epsilon_{t}+
+  \theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}
+\end{aligned}	
+$$
+
+#### Autocovariance
+
+$$
+\begin{aligned}
+y_{t}-\mu&=\phi_{1}(y_{t-1}-\mu)+\epsilon_{t}+
+  \theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}\\
+\\
+\gamma_{0}&=E[y_{t}-\mu]^{2}\\
+&=E[\phi_{1}(y_{t-1}-\mu)+\epsilon_{t}+\theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}]^{2}\\
+&=\phi_{1}^{2}\gamma_{0}+\sigma^{2}+\theta_{1}^{2}\sigma^{2}+\theta_{2}^{2}\sigma^{2}
+  +2\phi_{1}\theta_{1}\sigma^{2}+2\phi_{1}\theta_{2}(\phi_{1}+\theta_{1})\sigma^{2}\\
+\\
+\gamma_{0}&=\frac{\sigma^{2}[1+2\phi_{1}\theta_{1}+2\phi_{1}\theta_{2}(\phi_{1}+\theta_{1})+
+  \theta_{1}^{2}+\theta^{2}_{2}]}
+{1-\phi_{1}^{2}}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+\gamma_{1}&=E[(y_{t}-\mu)(y_{t-1}-\mu)]\\
+&=E\{[\phi_{1}(y_{t-1}-\mu)+\epsilon_{t}+\theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}]
+  [y_{t-1}-\mu]\}\\
+&=\phi_{1}\gamma_{0}+\theta_{1}\sigma^{2}+\theta_{2}(\phi_{1}+\theta_{1})\sigma^{2}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+\gamma_{2}&=E[(y_{t}-\mu)(y_{t-2}-\mu)]\\
+&=E\{[\phi_{1}(y_{t-1}-\mu)+\epsilon_{t}+\theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}]
+  [y_{t-2}-\mu]\}\\
+&=\phi_{1}\gamma_{1}+\theta_{2}\sigma^{2}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+for \;j&\geqslant 3\\
+\\
+\gamma_{j}&=E[(y_{t}-\mu)(y_{t-j}-\mu)]\\
+&=E\{[\phi_{1}(y_{t-1}-\mu)+\epsilon_{t}+\theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}]
+[y_{t-j}-\mu]\}\\
+&=\phi_{1}E[(y_{t-1}-\mu)(y_{t-j}-\mu)]\\
+&=\phi_{1}\gamma_{j-1}
+\end{aligned}	
+$$
+
+#### Autocorrelation
+
+$$
+\begin{aligned}
+\gamma_{0}&=\frac{\sigma^{2}[1+2\phi_{1}\theta_{1}+2\phi_{1}\theta_{2}(\phi_{1}+\theta_{1})+
+  \theta_{1}^{2}+\theta^{2}_{2}]}
+{1-\phi_{1}^{2}}\\
+\gamma_{1}&==\phi_{1}\gamma_{0}+\theta_{1}\sigma^{2}
+  +\theta_{2}(\phi_{1}+\theta_{1})\sigma^{2}\\
+\gamma_{2}&==\phi_{1}\gamma_{1}+\theta_{2}\sigma^{2}\\
+\gamma_{j}&=\phi_{1}\gamma_{j-1} \;\; for \;j \geqslant 3\\
+\rho_{1}&=\frac{\gamma_{1}}{\gamma_{0}}\\
+\rho_{2}&=\frac{\gamma_{2}}{\gamma_{0}}\\
+\rho_{j}&=\frac{\gamma_{j}}{\gamma_{0}}
+\end{aligned}	
+$$
+

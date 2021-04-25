@@ -1,0 +1,5 @@
+library(Rcpp)
+sourceCpp("src/rcpp_hello_world.cpp")
+rcpp_hello_world()
+sourceCpp("src/rcpp_rcout.cpp")
+rcpp_rcout(5)

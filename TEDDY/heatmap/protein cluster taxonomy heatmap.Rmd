@@ -1,0 +1,95 @@
+---
+title: "protein cluster taxonomy heatmap"
+author: "Yi Xiong"
+date: "2021/3/15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## read data
+
+```{r cars}
+library(tidyverse)
+library(readxl)
+df1 <-
+  read_xlsx("SuppTable 5 Protein Family Annotation.xlsx", skip = 2)
+df2 <-
+  read_xlsx("SuppTable 6 Seroconversion Protein Family.xlsx", skip = 2)
+df3 <-
+  right_join(df1[, c("Cluster ID", "Number of Proteins")],
+             df2, by = c("Cluster ID" =
+                           "Cluster ID"))
+df3<-df3[df3$`KEGG KO`!="NA",]
+# longest lineage is 7
+max(str_count(df3$Taxonomy,";"))
+rankTaxon <-
+  separate(df3[,"Taxonomy"], Taxonomy, sep = ";", into = as.character(1:7))
+colnames(rankTaxon) <-
+  c("Kingdom",
+    "Phylum",
+    "Class",
+    "Order",
+    "Family",
+    "Genus",
+    "Species")
+df3<-cbind(df3,rankTaxon)
+
+# Family is enough
+sort(table(df3$Family))
+# too many unclassified Genus
+sort(table(df3$Genus))
+
+df4<-df3[!is.na(df3$Family),]
+df4<-df4[df4$Family!="",]
+df4<-df4[df4$Family!="unknown",]
+
+df5<-df4[,c("Decrease/Increase","KEGG KO","Family","Number of Proteins")]
+df5<-separate_rows(df5, `KEGG KO`, sep = ",", convert = FALSE)
+```
+
+## get KO annotation
+
+```{r}
+KOannotation <- readRDS("../../soilWarming/KO.df.rds")
+row.names(KOannotation) <- NULL
+KOannotation$id <- str_sub(KOannotation$id, 4)
+df6 <-
+  add_column(df5,
+             Annotation = KOannotation$term[match(df5$`KEGG KO`, KOannotation$id)],
+             .after = "KEGG KO")
+df6<-df6[!is.na(df6$Annotation),]
+# filter annotation with EC number
+df6<-df6[str_detect(df6$Annotation,"EC:"),]
+
+increaseKO<-df6[df6$`Decrease/Increase`=="increase",-1:-2]
+increaseKO<-group_by(increaseKO,Annotation,Family)
+increaseKO<-summarise(increaseKO,ProteinCount=sum(`Number of Proteins`))
+
+# get top 50 Annotation by number of Proteins
+topAnnotation<-increaseKO[,-2]
+topAnnotation<-group_by(topAnnotation,Annotation)
+topAnnotation<-summarise(topAnnotation,ProteinCount=sum(`ProteinCount`))
+topAnnotation<-arrange(topAnnotation,desc(ProteinCount))$Annotation[1:50]
+```
+
+```{r}
+drawDf<-increaseKO[increaseKO$Annotation %in% topAnnotation,]
+
+p<-ggplot(drawDf, aes(x = Family, y = Annotation, fill = log10(ProteinCount))) +
+  geom_tile()+
+  scale_fill_gradient(low = "blue", high = "red") +
+  theme(text = element_text(size = 15)) +
+  scale_y_discrete(
+    labels = function(x)
+      str_wrap(x, width = 160)
+  )
+p+ggsave("increaseKO.pdf",width = 20,height = 10)
+```
+
+
+
+
+

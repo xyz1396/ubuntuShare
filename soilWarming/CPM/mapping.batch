@@ -1,0 +1,14 @@
+#!/bin/bash
+#SBATCH --partition=omicsbio
+#SBATCH --ntasks=1
+#SBATCH --time=48:00:00
+#SBATCH --job-name=Assembly_CH_WD
+#SBATCH --mem=50G
+#SBATCH --output=Assembly_CH_WD-1_%J_stdout.txt
+#SBATCH --error=Assembly_CH_WD_1_%J_stderr.txt
+#SBATCH --mail-user=dywang@ou.edu
+#SBATCH --mail-type=ALL
+#SBATCH --chdir=/scratch/dywang
+
+
+python /scratch/dywang/Metagenome_Warming_site/M8_NB/CPM/transferFile2.py

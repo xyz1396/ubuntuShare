@@ -1,0 +1,171 @@
+---
+title: "HW2_Yi_Xiong"
+author: "Yi Xiong"
+date: "2021/2/14"
+output: 
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1) Generate one set of 100 samples of x~t~\~iid N(0,1), and compute its mean $\overline{x}$, and variance $\widehat{\sigma }^{2}$
+
+```{r}
+set.seed(6666)
+x<-rnorm(100)
+# mean
+(x_mean<-mean(x))
+# variance
+(x_var<-var(x))
+```
+
+## a) Repeat this experiment 100 times and obtain 100 estimates of $\overline{x}$, and $\widehat{\sigma }^{2}$
+
+```{r}
+xt <- data.frame(T = 1:100)
+for (i in 1:100) {
+  xt <- cbind(xt, rnorm(100))
+}
+colnames(xt)[-1] <- paste0("S", 1:100)
+# mean
+head(xt_mean <- colMeans(xt[, -1]))
+# variance
+head(xt_var <- apply(xt[, -1], 2, var))
+```
+
+## b) Compute the mean, variance of $\overline{x}_{i}$, for $1\leq i\leq 100$
+
+```{r}
+# mean
+(xt_mean_mean <- mean(xt_mean))
+# variance
+(xt_mean_var <- var(xt_mean))
+```
+
+## c) Compute the mean, variance of $\widehat{\sigma_{i}}^{2}$, for $1\leq i\leq 100$
+
+```{r}
+# mean
+(xt_var_mean <- mean(xt_var))
+# variance
+(xt_var_var <- var(xt_var))
+```
+
+# 2) Generate $\varepsilon _{t}$\~iid N(0,1) for $1\leq t\leq 500$
+
+```{r}
+t<-500
+set.seed(6666)
+x<-rnorm(500)
+```
+
+## a) Define $x_{t}=\varepsilon _{t}+0.5\varepsilon _{t-1}$ called MA(1) process
+
+```{r}
+xt<-c(x[1])
+for (t in 2:500){
+  xt[t]<-x[t]+0.5*x[t-1]
+}
+```
+
+## b) Plot x~t~ (vs)x~t-1~ , x~t~ (vs) x~t-2~ ,x~t~ (vs) ~t~
+
+```{r}
+library(ggplot2)
+# t vs t-1
+df<-data.frame(x=xt[1:(t-1)],y=xt[2:t])
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_point()+
+  xlab(expression(x[t-1]))+
+  ylab(expression(x[t]))
+p
+# t vs t-2
+df<-data.frame(x=xt[1:(t-2)],y=xt[3:t])
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_point()+
+  xlab(expression(x[t-2]))+
+  ylab(expression(x[t]))
+p
+# xt vs t
+df<-data.frame(x=1:t,y=xt)
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  xlab(expression(t))+
+  ylab(expression(x[t]))
+p
+```
+
+## c) Compute the mean, variance and autocorrelation of x~t~ and plot
+
+```{r}
+# mean
+(xt_mean<-mean(xt))
+# var
+(xt_var<-var(xt))
+# autocorrelation
+getCov<-function(k){
+  x1<-xt[1:100]
+  x2<-xt[(k+1):(100+k)]
+  cov(x1,x2)
+}
+k<-0:100
+cov1<-sapply(k,getCov)
+dfCov<-data.frame(k=k,cov=cov1)
+p<-ggplot(dfCov,aes(x=k,y=cov))+
+  geom_point()+
+  xlab(expression(k))+
+  ylab(expression(gamma[k]))
+p
+
+p<-cov1/cov1[1]
+dfP<-data.frame(k=k,p=p)
+p<-ggplot(dfP,aes(x=k,y=p))+
+  geom_point()+
+  xlab(expression(k))+
+  ylab(expression(rho[k]))
+p
+```
+
+# 3) Plot $N\left( 0,\sigma ^{2}\right)$ for $\sigma ^{2}$ = 0.1, 0.5, 1.0, 2.0, 5.0 on the same plot and comment
+
+```{r}
+# ggplot() + xlim(-5, 5) + geom_function(
+#   fun = function(x)
+#     dnorm(x, sd = sqrt(0.1)),
+#   colour = "red"
+# ) + geom_function(
+#   fun = function(x)
+#     dnorm(x, sd = sqrt(0.5)),
+#   colour = "blue"
+# ) + geom_function(
+#   fun = function(x)
+#     dnorm(x, sd = sqrt(1)),
+#   colour = "green"
+# ) + geom_function(
+#   fun = function(x)
+#     dnorm(x, sd = sqrt(2)),
+#   colour = "yellow"
+# ) + geom_function(
+#   fun = function(x)
+#     dnorm(x, sd = sqrt(5)),
+#   colour = "orange"
+# ) +
+#   ylab("Density")+
+#   scale_colour_manual(values=cols)
+
+x1<-seq(-5,5,length.out=1001)
+d<-sapply(c(0.1,0.5,1,2,5), function(x)dnorm(x1,sd = sqrt(x)))
+d<-data.frame(x=rep(x1,times=5),density=c(d),sigma=rep(c(0.1,0.5,1,2,5),each=1001))
+d$sigma<-as.factor(d$sigma)
+p<-ggplot(d,aes(x=x,y=density,color=sigma))+
+  geom_line()+
+  xlab("")+
+  ylab("Density")+
+  scale_color_discrete(name = expression(sigma^2)) 
+p
+```
+
+As $\sigma ^{2}$ decreases, the tail gets thiner, the overall spread decreases, and the peak at $\mu$ = 0 increases, 

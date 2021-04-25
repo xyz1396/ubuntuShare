@@ -1,0 +1,461 @@
+---
+title: "HW1"
+author: "Yi Xiong"
+date: "2021/1/31"
+output: 
+  pdf_document:
+    toc: true
+---
+
+# 1)Generate $\epsilon$ ~t~\~N(0,1) ; IID samples, 1 $\leq$ t $\leq$ 500
+
+## a)
+
+### $\epsilon$~t~(vs)t
+
+```{r}
+library(ggplot2)
+x<-1:500
+set.seed(6666)
+y<-rnorm(500)
+df<-data.frame(x=x,y=y)
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  xlab("t")+
+  ylab(expression(epsilon[t]))
+p
+```
+
+$\epsilon$~t~ fluctuates around 0
+
+### $\epsilon$~t~ (vs) $\epsilon$~t-1~
+
+```{r}
+set.seed(6666)
+y<-rnorm(501)
+t<-501
+df<-data.frame(x=y[1:c(t-1)],y=y[2:t])
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_point()+
+  xlab(expression(epsilon[t-1]))+
+  ylab(expression(epsilon[t]))
+p
+```
+
+it seems no correlation between $\epsilon$~t~ and $\epsilon$~t-1~
+
+### $\epsilon$~t~ (vs) $\epsilon$~t-2~
+
+```{r}
+set.seed(6666)
+y<-rnorm(502)
+t<-502
+df<-data.frame(x=y[1:(t-2)],y=y[3:t])
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_point()+
+  xlab(expression(epsilon[t-2]))+
+  ylab(expression(epsilon[t]))
+p
+```
+
+it seems no correlation between $\epsilon$~t~ and $\epsilon$~t-2~
+
+## b)
+
+### mean
+
+```{r}
+set.seed(6666)
+y<-rnorm(500)
+mean(y)
+```
+
+### variance
+
+```{r}
+var(y)
+```
+
+### covariance $\gamma$~k~
+
+```{r}
+set.seed(6666)
+y<-rnorm(500)
+getCov<-function(k){
+  x1<-y[1:100]
+  x2<-y[(k+1):(100+k)]
+  cov(x1,x2)
+}
+k<-0:100
+cov1<-sapply(k,getCov)
+dfCov<-data.frame(k=k,cov=cov1)
+head(dfCov)
+```
+
+### $\rho$~k~
+
+```{r}
+p<-cov1/cov1[1]
+dfP<-data.frame(k=k,p=p)
+head(dfP)
+```
+
+### $\gamma$~k~ (vs) k
+
+```{r}
+p<-ggplot(dfCov,aes(x=k,y=cov))+
+  geom_point()+
+  xlab(expression(k))+
+  ylab(expression(gamma[k]))
+p
+```
+
+### $\rho$~k~ (vs) k
+
+```{r}
+p<-ggplot(dfP,aes(x=k,y=p))+
+  geom_point()+
+  xlab(expression(k))+
+  ylab(expression(rho[k]))
+p
+```
+
+## c)
+
+### min
+
+```{r}
+set.seed(6666)
+y<-rnorm(500)
+min(y)
+```
+
+### max
+
+```{r}
+max(y)
+```
+
+### histogram
+
+```{r}
+qplot(y,  binwidth=0.1, geom = "histogram", xlab=expression(epsilon[t]), ylab="Frequency") 
+```
+
+# 2) Repeat (Q1) on x~t~ when x~t~ is given by
+
+## a) x~t~=2.0+$\epsilon$~t~, x~0~=0
+
+### x~t~(vs)t
+
+```{r}
+t<-1:500
+set.seed(6666)
+y<-rnorm(500)+2.0
+df<-data.frame(x=t,y=y)
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  xlab("t")+
+  ylab(expression(x[t]))
+p
+```
+
+x~t~ fluctuates around 2
+
+### x~t~ (vs) x~t-1~
+
+```{r}
+set.seed(6666)
+y<-rnorm(501)+2.0
+t<-501
+df<-data.frame(x=y[1:c(t-1)],y=y[2:t])
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_point()+
+  xlab(expression(x[t-1]))+
+  ylab(expression(x[t]))
+p
+```
+
+it seems no correlation between x~t~ and x~t-1~
+
+### x~t~ (vs) x~t-2~
+
+```{r}
+set.seed(6666)
+y<-rnorm(502)+2.0
+t<-502
+df<-data.frame(x=y[1:(t-2)],y=y[3:t])
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_point()+
+  xlab(expression(x[t-2]))+
+  ylab(expression(x[t]))
+p
+```
+it seems no correlation between x~t~ and x~t-2~
+
+
+### mean
+
+```{r}
+set.seed(6666)
+y<-rnorm(501)+2.0
+mean(y)
+```
+
+### variance
+
+```{r}
+var(y)
+```
+
+### covariance $\gamma$~k~
+
+```{r}
+set.seed(6666)
+y<-rnorm(500)+2.0
+getCov<-function(k){
+  x1<-y[1:100]
+  x2<-y[(k+1):(100+k)]
+  cov(x1,x2)
+}
+k<-0:100
+cov1<-sapply(k,getCov)
+dfCov<-data.frame(k=k,cov=cov1)
+head(dfCov)
+```
+
+### $\rho$~k~
+
+```{r}
+p<-cov1/cov1[1]
+dfP<-data.frame(k=k,p=p)
+head(dfP)
+```
+
+### $\gamma$~k~ (vs) k
+
+```{r}
+p<-ggplot(dfCov,aes(x=k,y=cov))+
+  geom_point()+
+  xlab(expression(k))+
+  ylab(expression(gamma[k]))
+p
+```
+
+### $\rho$~k~ (vs) k
+
+```{r}
+p<-ggplot(dfP,aes(x=k,y=p))+
+  geom_point()+
+  xlab(expression(k))+
+  ylab(expression(rho[k]))
+p
+```
+
+### min
+
+```{r}
+set.seed(6666)
+y<-rnorm(500)+2.0
+min(y)
+```
+
+### max
+
+```{r}
+max(y)
+```
+
+### histogram
+
+```{r}
+qplot(y,  binwidth=0.1, geom = "histogram", xlab=expression(x[t]), ylab="Frequency") 
+```
+
+## b) x~t~=x~t-1~+$\epsilon$~t~, x~0~=0
+
+### x~t~(vs)t
+
+```{r}
+t<-1:500
+set.seed(6666)
+y<-rnorm(500)
+xt<-function(t){
+  if (t==0) return(0)
+  else return(xt(t-1)+y[t])
+}
+y<-sapply(1:500,xt)
+df<-data.frame(x=t,y=y)
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  xlab("t")+
+  ylab(expression(x[t]))
+p
+```
+
+x~t~ is unstable
+
+### x~t~ (vs) x~t-1~
+
+```{r}
+t<-501
+set.seed(6666)
+y<-rnorm(501)
+xt<-function(t){
+  if (t==0) return(0)
+  else return(xt(t-1)+y[t])
+}
+y<-sapply(1:t,xt)
+df<-data.frame(x=y[1:(t-1)],y=y[2:t])
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_point()+
+  xlab(expression(x[t-1]))+
+  ylab(expression(x[t]))
+p
+```
+
+it seems strong correlation between x~t~ and x~t-1~
+
+### x~t~ (vs) x~t-2~
+
+```{r}
+t<-502
+set.seed(6666)
+y<-rnorm(502)
+xt<-function(t){
+  if (t==0) return(0)
+  else return(xt(t-1)+y[t])
+}
+y<-sapply(1:t,xt)
+df<-data.frame(x=y[1:(t-2)],y=y[3:t])
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_point()+
+  xlab(expression(x[t-2]))+
+  ylab(expression(x[t]))
+p
+```
+it seems strong correlation between x~t~ and x~t-2~
+
+
+### mean
+
+```{r}
+set.seed(6666)
+y<-rnorm(500)
+xt<-function(t){
+  if (t==0) return(0)
+  else return(xt(t-1)+y[t])
+}
+y<-sapply(1:500,xt)
+mean(y)
+```
+
+### variance
+
+```{r}
+var(y)
+```
+
+### covariance $\gamma$~k~
+
+```{r}
+set.seed(6666)
+y<-rnorm(1000)
+y<-cumsum(y)
+getCov<-function(k){
+  x1<-y[1:500]
+  x2<-y[(k+1):(500+k)]
+  cov(x1,x2)
+}
+k<-0:100
+cov1<-sapply(k,getCov)
+dfCov<-data.frame(k=k,cov=cov1)
+head(dfCov)
+```
+
+### $\rho$~k~
+
+```{r}
+p<-cov1/cov1[1]
+dfP<-data.frame(k=k,p=p)
+head(dfP)
+```
+
+### $\gamma$~k~ (vs) k
+
+```{r}
+p<-ggplot(dfCov,aes(x=k,y=cov))+
+  geom_line()+
+  xlab(expression(k))+
+  ylab(expression(gamma[k]))
+p
+```
+
+### $\rho$~k~ (vs) k
+
+```{r}
+p<-ggplot(dfP,aes(x=k,y=p))+
+  geom_line()+
+  xlab(expression(k))+
+  ylab(expression(rho[k]))
+p
+```
+
+### min
+
+```{r}
+set.seed(6666)
+y<-rnorm(500)
+y<-cumsum(y)
+min(y)
+```
+
+### max
+
+```{r}
+max(y)
+```
+
+### histogram
+
+```{r}
+qplot(y,  binwidth=1, geom = "histogram", xlab=expression(x[t]), ylab="Frequency")
+```
+
+# 3) Verify convariance function $\mathit{f(i,j)}$ is non-negtive definite
+
+```{r}
+# define xt~N(0,1)
+set.seed(6666)
+xt<-rnorm(500)
+# each column of xt is x(i) or x(j)
+xt<-matrix(xt,ncol = 20)
+# verify convariance function f(i,j) is non-negtive definite
+totalSum<-0
+for (i in 1:20){
+  for (j in 1:20){
+    totalSum<-totalSum+(t(xt[,i])*cov(xt[,i],xt[,j]))%*%matrix(xt[,j])
+  }
+}
+# TRUE
+totalSum>0
+
+# define xt~N(0,1)
+set.seed(6666)
+xt<-rnorm(500)
+# define yt=y(t-1)+xt
+yt<-cumsum(xt)
+# each column of yt is y(i) or y(j)
+yt<-matrix(yt,ncol = 20)
+# verify convariance function f(i,j) is non-negtive definite
+totalSum<-0
+for (i in 1:20){
+  for (j in 1:20){
+    totalSum<-totalSum+(t(yt[,i])*cov(yt[,i],yt[,j]))%*%matrix(yt[,j])
+  }
+}
+# TRUE
+totalSum>0
+```
+
+

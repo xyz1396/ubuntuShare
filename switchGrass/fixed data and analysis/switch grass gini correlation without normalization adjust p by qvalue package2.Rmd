@@ -1,0 +1,101 @@
+---
+title: "switch grass merge 3 repeats gini correlation without normalization adjust p by qvalue package"
+author: "xyz"
+date: "2021/2/1"
+output: html_document
+---
+
+### read data
+
+```{r}
+library(readxl)
+library(tidyverse)
+phy<-read.csv("CellWallComponent.csv")
+gene<-read.csv("GeneExpressionData.csv")
+# check
+sum(phy$id==gene$id)
+```
+
+### caculate correlations
+
+```{r}
+library(rsgcc)
+library(qvalue)
+
+# first 11 are genes, 15 are physiology
+ncol(gene[,-1])
+ncol(phy[,-1])
+geneAndPhy <- cbind(gene[,-1], phy[,-1])
+results <- cor.matrix(
+  t(geneAndPhy),
+  cpus = 11,
+  cormethod = "GCC",
+  style = "all.pairs",
+  pernum = 2000,
+  sigmethod = "two.sided",
+  output = "matrix"
+)
+```
+
+### Physiology to Gene
+
+```{r}
+r<-results$corMatrix
+# check
+sum(colnames(r)==rownames(r))
+sum(colnames(r)==colnames(geneAndPhy))
+r<-r[12:26,1:11]
+r <- cbind(r, physiology = rownames(r))
+r.gini <-
+  pivot_longer(as.data.frame(r),
+               -physiology,
+               names_to = "gene",
+               values_to = "r")
+
+p<-results$pvalueMatrix
+# check
+sum(colnames(p)==rownames(p))
+sum(colnames(p)==colnames(geneAndPhy))
+p<-p[12:26,1:11]
+p <- cbind(as.data.frame(p), physiology = rownames(p))
+p.gini <-
+  pivot_longer(as.data.frame(p),
+               -physiology,
+               names_to = "gene",
+               values_to = "p")
+# most add pi0 = 1 or lambda=0 if not it will raise error because 
+# there is not a pvalue beyond the last value (default: 0.95)
+# https://github.com/StoreyLab/qvalue/issues/9
+# https://support.bioconductor.org/p/105623/
+q<-qvalue(p.gini$p,lambda=0)
+results.gini <- cbind(r.gini, p = p.gini$p, qOrFdr = q$qvalues)
+write.csv(results.gini, "Physiology2Gene.byQvalue.gini2.csv", row.names = F)
+```
+
+### Physiology to Physiology
+
+```{r}
+r<-results$corMatrix[12:26,12:26]
+r <- cbind(r, physiology = rownames(r))
+r.gini <-
+  pivot_longer(as.data.frame(r),
+               -physiology,
+               names_to = "physiology2",
+               values_to = "r")
+
+p<-results$pvalueMatrix[12:26,12:26]
+p <- cbind(as.data.frame(p), physiology = rownames(p))
+p.gini <-
+  pivot_longer(as.data.frame(p),
+               -physiology,
+               names_to = "physiology2",
+               values_to = "p")
+# most add pi0 = 1 or lambda=0 if not it will raise error because 
+# there is not a pvalue beyond the last value (default: 0.95)
+# https://github.com/StoreyLab/qvalue/issues/9
+# https://support.bioconductor.org/p/105623/
+q<-qvalue(p.gini$p,lambda=0)
+results.gini <- cbind(r.gini, p = p.gini$p, qOrFdr = q$qvalues)
+write.csv(results.gini, "Physiology2Physiology.byQvalue.gini2.csv", row.names = F)
+```
+

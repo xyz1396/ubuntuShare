@@ -1,0 +1,107 @@
+---
+title: "S2 proteins convert to GP6"
+author: "xyz"
+date: "2020/10/20"
+output: html_document
+---
+
+
+  [Clostridium thermocellum S2 genome](https://www.ncbi.nlm.nih.gov/nuccore/CP002416.1)  
+  
+  [Clostridium cellulovorans GP6JF1, complete genome](https://www.ncbi.nlm.nih.gov/nuccore/CP002160)  
+  
+  [cobra coculture community model](https://micom-dev.github.io/micom/index.html)
+
+```{r scan conda env}
+library(reticulate)
+# set conda env
+use_python("/home/xyz/miniconda3/envs/openCOBRA/bin/python")
+```
+
+```{python "get gene id in S2", results="hide"}
+import cobra.test
+import cobra.io
+import pandas as pd
+imr=cobra.io.read_sbml_model("../iMR539.xml")
+gene=[gene.id for gene in imr.genes]
+```
+
+### blast
+
+```{r}
+system('nohup /home/xyz/miniconda3/envs/blast/bin/blastp -query ../S2.fasta -subject ../GP6.fasta -outfmt 6 -out "S2 proteins convert to GP6.txt" &>"S2 proteins convert to GP6.log"')
+```
+
+### output the best hit of gene in S2 model
+
+```{r}
+library(tidyverse)
+df<-read.table("S2 proteins convert to GP6.txt")
+# 1	qseqid	Query Seq-id (ID of your sequence)
+# 2	sseqid	Subject Seq-id (ID of the database hit)
+# 3	pident	Percentage of identical matches
+# 4	length	Alignment length
+# 5	mismatch	Number of mismatches
+# 6	gapopen	Number of gap openings
+# 7	qstart	Start of alignment in query
+# 8	qend	End of alignment in query
+# 9	sstart	Start of alignment in subject (database hit)
+# 10	send	End of alignment in subject (database hit)
+# 11	evalue	Expectation value (E-value)
+# 12	bitscore	Bit score
+
+# get variable from python env
+gene<-py$gene
+# 539 genes in S2 model
+length(gene)
+# 539 genes blasted in GP6 model
+sum(unique(df$V1) %in% gene)
+# setdiff(gene,df$V1)
+# filter out genes in S2 model
+df<-df[df$V1 %in% py$gene,]
+# filter out genes in GP6 model's best match
+df2<-arrange(df,V2,desc(V12))
+df2<-distinct(df2, V2, .keep_all = TRUE)
+# filter out genes in S2 model's best match
+df2<-arrange(df2,V1,desc(V12))
+df2<-distinct(df2, V1, .keep_all = TRUE)
+# filter genes in S2 without best match
+df3<-df[df$V1 %in% setdiff(df$V1,df2$V1),]
+df3<-arrange(df3,V2,desc(V12))
+df3<-distinct(df3, V2, .keep_all = TRUE)
+df3<-arrange(df3,V1,desc(V12))
+df3<-distinct(df3, V1, .keep_all = TRUE)
+# genes in GP6 model have 2 match
+df3$V2[df3$V2 %in% df2$V2]
+df2<-rbind(df2,df3)
+# filter genes in S2 without best match
+df3<-df[df$V1 %in% setdiff(df$V1,df2$V1),]
+# genes in GP6 model have 2 match
+df3$V2[df3$V2 %in% df2$V2]
+# output results
+df2<-rbind(df2,df3)
+colnames(df2)[1:2] <- c("S2","GP6")
+write.csv(df2[,1:2],"S2 to GP6.csv",row.names =F)
+# output variable to python env
+py$genedf<-df2[,1:2]
+```
+
+```{python gene convert and sbml model output}
+S2=list(genedf.S2)
+GP6=list(genedf['GP6'])
+for i,gene in enumerate(imr.genes):
+    id = gene.id
+    if id in S2:
+        imr.genes[i].id=GP6[S2.index(id)]
+imr.genes[1:10]
+# https://cobrapy.readthedocs.io/en/latest/faq.html#How-do-I-rename-reactions-or-metabolites?
+imr.repair()
+# bug: ids are not converted totally in xml file, gene.name and gene id in gene_reaction_rule is not converted
+cobra.io.write_sbml_model(imr,filename="S2_to_GP6.xml")
+```
+
+
+
+
+
+

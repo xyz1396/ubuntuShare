@@ -1,0 +1,39 @@
+---
+title: "adjust lambda"
+author: "Yi Xiong"
+date: "2021/3/20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(stringr)
+library(qvalue)
+fileName <- dir("old/")
+fileName <- fileName[str_detect(fileName, "csv")]
+fileName <-
+  fileName[fileName != "Physiology2Gene.withoutTFAsugars.gini.csv"]
+
+# get p of each file
+p <- c()
+for (i in fileName) {
+  df <- read.csv(paste0("old/", i))
+  p <- c(p, df$p)
+}
+
+q <- qvalue(p)$qvalues
+
+# write qvalue
+j <- 1
+for (i in fileName) {
+  df <- read.csv(paste0("old/", i))
+  n <- nrow(df)
+  df$qOrFdr <- q[j:(j + n - 1)]
+  write.csv(df, paste0("allComparisonToQvalue/", i), row.names = F)
+  j <- j + n
+}
+```
+

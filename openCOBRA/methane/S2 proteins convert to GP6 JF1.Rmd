@@ -1,0 +1,66 @@
+---
+title: "S2 proteins convert to GP6 JF1"
+author: "xyz"
+date: "2020/10/19"
+output: html_document
+---
+
+  [M. maripaludis S2 iMR539](https://www.ncbi.nlm.nih.gov/nuccore/BX950229.1)  
+  
+  [CMethanothrix soehngenii GP6](https://www.ncbi.nlm.nih.gov/nuccore/NC_015416.1)  
+
+### convert protein name to gene id
+
+```{r}
+library(Biostrings)
+library(stringr)
+S2<-readAAStringSet("Methanococcus maripaludis strain S2.proteins.fasta",format="fasta")
+names(S2)<-str_sub(str_extract(names(S2),"\\[locus_tag=.*?]"),12,-2)
+writeXStringSet(S2,"S2.fasta")
+GP6<-readAAStringSet("Methanothrix soehngenii GP6.proteins.fasta",format="fasta")
+names(GP6)<-str_sub(str_extract(names(GP6),"\\[locus_tag=.*?]"),12,-2)
+writeXStringSet(GP6,"GP6.fasta")
+JF1<-readAAStringSet("Methanospirillum hungatei JF-1.proteins.fasta",format="fasta")
+names(JF1)<-str_sub(str_extract(names(JF1),"\\[locus_tag=.*?]"),12,-2)
+writeXStringSet(JF1,"JF1.fasta")
+```
+
+### blast
+
+```{bash}
+conda activate openCOBRA
+conda install blast
+nohup blastp -query S2.fasta -subject GP6.fasta -outfmt 5 -evalue 1e-6 -out "S2 proteins convert to GP6.xml" &>"S2 proteins convert to GP6.log" &
+nohup blastp -query S2.fasta -subject JF1.fasta -outfmt 5 -evalue 1e-6 -out "S2 proteins convert to JF1.xml" &>"S2 proteins convert to JF1.log" &
+python3 ../cellulose/Clostridium\ thermocellum\ DSM\ 1313/blastxml_to_tabular.py -o "S2 proteins convert to GP6.xml.txt" -c std "S2 proteins convert to GP6.xml"
+python3 ../cellulose/Clostridium\ thermocellum\ DSM\ 1313/blastxml_to_tabular.py -o "S2 proteins convert to JF1.xml.txt" -c std "S2 proteins convert to JF1.xml"
+```
+
+### output the best hit
+
+```{r}
+library(tidyverse)
+df<-read.table("S2 proteins convert to GP6.xml.txt")
+# 1	qseqid	Query Seq-id (ID of your sequence)
+# 2	sseqid	Subject Seq-id (ID of the database hit)
+# 3	pident	Percentage of identical matches
+# 4	length	Alignment length
+# 5	mismatch	Number of mismatches
+# 6	gapopen	Number of gap openings
+# 7	qstart	Start of alignment in query
+# 8	qend	End of alignment in query
+# 9	sstart	Start of alignment in subject (database hit)
+# 10	send	End of alignment in subject (database hit)
+# 11	evalue	Expectation value (E-value)
+# 12	bitscore	Bit score
+df<-arrange(df,V1,desc(V12))
+df<-distinct(df, V1, .keep_all = TRUE)
+colnames(df)[1:2] <- c("S2","GP6")
+write.csv(df[,1:2],"S2 to GP6.csv",row.names =F)
+
+df2<-read.table("S2 proteins convert to JF1.xml.txt")
+df2<-arrange(df2,V1,desc(V12))
+df2<-distinct(df2, V1, .keep_all = TRUE)
+colnames(df2)[1:2] <- c("S2","JF1")
+write.csv(df2[,1:2],"S2 to JF1.csv",row.names =F)
+```

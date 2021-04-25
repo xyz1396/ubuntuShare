@@ -1,0 +1,853 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" >
+<html ng-app="UtilApp" xmlns="http://www.w3.org/1999/xhtml">
+<head><link class="component" href="/portal/res/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/basic_classes.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__" rel="stylesheet" type="text/css" /><link class="component" href="/portal/res/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/extended_classes.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__" media="rich-extended-skinning" rel="stylesheet" type="text/css" /><link class="component" href="/portal/res/a4j/s/3_3_3.Finalcss/panel.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__" rel="stylesheet" type="text/css" /><script src="/portal/res/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.AjaxScript" type="text/javascript"></script><script id="org.ajax4jsf.queue_script" type="text/javascript">if (typeof A4J != 'undefined') { if (A4J.AJAX) { with (A4J.AJAX) {if (!EventQueue.getQueue('downloadForm')) { EventQueue.addQueue(new EventQueue('downloadForm',null,null)) };}}};</script><script src="/portal/res/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.PrototypeScript" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/utils.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/browser_info.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/modalPanel.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/modalPanelBorders.js" type="text/javascript"></script><link class="component" href="/portal/res/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/modalPanel.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__" rel="stylesheet" type="text/css" /><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/available.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/jquery/jquery.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/script/controlUtils.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalscripts/tiny_mce/tiny_mce_src.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalscripts/editor.js" type="text/javascript"></script><link class="component" href="/portal/res/a4j/s/3_3_3.Finalcss/editor.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__" rel="stylesheet" type="text/css" /><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/jquery.utils.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/json/json-mini.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg.ajax4jsf.javascript.DnDScript" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/json/json-dom.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/dnd/dnd-common.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/dnd/dnd-draggable.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/dnd/dnd-dropzone.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/ajax4jsf/javascript/scripts/form.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/form.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/events.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/tree.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/tree-selection.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/tree-item.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/tree-item-dnd.js" type="text/javascript"></script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/drag-indicator.js" type="text/javascript"></script><link class="component" href="/portal/res/a4j/s/3_3_3.Finalorg/richfaces/renderkit/html/css/dragIndicator.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__" rel="stylesheet" type="text/css" /><link class="component" href="/portal/res/a4j/s/3_3_3.Finalcss/tree.xcss/DATB/eAF7sqpgb-jyGdIAFrMEaw__" rel="stylesheet" type="text/css" /><script type="text/javascript">window.RICH_FACES_EXTENDED_SKINNING_ON=true;</script><script src="/portal/res/a4j/g/3_3_3.Finalorg/richfaces/renderkit/html/scripts/skinning.js" type="text/javascript"></script><link href="/portal/css/genome2.css" rel="stylesheet" type="text/css"/>
+<!--[if lt IE 8]><script src="/portal/js/IE8.js" type="text/javascript"></script><![endif]--><script type="text/javascript" src="/portal/js/ie_workarounds.js"></script><!--[if IE 6]><link type="text/css" rel="stylesheet" href="/portal/css/ie6.css"><![endif]--><title>Download - Arctic soil microbial communities from a glacier forefield, Russell Glacier, Kangerlussuaq, Greenland (Sample G6A, Proglacial plain, adjacent to northern proglacial tributary)</title>
+<link href="/portal/css/other_genomes.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript">(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-23422913-1', 'auto');
+ga('send', 'pageview');
+
+var _gaq = _gaq || [];</script>
+
+	<script type="text/javascript" src="../pages/angular/js/libs/jquery-3.5.1.min.js"> </script>
+	<script src="../pages/angular/js/libs/jquery-migrate-3.3.0.min.js"></script>
+	<script type="text/javascript" src="../jqueryui/1.10.3/jquery-ui.min.js"></script>
+	<link rel="stylesheet" href="../jqueryui/1.10.3/themes/smoothness/jquery-ui.css" />
+	<script src="../pages/angular/js/genomePortalPrefix.js"></script>
+
+		<link rel="stylesheet" type="text/css" href="../pages/angular/css/bootstrap-3.0.0.min.css" />
+		<link rel="stylesheet" type="text/css" href="../css/jquery-ui-customized/jquery-ui-1.8.10.custom.css" />
+		<link rel="stylesheet" type="text/css" href="../pages/organisms-group-info.css" />
+		<link rel="stylesheet" type="text/css" href="../pages/angular/css/style.css" />
+		<link rel="stylesheet" type="text/css" href="../pages/tmpl.css" />
+		<link type="text/css" rel="stylesheet" href="../css/search.css" />
+		<link type="text/css" rel="stylesheet" href="../css/genome2.css" />
+		<style>
+			[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+			display: none !important;
+			}
+			.richfacesSkin table.mceLayout {
+				border: none;
+			}
+			.richfacesSkin table.mceLayout tr.mceFirst td {
+				border-top: none;				
+			}
+			.genomes td {
+			    padding: 7px;
+			    /*border: 1px solid #D3D4EF;*/
+			}	
+			
+		</style>	
+	
+	<script src="../pages/angular/js/libs/angular-1.2.5.js"></script>
+	<script src="../pages/angular/js/libs/angular-sanitize-1.1.5.min.js"></script> 
+	<script src="../pages/angular/js/libs/ng-csv.js"></script>
+	<script src="../pages/angular/js/libs/ui-bootstrap-tpls-0.9.0.js"></script>
+	<script src="../pages/angular/js/services/genomePortalHttp.js"></script>
+	<script src="../pages/angular/js/services/utilApp.js"></script>
+	<script src="../pages/angular/js/controllers/dialogController.js"></script>
+	<script type="text/javascript" src="../js/jquery.timers.js"></script>
+	<script type="text/javascript" src="../pages/tmpl.js"></script>
+	
+	 <script type="text/javascript">	
+		<!--
+		jQuery.noConflict();
+	
+		history.navigationMode = 'compatible';
+		jQuery(document).ready(function() {
+		//	executeGroupInfoSearch();
+			// alert('jQuerydocumentready called in tmplInfoGroup!');
+		});
+	
+		-->
+    </script>
+		<script>
+			jQuery.noConflict();			
+		</script>
+		<script>
+		 /*<![CDATA[*/
+			var goingToHelp = false;
+			function help_wrapper(page) {
+				goingToHelp = true;
+				help(page);
+			}		
+			function toggleimg(imgId, toToggleId) {				
+				if( goingToHelp ) {
+					goingToHelp = false;
+					return; // Prevent expansion when user clicks on the help icon. Why it is not enough to simply return false from onclick, I do not know.	
+				}
+				var o=document.getElementById(imgId); 
+				if(o.src.indexOf('collapse') != -1) { 
+					o.src = '../images/expand.png';
+					updateExpansionState(toToggleId, "none");
+				} else {
+					o.src = '../images/collapse.png'; 
+					updateExpansionState(toToggleId, "block");
+				}
+				jQuery("#" + toToggleId).toggle("slow");
+			}/*]]>*/
+		</script>
+		<script src="/portal/pages/angular/js/libs/add-selected-files.js"></script>
+		<script type="text/javascript" src="../pages/angular/js/overlay-bubbles.js"></script>
+	 <link href="../css/kbase/bootstrap.min.css" rel="stylesheet" type="text/css" />
+ 
+		<script type="text/javascript" src="../js/preload.js"></script><div class="rich-panel no_frame" id="j_id13"><div class="rich-panel-body " id="j_id13_body">
+			<script>
+				jQuery(document).ready(function() {
+					showSafariWarning();
+					refreshTree(false, false);
+						});
+			</script></div></div>
+		
+		<script>
+        //<![CDATA[
+
+        function showSafariWarning() {
+        	var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        	if (isSafari) {
+        		jQuery("#safariWarning").show();
+        	}
+        }
+
+        function toggleChildren(parent, checkboxClass) {
+			    var checked = parent.checked;
+			    var tmp = jQuery("[class*='"+checkboxClass+"']");
+			    if( checked ) {
+				    tmp.prop('checked', "1");
+			    } else {
+				    tmp.removeAttr('checked');
+			    }
+			}
+
+			function setAllCheckboxes(checked) {
+				jQuery(":checkbox").attr('checked', checked ? "1" : null);
+			}
+			
+			function fadeTreesOut() {
+				jQuery(".download-tree").fadeTo('slow', "0.3");
+				jQuery("#spinner").show();
+			}
+
+			function fadeTreesIn() {
+				jQuery(".download-tree").fadeTo('fast', "1.0");
+				jQuery("#spinner").hide();
+			}
+
+			function fadeTreeIn(tree_id) {
+				jQuery("#"+tree_id).fadeTo('fast', "1.0");
+			}
+			
+			function collapseAll() {
+				collapseTree();
+			}
+
+			function expandAll() {
+				expandTree();
+			}
+
+			function setNodeIconToCollapsed(nodeSelector) {				
+				nodeSelector.removeClass('rich-tree-node-handleicon-expanded').
+					addClass('rich-tree-node-handleicon-collapsed').
+					attr("src","../images/richTreeCollapsedIcon.gif");
+			}
+
+			function setNodeIconToExpanded(nodeFromSelector) {				
+				nodeFromSelector.removeClass('rich-tree-node-handleicon-collapsed').
+					addClass('rich-tree-node-handleicon-expanded').
+					attr("src","../images/richTreeExpandedIcon.gif");
+			}
+			
+			function alertNothingSelected() {
+				alert("No files were selected to download. Please use the checkboxes to select some files!");
+			}
+			
+			function downloadSelectedFiles() {
+				verifyFileSelected();
+			}
+			
+			function startDownload(isSomethingSelected) {
+				if (isSomethingSelected) {
+					setSelectedFileCount();
+				} else
+					alertNothingSelected();
+			}
+			
+			function showFileSelectedWarning(isSomethingSelected) {
+				if (isSomethingSelected)
+					alert("ATTENTION!  Files were selected to download.\n\nPlease be aware that you are going to submit a request to stage ALL FILES shown on this page\nand share them with your Globus account.");
+			}
+			
+			function refreshTree(refreshClearsCache, refreshDuidData) {
+				fadeTreesOut();
+				refreshData(refreshClearsCache, refreshDuidData);
+			}
+			
+			var downloadLinkTarget = "";
+			
+			function prepareZipDownload() {
+				fadeTreesOut();
+				prepareZipDownloadHelper();
+			}
+			
+			function prepareDownload(linkTarget) {
+				fadeTreesOut();
+				downloadLinkTarget = linkTarget;
+				prepareDownloadHelper(linkTarget);
+			}
+			
+			function checkTapeFilesReady(isReady) {
+				if( !isReady ) {
+					setTimeout('checkZipStageRequestStatus()', 3000);
+				} else {
+					fadeTreesIn();
+					document.getElementById("downloadForm:DownloadZip").click();
+				}
+			}
+			
+			function checkTapeFileReady(isReady) {
+				if( !isReady ) {
+					setTimeout('checkStageRequestStatus()', 3000);
+				} else {
+					getDownloadRequestTime();
+				}
+			}
+			
+			function receiveFile(downloadRequestTime) {
+				fadeTreesIn();
+				window.location = ".." + downloadLinkTarget + "?requestTime=" + downloadRequestTime;
+			}
+			
+			function onDownloadSourceReady(readySourceId) {
+				if( readySourceId ) {
+					switch(readySourceId) {
+					case 'ALL': rerender_ALL(); fadeTreeIn('ALL_div'); break;
+					}
+					setTimeout('checkDownloadSourceReady()', 100);
+				} else {
+					setTimeout('rerenderTrees()', 500);
+				}
+			}
+
+			function updateElement(id, value) {
+				document.getElementById("downloadForm:" + id).innerHTML = value;
+			}
+			
+			function revealMd5(md5Sum) {
+				updateElement("md5Sum", md5Sum);
+				Richfaces.showModalPanel('showMd5',{minWidth:300, minHeight: 100});
+			}
+			
+			function getFileInfo(item) {
+				var info = '';
+				for (var prop in item) {
+					if ((item[prop].length != 0) && (item[prop] != '0')) {
+						if (info.length > 0) info += '\n';
+						info += prop + ': ' + item[prop];
+					}
+				}
+				return info;
+			}
+			
+			function getFileInfoHtml(item) {
+				var info = '';
+				for (var prop in item) {
+					if ((item[prop].length != 0) && (item[prop] != '0')) {
+						if (info.length > 0) info += '<br>';
+						property = (prop == 'MD5 sum') ? '<a href="https://en.wikipedia.org/wiki/MD5" target="_blank">MD5</a> sum' : prop;
+						info += property + ': ' + item[prop];
+					}
+				}
+				return info;
+			}
+			
+			function revealFileInfo(item) {
+				updateElement("fileInfoText", getFileInfoHtml(item));
+				Richfaces.showModalPanel('showFileInfo', {width:400, height: 200});
+			}
+
+			function setItemTitle(item, info) {
+				if (item.title.length == 0)
+					item.setAttribute("title", getFileInfo(info));
+			}
+
+			function updateOrganizedByFileType(checkbox) {
+				var value;
+				if (checkbox.checked)
+					value = "true";
+				else
+					value = "false";
+				document.getElementById("downloadForm:organizedByFileType").value = value;
+			}
+
+			function updateTree(treeRefreshNeeded) {
+				if (treeRefreshNeeded == "true") {
+					refreshTree(false, false);
+				} else {
+					rerenderTrees();
+					checkDownloadSourceReady();
+				}
+			}
+			
+			function showTOC(toc) {
+				if (toc) {
+					Richfaces.showModalPanel('fileTOCPanel');
+					var p=document.getElementById("includedFiles");
+					p.innerHTML = toc;
+					jQuery("#filesInArchive").show();
+				}
+			}
+
+			function submitDisplayLocationForm(identifier, values) {
+				jQuery("#displayLocationVar1").val(identifier);
+				jQuery("#displayLocationVar2").val(values);
+				jQuery("#displayLocationForm").submit();
+			}
+			
+			function showGlobusV2Panel(isGlobusEnabled) {
+				if (isGlobusEnabled) {
+					setGlobusFileCount();
+				} else {
+					alert("There is not enough disk space in the staging area for this data. Please try again later.");
+				}
+			}
+
+			function submitGlobusRequest(isUserNameValid) {
+				if (isUserNameValid) {
+					updateElement("validationError", "");
+					jQuery("#validationErrorSection").hide();
+					doSubmitGlobusRequest();
+				} else {
+					updateElement("validationError", "Error: Globus account does not exist");
+					jQuery("#validationErrorSection").show();
+					Richfaces.showModalPanel('globusV2Panel');
+				}
+			}
+			
+			function showGlobusRequestResult(result) {
+				if (result) {
+					updateElement("globusRequestResult", "Globus request failed: " + result);
+				} else {
+					updateElement("globusRequestResult", "Your Globus request has been successfully submitted. You will receive an email with a link to the data.");
+				}
+				Richfaces.showModalPanel('globusRequestResultPanel');
+			}
+	        //]]>
+		</script>
+
+<style>
+.app-modal .modal-content {
+          width: 560px;
+         /* height:300px;*/
+          position: fixed;
+          top: 100px;
+          left: -700px;
+          overflow: auto;
+          overflow-y: auto;
+  }
+.menu_holder,.menu_group, .menu_holder ul {
+	-moz-box-sizing: content-box;
+    -webkit-box-sizing: content-box;
+    box-sizing: content-box;
+}
+.main_content a, a, a:link, a.textlink {
+	text-decoration: underline;
+	z-index: 1000;
+	color: #000000;
+}
+a:hover, a.textlink:hover {
+	text-decoration: underline;
+	color:#CC3300;
+	cursor: pointer;
+}
+
+a:visited, a.textlink:visited {
+	color: #000000;	
+	text-decoration: underline;
+}
+.control-label, .form-control, .col-sm-5, .col-sm-7 {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.btn {
+	text-decoration: none !important;
+}
+.button_styled_blue:hover, a.button_styled_blue:hover, a.button_styled_blue:active, a.button_styled_blue:visited{
+	background: #e1ffe2 url(../images/button_grad2_blue.gif) repeat-x center bottom;
+	text-decoration: none !important;
+}
+.rich-tree-node-icon-leaf {
+	display: none
+}
+
+.download-tree img {
+	margin: 0
+}
+
+.download-tree .rich-panel-body {
+	font-size: 12px
+}
+
+.close, .close:link, .close:hover {
+	background-image: none;
+	background: none;
+}
+.rich-mpnl-body {
+	/*white-space: pre-line;*/
+	overflow: auto !important;
+	font-size: 1em
+	}
+.rich-mpnl-shadow {
+	background:none
+	}
+	
+</style>
+
+</head>
+<body class="" ng-cloak="true" ng-controller="DialogController">
+<div class="header_open" id="fold_control_panel"></div>
+	<div id="foldable"><div class="header_wrap">
+<header id="jgi-header"><div id="jgi-logo"><a target="_parent" href="/portal/" title="DOE Joint Genome Institute - JGI Genome Portal"><img width="480" height="70" src="/portal/images/logo-JGI-GenomePortal.png" alt="DOE Joint Genome Institute's Genome Portal logo" /></a></div><nav class="jgi-nav"><ul><li id="skipto"><a href="#skipnav" accesskey="S">Skip To Main Content</a></li>
+<li><a href="http://jgi.doe.gov" target="_parent">JGI Home</a></li>
+<li><a href="/portal/" target="_parent">Genome Portal</a></li>
+<li><a ng-click="onLogout()" class="textlink" id="logout" target="_parent" href="javascript: if(top.window.location.href.search('accessDenied')==-1) { document.cookie='jgi_return=' + escape(top.window.location.href) + '; domain=.jgi.doe.gov; path=/;'; document.cookie='session=; domain=.jgi.doe.gov; path=/;';  } top.window.location.href='https://signon.jgi.doe.gov/signon/destroy';">Logout</a></li><li><a class="textlink" target="_parent" href="https://signon.jgi.doe.gov/user/contacts/edit">Yi Xiong (yixiong@ou.edu)</a></li><li><div  class="ng-cloak"><a  target="_parent" class="textlink"  href="/portal/myCart"><img alt="Cart icon" src="/portal/images/cart.png" width="16" height="16"/><span style="text-transform:lowercase"> ({{getPortalsInCart()}}&nbsp;items)</span></a>
+</div></li></ul></nav></header><div class="header_top"><div class="float_right"><div  class="organismName">Arctic soil microbial communities from a glacier forefield, Russell Glacier, Kangerlussuaq, Greenland (Sample G6A, Proglacial plain, adjacent to northern proglacial tributary)</div></div></div></div>
+<div class="menu_holder"><div class="menu_group"><ul> <li>  <a class="" href="/portal/IMG_3300015087/IMG_3300015087.info.html"  target="_parent" >Info</a> </li> <li>  <a class="selected" href="/portal/IMG_3300015087/IMG_3300015087.download.html"  target="_parent" >Download</a> </li> <li>  <a class="" href="https://img.jgi.doe.gov/genome.php?id=3300015087"  target="_parent" >IMG/M</a> </li> <li>  <a class="menu_help" href="/portal/help/index.jsf"  target="_parent" >HELP!</a> </li></ul></div></div><a name="skipnav"></a>
+<div class="message">
+<div class="red_message">On November 18, 2020 the JGI computer systems will be undergoing maintenance. The website will be down from 9:00am to 10:00am PDT. Access to tools and files will be restricted. Sorry for the inconvenience.</div></div>
+
+	</div>
+	<div class="clear"></div>
+
+		
+		<div class="main_content">
+			<div class="home">
+
+				<form style="display: hidden" action="https://sdm2.jgi-psf.org/metadata/projectfiles" method="POST" id="displayLocationForm">
+					<input type="hidden" id="displayLocationVar1" name="identifier" />
+					<input type="hidden" id="displayLocationVar2" name="values" />
+				</form><span id="_viewRoot:status"><span id="_viewRoot:status.start" style="display: none" class="network-status">Communicating with server...</span><span id="_viewRoot:status.stop"></span></span>
+<form id="downloadForm" name="downloadForm" method="post" action="/portal/pages/dynamicOrganismDownload.jsf" class="no_frame" enctype="application/x-www-form-urlencoded">
+<input type="hidden" name="downloadForm" value="downloadForm" />
+<script id="downloadForm:j_id29" type="text/javascript">//<![CDATA[
+		editLocationsITSSP=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id29','containerId':'downloadForm:j_id28','oncomplete':function(request,event,data){submitDisplayLocationForm('metadata.sequencing_project_id', data);},'parameters':{'downloadForm:j_id29':'downloadForm:j_id29'} ,'status':'_viewRoot:status'} )};
+		//]]></script><script id="downloadForm:j_id30" type="text/javascript">//<![CDATA[
+		editLocationsGPTSSP=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id30','containerId':'downloadForm:j_id28','oncomplete':function(request,event,data){submitDisplayLocationForm('metadata.pmo_project_id', data);},'parameters':{'downloadForm:j_id30':'downloadForm:j_id30'} ,'status':'_viewRoot:status'} )};
+		//]]></script><script id="downloadForm:j_id31" type="text/javascript">//<![CDATA[
+		editLocationsITSAP=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id31','containerId':'downloadForm:j_id28','oncomplete':function(request,event,data){submitDisplayLocationForm('metadata.analysis_project_id', data);},'parameters':{'downloadForm:j_id31':'downloadForm:j_id31'} ,'status':'_viewRoot:status'} )};
+		//]]></script><span id="downloadForm:j_id32:status"><span id="downloadForm:j_id32:status.start" style="display: none" class="network-status">Checking tape transfer status...</span><span id="downloadForm:j_id32:status.stop"></span></span><script id="downloadForm:j_id34" type="text/javascript">//<![CDATA[
+		prepareDownloadHelper=function(linkTarget){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id34','containerId':'downloadForm:j_id32','oncomplete':function(request,event,data){checkTapeFileReady(data)},'parameters':{'downloadForm:j_id34':'downloadForm:j_id34','linkTarget':linkTarget} } )};
+		//]]></script><script id="downloadForm:j_id36" type="text/javascript">//<![CDATA[
+		checkStageRequestStatus=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id36','containerId':'downloadForm:j_id32','oncomplete':function(request,event,data){checkTapeFileReady(data)},'parameters':{'downloadForm:j_id36':'downloadForm:j_id36'} } )};
+		//]]></script><script id="downloadForm:j_id37" type="text/javascript">//<![CDATA[
+		checkZipStageRequestStatus=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id37','containerId':'downloadForm:j_id32','oncomplete':function(request,event,data){checkTapeFilesReady(data)},'parameters':{'downloadForm:j_id37':'downloadForm:j_id37'} } )};
+		//]]></script><script id="downloadForm:j_id38" type="text/javascript">//<![CDATA[
+		getDownloadRequestTime=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id38','containerId':'downloadForm:j_id32','oncomplete':function(request,event,data){receiveFile(data)},'parameters':{'downloadForm:j_id38':'downloadForm:j_id38'} } )};
+		//]]></script><script id="downloadForm:j_id39" type="text/javascript">//<![CDATA[
+		updateExpansionState=function(section,display){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id39','parameters':{'display':display,'section':section,'downloadForm:j_id39':'downloadForm:j_id39'} } )};
+		//]]></script><span id="prep_zip"><span id="prep_zip.start" style="display: none" class="network-status">Staging files...</span><span id="prep_zip.stop"></span></span><script id="downloadForm:j_id43" type="text/javascript">//<![CDATA[
+		prepareZipDownloadHelper=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id43','containerId':'downloadForm:j_id42','oncomplete':function(request,event,data){checkTapeFilesReady(data)},'parameters':{'downloadForm:j_id43':'downloadForm:j_id43'} ,'status':'prep_zip'} )};
+		//]]></script>
+<script type="text/javascript" src="/portal/javax.faces.resource/jsf.js.jsf?ln=javax.faces"></script>
+<a id="downloadForm:DownloadZip" href="#" onclick="mojarra.jsfcljs(document.getElementById('downloadForm'),{'downloadForm:DownloadZip':'downloadForm:DownloadZip'},'');return false"></a><input id="downloadForm:organism" type="hidden" name="downloadForm:organism" value="IMG_3300015087" /><input id="downloadForm:portal_id_hidden" type="hidden" name="downloadForm:portal_id_hidden" value="IMG_3300015087" /><input id="downloadForm:duid" type="hidden" name="downloadForm:duid" value="" /><input id="downloadForm:initExpandPaths" type="hidden" name="downloadForm:initExpandPaths" value="done" /><input id="downloadForm:organizedByFileType" type="hidden" name="downloadForm:organizedByFileType" value="false" /><span id="downloadForm:j_id44:status"><span id="downloadForm:j_id44:status.start" style="display: none" class="network-status">Scanning server for downloads...</span><span id="downloadForm:j_id44:status.stop"></span></span><script id="downloadForm:j_id46" type="text/javascript">//<![CDATA[
+		refreshData=function(clearCache,refreshDuidData){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id46','containerId':'downloadForm:j_id44','oncomplete':function(request,event,data){rerenderTrees(); checkDownloadSourceReady()},'parameters':{'refreshDuidData':refreshDuidData,'downloadForm:j_id46':'downloadForm:j_id46','clearCache':clearCache} } )};
+		//]]></script><script id="downloadForm:j_id49" type="text/javascript">//<![CDATA[
+		checkDownloadSourceReady=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id49','containerId':'downloadForm:j_id44','oncomplete':function(request,event,data){onDownloadSourceReady(data)},'parameters':{'downloadForm:j_id49':'downloadForm:j_id49'} } )};
+		//]]></script><script id="downloadForm:j_id50" type="text/javascript">//<![CDATA[
+		switchTree=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id50','containerId':'downloadForm:j_id44','oncomplete':function(request,event,data){updateTree(data)},'parameters':{'downloadForm:j_id50':'downloadForm:j_id50'} } )};
+		//]]></script><script id="downloadForm:j_id52" type="text/javascript">//<![CDATA[
+		setPolicyFlag=function(param1){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id52','containerId':'downloadForm:j_id51','oncomplete':function(request,event,data){window.location='/IMG_3300015087/IMG_3300015087.download.html';},'parameters':{'downloadForm:j_id52':'downloadForm:j_id52','param1':param1} ,'status':'_viewRoot:status'} )};
+		//]]></script><div id="downloadForm:showMd5" style="display: none;"><input autocomplete="off" id="downloadForm:showMd5OpenedState" name="downloadForm:showMd5OpenedState" type="hidden" /><div class="rich-modalpanel " id="downloadForm:showMd5Container" style="position: absolute; display: none; z-index: 100; background-color: inherit;"><div class="rich-mpnl-mask-div-opaque rich-mpnl-mask-div" id="downloadForm:showMd5Div" style="z-index: -1;"><button class="rich-mpnl-button" id="downloadForm:showMd5FirstHref"></button></div><div class="rich-mpnl-panel"><div class="rich-mp-container" id="downloadForm:showMd5CDiv" style="position: absolute; left: 0px; top: 0px; z-index: 9;"><div class="rich-mpnl-shadow" id="downloadForm:showMd5ShadowDiv"></div><div class="rich-mpnl-ovf-hd rich-mpnl-trim rich-mpnl-content" id="downloadForm:showMd5ContentDiv"><div class="rich-mpnl-text rich-mpnl-controls "><img id="downloadForm:md5Hidelink" src="/portal/images/closeBtn.gif" /><script type="text/javascript">Richfaces.componentControl.attachAvailable('#downloadForm\\:md5Hidelink','onclick','#downloadForm\\:showMd5','hide')</script></div><table border="0" cellpadding="0" cellspacing="0" class="rich-mp-content-table" id="downloadForm:showMd5ContentTable" style="height: 100%; width: 100%;"><tr style="height: 1%;"><td class="rich-mpnl-header-cell"><div class="rich-mpnl-text rich-mpnl-header " id="downloadForm:showMd5Header" style="white-space: nowrap;">MD5 Sum</div></td></tr><tr style="height: 99%"><td class="rich-mpnl-body" valign="top"><span id="downloadForm:md5Sum"></span>
+						<br /><br /><a href="https://en.wikipedia.org/wiki/MD5" target="_blank">What is MD5?</a></td></tr></table></div><div class="rich-mpnl-resizer" id="downloadForm:showMd5ResizerN" style="width: 40px; height: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showMd5ResizerE" style="height: 40px; width: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showMd5ResizerS" style="width: 40px; height: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showMd5ResizerW" style="height: 40px; width: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showMd5ResizerNWU" style="width: 40px; height: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showMd5ResizerNEU" style="height: 40px; width: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showMd5ResizerNEL" style="width: 40px; height: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showMd5ResizerSEU" style="height: 40px; width: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showMd5ResizerSEL" style="width: 40px; height: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showMd5ResizerSWL" style="height: 40px; width: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showMd5ResizerSWU" style="width: 40px; height: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showMd5ResizerNWL" style="height: 40px; width: 4px;"></div></div></div><div class="rich-mpnl-mask-div rich-mpnl-mask-div-transparent" id="downloadForm:showMd5CursorDiv" style="z-index: -200;"><button class="rich-mpnl-button" id="downloadForm:showMd5LastHref"></button></div><script type="text/javascript">new ModalPanel('downloadForm:showMd5',
+				{
+					width: -1,
+					height: -1,
+
+					minWidth: -1,
+					minHeight: -1,
+
+					resizeable: true,
+					moveable: true,
+
+					left: "auto",
+					top: "auto",
+
+					zindex: 100,onresize: '',onmove: '',onshow: '',onhide: '',onbeforeshow: '',onbeforehide: '',
+					domElementAttachment: "",				
+					keepVisualState: false,
+					showWhenRendered: false,
+					selectBehavior: "disable",
+
+					autosized: false,
+					overlapEmbedObjects: false});</script></div><script type="text/javascript"></script></div><div id="downloadForm:showFileInfo" style="display: none;"><input autocomplete="off" id="downloadForm:showFileInfoOpenedState" name="downloadForm:showFileInfoOpenedState" type="hidden" /><div class="rich-modalpanel " id="downloadForm:showFileInfoContainer" style="position: absolute; display: none; z-index: 100; background-color: inherit;"><div class="rich-mpnl-mask-div-opaque rich-mpnl-mask-div" id="downloadForm:showFileInfoDiv" style="z-index: -1;"><button class="rich-mpnl-button" id="downloadForm:showFileInfoFirstHref"></button></div><div class="rich-mpnl-panel"><div class="rich-mp-container" id="downloadForm:showFileInfoCDiv" style="position: absolute; left: 0px; top: 0px; z-index: 9;"><div class="rich-mpnl-shadow" id="downloadForm:showFileInfoShadowDiv"></div><div class="rich-mpnl-ovf-hd rich-mpnl-trim rich-mpnl-content" id="downloadForm:showFileInfoContentDiv"><div class="rich-mpnl-text rich-mpnl-controls "><img id="downloadForm:fileInfoHidelink" src="/portal/images/closeBtn.gif" /><script type="text/javascript">Richfaces.componentControl.attachAvailable('#downloadForm\\:fileInfoHidelink','onclick','#downloadForm\\:showFileInfo','hide')</script></div><table border="0" cellpadding="0" cellspacing="0" class="rich-mp-content-table" id="downloadForm:showFileInfoContentTable" style="height: 100%; width: 100%;"><tr style="height: 1%;"><td class="rich-mpnl-header-cell"><div class="rich-mpnl-text rich-mpnl-header " id="downloadForm:showFileInfoHeader" style="white-space: nowrap;">File Information</div></td></tr><tr style="height: 99%"><td class="rich-mpnl-body" valign="top"><span id="downloadForm:fileInfoText"></span></td></tr></table></div><div class="rich-mpnl-resizer" id="downloadForm:showFileInfoResizerN" style="width: 40px; height: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showFileInfoResizerE" style="height: 40px; width: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showFileInfoResizerS" style="width: 40px; height: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showFileInfoResizerW" style="height: 40px; width: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showFileInfoResizerNWU" style="width: 40px; height: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showFileInfoResizerNEU" style="height: 40px; width: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showFileInfoResizerNEL" style="width: 40px; height: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showFileInfoResizerSEU" style="height: 40px; width: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showFileInfoResizerSEL" style="width: 40px; height: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showFileInfoResizerSWL" style="height: 40px; width: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showFileInfoResizerSWU" style="width: 40px; height: 4px;"></div><div class="rich-mpnl-resizer" id="downloadForm:showFileInfoResizerNWL" style="height: 40px; width: 4px;"></div></div></div><div class="rich-mpnl-mask-div rich-mpnl-mask-div-transparent" id="downloadForm:showFileInfoCursorDiv" style="z-index: -200;"><button class="rich-mpnl-button" id="downloadForm:showFileInfoLastHref"></button></div><script type="text/javascript">new ModalPanel('downloadForm:showFileInfo',
+				{
+					width: -1,
+					height: -1,
+
+					minWidth: -1,
+					minHeight: -1,
+
+					resizeable: true,
+					moveable: true,
+
+					left: "auto",
+					top: "auto",
+
+					zindex: 100,onresize: '',onmove: '',onshow: '',onhide: '',onbeforeshow: '',onbeforehide: '',
+					domElementAttachment: "",				
+					keepVisualState: false,
+					showWhenRendered: false,
+					selectBehavior: "disable",
+
+					autosized: false,
+					overlapEmbedObjects: false});</script></div><script type="text/javascript"></script></div><div id="downloadForm:fileTOCPanel" style="display: none;"><input autocomplete="off" id="downloadForm:fileTOCPanelOpenedState" name="downloadForm:fileTOCPanelOpenedState" type="hidden" /><div class="rich-modalpanel " id="downloadForm:fileTOCPanelContainer" style="position: absolute; display: none; z-index: 100; background-color: inherit;"><div class="rich-mpnl-mask-div-opaque rich-mpnl-mask-div" id="downloadForm:fileTOCPanelDiv" style="z-index: -1;"><button class="rich-mpnl-button" id="downloadForm:fileTOCPanelFirstHref"></button></div><div class="rich-mpnl-panel"><div class="rich-mp-container" id="downloadForm:fileTOCPanelCDiv" style="position: absolute; left: 0px; top: 0px; z-index: 9;"><div class="rich-mpnl-shadow" id="downloadForm:fileTOCPanelShadowDiv"></div><div class=" rich-mpnl-content" id="downloadForm:fileTOCPanelContentDiv" style="border:0;background:none;shadow:0"><table border="0" cellpadding="0" cellspacing="0" class="rich-mp-content-table" id="downloadForm:fileTOCPanelContentTable" style="width: 600px;height: 300px;"><tr style="height: 99%"><td class="rich-mpnl-body" valign="top">
+						<div class="modal-content" style="position:fixed;top:0">
+							<div name="header" class="modal-header">
+								<button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="Richfaces.hideModalPanel('fileTOCPanel'); return false;">x</button>
+									<h3 class="modal-title">Table of contents</h3>
+							</div>
+							<div class="modal-body">
+								<div id="filesInArchive" class="none_display">
+									<ul class="preline_whitespace"><li id="includedFiles" style="max-height: 400px; overflow: auto" class="preline_whitespace"></li></ul>
+								</div>						
+							</div>
+							<div class="modal-footer"><input type="submit" name="downloadForm:j_id66" value="Ok" class="button_styled_blue together" onclick="Richfaces.hideModalPanel('fileTOCPanel'); return false;" />
+							</div>
+						</div></td></tr></table></div></div></div><div class="rich-mpnl-mask-div rich-mpnl-mask-div-transparent" id="downloadForm:fileTOCPanelCursorDiv" style="z-index: -200;"><button class="rich-mpnl-button" id="downloadForm:fileTOCPanelLastHref"></button></div><script type="text/javascript">new ModalPanel('downloadForm:fileTOCPanel',
+				{
+					width: -1,
+					height: -1,
+
+					minWidth: 600,
+					minHeight: 300,
+
+					resizeable: false,
+					moveable: true,
+
+					left: "auto",
+					top: "auto",
+
+					zindex: 100,onresize: '',onmove: '',onshow: '',onhide: '',onbeforeshow: '',onbeforehide: '',
+					domElementAttachment: "",				
+					keepVisualState: false,
+					showWhenRendered: false,
+					selectBehavior: "disable",
+
+					autosized: true,
+					overlapEmbedObjects: false});</script></div><script type="text/javascript"></script></div><div id="downloadForm:selectedFilesPanel" style="display: none;"><input autocomplete="off" id="downloadForm:selectedFilesPanelOpenedState" name="downloadForm:selectedFilesPanelOpenedState" type="hidden" /><div class="rich-modalpanel " id="downloadForm:selectedFilesPanelContainer" style="position: absolute; display: none; z-index: 100; background-color: inherit;"><div class="rich-mpnl-mask-div-opaque rich-mpnl-mask-div" id="downloadForm:selectedFilesPanelDiv" style="z-index: -1;"><button class="rich-mpnl-button" id="downloadForm:selectedFilesPanelFirstHref"></button></div><div class="rich-mpnl-panel"><div class="rich-mp-container" id="downloadForm:selectedFilesPanelCDiv" style="position: absolute; left: 0px; top: 0px; z-index: 9;"><div class="rich-mpnl-shadow" id="downloadForm:selectedFilesPanelShadowDiv"></div><div class=" rich-mpnl-content" id="downloadForm:selectedFilesPanelContentDiv" style="border:0;background:none;shadow:0"><table border="0" cellpadding="0" cellspacing="0" class="rich-mp-content-table" id="downloadForm:selectedFilesPanelContentTable" style="width: 600px;height: 300px;"><tr style="height: 99%"><td class="rich-mpnl-body" valign="top">
+						<div class="modal-content" style="position:fixed;top:0">
+							<div name="header" class="modal-header">
+								<button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="Richfaces.hideModalPanel('selectedFilesPanel'); return false;">x</button>
+									<h3 class="modal-title">Download Selected Files</h3>
+							</div>
+							<div class="modal-body">
+								<p>You are going to download <b><span id="downloadForm:selectedFileCount"></span> (<span id="downloadForm:selectedDataSize"></span>)</b> selected on this page.
+								<br /><br />Please be aware that tape restore requests may be <b>delayed until 8PM Pacific Time</b>.</p>
+							</div>
+							<div class="modal-footer"><input type="submit" name="downloadForm:j_id71" value="Submit" class="button_styled_blue together" onclick="Richfaces.hideModalPanel('selectedFilesPanel'); prepareZipDownload(); return false;" /><input type="submit" name="downloadForm:j_id72" value="Cancel" class="button_styled_blue together" onclick="Richfaces.hideModalPanel('selectedFilesPanel'); return false;" />
+							</div>
+						</div></td></tr></table></div></div></div><div class="rich-mpnl-mask-div rich-mpnl-mask-div-transparent" id="downloadForm:selectedFilesPanelCursorDiv" style="z-index: -200;"><button class="rich-mpnl-button" id="downloadForm:selectedFilesPanelLastHref"></button></div><script type="text/javascript">new ModalPanel('downloadForm:selectedFilesPanel',
+				{
+					width: -1,
+					height: -1,
+
+					minWidth: 600,
+					minHeight: 300,
+
+					resizeable: false,
+					moveable: true,
+
+					left: "auto",
+					top: "auto",
+
+					zindex: 100,onresize: '',onmove: '',onshow: '',onhide: '',onbeforeshow: '',onbeforehide: '',
+					domElementAttachment: "",				
+					keepVisualState: false,
+					showWhenRendered: false,
+					selectBehavior: "disable",
+
+					autosized: true,
+					overlapEmbedObjects: false});</script></div><script type="text/javascript"></script></div><div id="downloadForm:globusV2Panel" style="display: none;"><input autocomplete="off" id="downloadForm:globusV2PanelOpenedState" name="downloadForm:globusV2PanelOpenedState" type="hidden" /><div class="rich-modalpanel " id="downloadForm:globusV2PanelContainer" style="position: absolute; display: none; z-index: 100; background-color: inherit;"><div class="rich-mpnl-mask-div-opaque rich-mpnl-mask-div" id="downloadForm:globusV2PanelDiv" style="z-index: -1;"><button class="rich-mpnl-button" id="downloadForm:globusV2PanelFirstHref"></button></div><div class="rich-mpnl-panel"><div class="rich-mp-container" id="downloadForm:globusV2PanelCDiv" style="position: absolute; left: 0px; top: 0px; z-index: 9;"><div class="rich-mpnl-shadow" id="downloadForm:globusV2PanelShadowDiv"></div><div class=" rich-mpnl-content" id="downloadForm:globusV2PanelContentDiv" style="border:0;background:none;shadow:0"><table border="0" cellpadding="0" cellspacing="0" class="rich-mp-content-table" id="downloadForm:globusV2PanelContentTable" style="width: 600px;height: 300px;"><tr style="height: 99%"><td class="rich-mpnl-body" valign="top">
+						<div class="modal-content" style="position:fixed;top:0">
+							<div name="header" class="modal-header">
+								<button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="Richfaces.hideModalPanel('globusV2Panel'); return false;">x</button>
+									<h3 class="modal-title">Globus v.2</h3>
+							</div>
+							<div class="modal-body">
+								<p>You are going to submit a request to stage <b><span id="downloadForm:globusFileCount"></span> (<span id="downloadForm:globusDataSize"></span>)</b> shown on this page and share them with your Globus account.
+								<br /><br />Please be aware that tape restore requests may be <b>delayed until 8PM Pacific Time</b>.
+								<br />You will receive an <i>email</i> when your data is staged.</p>
+								<p>If you would like to download only specific files, please use the <b>"Download Selected Files"</b> option.</p>
+								<br /><br />Your Globus account name: <input id="downloadForm:globusUserName" type="text" name="downloadForm:globusUserName" value="xion0018@ou.edu" /><div class="caption" style="display:inline">Example:jdoe@gmail.com</div>
+								<br /><br />
+								<div id="validationErrorSection" class="none_display red_message"><span id="downloadForm:validationError"></span>
+								</div>
+								<span class="tips">Do not have an account? <a href="https://www.globus.org/login" target="_blank">Register with <strong>Globus service</strong></a> described <a href="https://docs.globus.org/how-to/get-started/" target="_blank">here</a>
+								</span>
+							</div>
+							<div class="modal-footer"><input type="submit" name="downloadForm:j_id80" value="Submit" class="button_styled_blue together" onclick="Richfaces.hideModalPanel('globusV2Panel'); validateGlobusUserName(document.getElementById('downloadForm:globusUserName').value); return false;" /><input type="submit" name="downloadForm:j_id81" value="Cancel" class="button_styled_blue together" onclick="Richfaces.hideModalPanel('globusV2Panel'); return false;" />
+							</div>
+						</div></td></tr></table></div></div></div><div class="rich-mpnl-mask-div rich-mpnl-mask-div-transparent" id="downloadForm:globusV2PanelCursorDiv" style="z-index: -200;"><button class="rich-mpnl-button" id="downloadForm:globusV2PanelLastHref"></button></div><script type="text/javascript">new ModalPanel('downloadForm:globusV2Panel',
+				{
+					width: -1,
+					height: -1,
+
+					minWidth: 600,
+					minHeight: 300,
+
+					resizeable: false,
+					moveable: true,
+
+					left: "auto",
+					top: "auto",
+
+					zindex: 100,onresize: '',onmove: '',onshow: '',onhide: '',onbeforeshow: '',onbeforehide: '',
+					domElementAttachment: "",				
+					keepVisualState: false,
+					showWhenRendered: false,
+					selectBehavior: "disable",
+
+					autosized: true,
+					overlapEmbedObjects: false});</script></div><script type="text/javascript"></script></div><div id="downloadForm:globusRequestResultPanel" style="display: none;"><input autocomplete="off" id="downloadForm:globusRequestResultPanelOpenedState" name="downloadForm:globusRequestResultPanelOpenedState" type="hidden" /><div class="rich-modalpanel " id="downloadForm:globusRequestResultPanelContainer" style="position: absolute; display: none; z-index: 100; background-color: inherit;"><div class="rich-mpnl-mask-div-opaque rich-mpnl-mask-div" id="downloadForm:globusRequestResultPanelDiv" style="z-index: -1;"><button class="rich-mpnl-button" id="downloadForm:globusRequestResultPanelFirstHref"></button></div><div class="rich-mpnl-panel"><div class="rich-mp-container" id="downloadForm:globusRequestResultPanelCDiv" style="position: absolute; left: 0px; top: 0px; z-index: 9;"><div class="rich-mpnl-shadow" id="downloadForm:globusRequestResultPanelShadowDiv"></div><div class=" rich-mpnl-content" id="downloadForm:globusRequestResultPanelContentDiv" style="border:0;background:none;shadow:0"><table border="0" cellpadding="0" cellspacing="0" class="rich-mp-content-table" id="downloadForm:globusRequestResultPanelContentTable" style="width: 600px;height: 300px;"><tr style="height: 99%"><td class="rich-mpnl-body" valign="top">
+						<div class="modal-content" style="position:fixed;top:0">
+							<div name="header" class="modal-header">
+								<button type="button" class="close" data-dismiss="modal" aria-hidden="true" onclick="Richfaces.hideModalPanel('globusRequestResultPanel'); return false;">x</button>
+									<h3 class="modal-title">Globus request result</h3>
+							</div>
+							<div class="modal-body"><span id="downloadForm:globusRequestResult"></span>
+							</div>
+							<div class="modal-footer"><input type="submit" name="downloadForm:j_id85" value="Ok" class="button_styled_blue together" onclick="Richfaces.hideModalPanel('globusRequestResultPanel'); return false;" />
+							</div>
+						</div></td></tr></table></div></div></div><div class="rich-mpnl-mask-div rich-mpnl-mask-div-transparent" id="downloadForm:globusRequestResultPanelCursorDiv" style="z-index: -200;"><button class="rich-mpnl-button" id="downloadForm:globusRequestResultPanelLastHref"></button></div><script type="text/javascript">new ModalPanel('downloadForm:globusRequestResultPanel',
+				{
+					width: -1,
+					height: -1,
+
+					minWidth: 600,
+					minHeight: 300,
+
+					resizeable: false,
+					moveable: true,
+
+					left: "auto",
+					top: "auto",
+
+					zindex: 100,onresize: '',onmove: '',onshow: '',onhide: '',onbeforeshow: '',onbeforehide: '',
+					domElementAttachment: "",				
+					keepVisualState: false,
+					showWhenRendered: false,
+					selectBehavior: "disable",
+
+					autosized: true,
+					overlapEmbedObjects: false});</script></div><script type="text/javascript"></script></div><div id="downloadForm:messages"></div><span id="downloadForm:fileTreePanel"><span id="downloadForm:blurb" class="no_frame"></span>
+					<div class="clear"></div><div class="rich-panel section_container" id="downloadForm:j_id133"><div class="rich-panel-body " id="downloadForm:j_id133_body">
+						<table>
+							<tr height="40px">
+								<td>
+									<div onclick="refreshTree(true, false);"><span class="button_styled_blue">Rescan</span>
+									</div>
+								</td>
+								<td>
+	
+									<div id="spinner" style="display: none;">
+										<img src="../images/wait_spinner.gif" />
+									</div>
+	
+								</td>
+								<td>
+								</td>
+							</tr>
+						</table></div></div>
+					<div class="clear"></div>
+					<div style="position: relative" class="regular_margins">
+					<div class="overlay_bubble" id="showLegend" style="overflow: visible; z-index: 200">
+	                    <div class="bubble_header"><strong>Legend</strong>
+	                    	<img src="../images/closeBtn.gif" alt="Close" id="closeBtn_message_help" onclick="hideOverlayHelp(); return false" class="close_btn float_right" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('closeBtn_message_help','', genomePortalPrefix + '/images/closeBtn_over.gif',1)" />
+	                    </div>
+			            <div class="inner_bubble">
+			                <div class="content_bubble">
+			                    <div id="ArchivedTapeLegend">
+			                    	<p class="sub_header"><strong>Archived tape file</strong></p>
+									<ul class="regular_margins">
+										<li><img title="Archived on Tape" src="../images/tape.png" /> - Archived on tape. Please keep in mind that restore requests sourced from tape and of more than 1 file (including Globus downloads) will be delayed until 8PM</li>
+									</ul>
+								</div>
+			                    <div id="CachedDiskLegend">
+			                    <p class="sub_header"><strong>Cached disk file</strong></p>
+									<ul class="regular_margins">
+										<li><img title="Cached on Disk" src="../images/hard_disc.png" /> - Cached on disk</li>
+									</ul>
+								</div>
+			                    <div id="MD5Legend">
+			                    <p class="sub_header"><strong>MD5</strong></p>
+									<ul class="regular_margins">
+										<li><img src="../images/md5.png" alt="md5" title="MD5" /> - File checksum by MD5 message-digest algorithm. <a href="https://en.wikipedia.org/wiki/MD5" target="_blank">What is MD5?</a></li>
+									</ul>
+								</div>
+			                </div>
+			            </div> 
+			        </div>
+					</div></span>
+
+					<div id="updatingDynTreeMsg" style="display: none;">Searching for downloads...
+					</div>
+					<div style="position:relative">
+					<div id="dummydiv" style="float: left"></div><span id="downloadForm:j_id154:status"><span id="downloadForm:j_id154:status.start" style="display: none" class="network-status">Rendering download tree...</span><span id="downloadForm:j_id154:status.stop"></span></span><script id="downloadForm:j_id156" type="text/javascript">//<![CDATA[
+		rerenderTrees=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id156','containerId':'downloadForm:j_id154','parameters':{'downloadForm:j_id156':'downloadForm:j_id156'} } )};
+		//]]></script><script id="downloadForm:j_id157" type="text/javascript">//<![CDATA[
+		expandTree=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id157','containerId':'downloadForm:j_id154','oncomplete':function(request,event,data){rerenderTrees()},'parameters':{'downloadForm:j_id157':'downloadForm:j_id157'} } )};
+		//]]></script><script id="downloadForm:j_id158" type="text/javascript">//<![CDATA[
+		collapseTree=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id158','containerId':'downloadForm:j_id154','oncomplete':function(request,event,data){rerenderTrees()},'parameters':{'downloadForm:j_id158':'downloadForm:j_id158'} } )};
+		//]]></script><script id="downloadForm:j_id160" type="text/javascript">//<![CDATA[
+		toggleChildrenOnServer=function(nodeId){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id160','containerId':'downloadForm:j_id159','parameters':{'downloadForm:j_id160':'downloadForm:j_id160','nodeId':nodeId} ,'status':'_viewRoot:status'} )};
+		//]]></script><script id="downloadForm:j_id162" type="text/javascript">//<![CDATA[
+		verifyFileSelected=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id162','containerId':'downloadForm:j_id159','oncomplete':function(request,event,data){startDownload(data);},'parameters':{'downloadForm:j_id162':'downloadForm:j_id162'} ,'status':'_viewRoot:status'} )};
+		//]]></script><script id="downloadForm:j_id163" type="text/javascript">//<![CDATA[
+		verifyFileSelected4Globus=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id163','containerId':'downloadForm:j_id159','oncomplete':function(request,event,data){showFileSelectedWarning(data);},'parameters':{'downloadForm:j_id163':'downloadForm:j_id163'} ,'status':'_viewRoot:status'} )};
+		//]]></script><script id="downloadForm:j_id164" type="text/javascript">//<![CDATA[
+		showFileTOC=function(nodeId){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id164','containerId':'downloadForm:j_id159','oncomplete':function(request,event,data){showTOC(data);},'parameters':{'downloadForm:j_id164':'downloadForm:j_id164','nodeId':nodeId} ,'status':'_viewRoot:status'} )};
+		//]]></script><script id="downloadForm:j_id166" type="text/javascript">//<![CDATA[
+		setSelectedFileCount=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id166','containerId':'downloadForm:j_id159','oncomplete':function(request,event,data){updateElement('selectedFileCount', data); setSelectedDataSize();},'parameters':{'downloadForm:j_id166':'downloadForm:j_id166'} ,'status':'_viewRoot:status'} )};
+		//]]></script><script id="downloadForm:j_id167" type="text/javascript">//<![CDATA[
+		setSelectedDataSize=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id167','containerId':'downloadForm:j_id159','oncomplete':function(request,event,data){updateElement('selectedDataSize', data); Richfaces.showModalPanel('selectedFilesPanel');},'parameters':{'downloadForm:j_id167':'downloadForm:j_id167'} ,'status':'_viewRoot:status'} )};
+		//]]></script><script id="downloadForm:j_id168" type="text/javascript">//<![CDATA[
+		checkGlobusStagingArea=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id168','containerId':'downloadForm:j_id159','oncomplete':function(request,event,data){showGlobusV2Panel(data);},'parameters':{'downloadForm:j_id168':'downloadForm:j_id168'} ,'status':'_viewRoot:status'} )};
+		//]]></script><script id="downloadForm:j_id169" type="text/javascript">//<![CDATA[
+		setGlobusFileCount=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id169','containerId':'downloadForm:j_id159','oncomplete':function(request,event,data){updateElement('globusFileCount', data); setGlobusDataSize();},'parameters':{'downloadForm:j_id169':'downloadForm:j_id169'} ,'status':'_viewRoot:status'} )};
+		//]]></script><script id="downloadForm:j_id170" type="text/javascript">//<![CDATA[
+		setGlobusDataSize=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id170','containerId':'downloadForm:j_id159','oncomplete':function(request,event,data){updateElement('globusDataSize', data); Richfaces.showModalPanel('globusV2Panel');},'parameters':{'downloadForm:j_id170':'downloadForm:j_id170'} ,'status':'_viewRoot:status'} )};
+		//]]></script><script id="downloadForm:j_id171" type="text/javascript">//<![CDATA[
+		validateGlobusUserName=function(globusUserName){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id171','containerId':'downloadForm:j_id159','oncomplete':function(request,event,data){submitGlobusRequest(data);},'parameters':{'downloadForm:j_id171':'downloadForm:j_id171','globusUserName':globusUserName} ,'status':'_viewRoot:status'} )};
+		//]]></script><script id="downloadForm:j_id173" type="text/javascript">//<![CDATA[
+		doSubmitGlobusRequest=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id173','containerId':'downloadForm:j_id159','oncomplete':function(request,event,data){showGlobusRequestResult(data);},'parameters':{'downloadForm:j_id173':'downloadForm:j_id173'} ,'status':'_viewRoot:status'} )};
+		//]]></script><script id="downloadForm:j_id174" type="text/javascript">//<![CDATA[
+		doAddSelectedFilesToCart=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id174','containerId':'downloadForm:j_id159','oncomplete':function(request,event,data){addSelectedFilesToCart(data);},'parameters':{'downloadForm:j_id174':'downloadForm:j_id174'} ,'status':'_viewRoot:status'} )};
+		//]]></script><script id="downloadForm:j_id175" type="text/javascript">//<![CDATA[
+		rerender_ALL=function(){A4J.AJAX.Submit('downloadForm',null,{'similarityGroupingId':'downloadForm:j_id175','parameters':{'downloadForm:j_id175':'downloadForm:j_id175'} } )};
+		//]]></script>
+		<div id="ALL_div" class="download-tree"><span id="downloadForm:_rerender_ALL_id"><div class="rich-panel no_frame" id="downloadForm:j_id177"><div class="rich-panel-body " id="downloadForm:j_id177_body">All Data
+					<img src="../images/wait_spinner.gif" /></div></div></span>
+		</div>
+					</div><input type="hidden" name="javax.faces.ViewState" id="_viewRoot:javax.faces.ViewState:0" value="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" autocomplete="off" />
+</form>
+			</div>
+		</div><!-- script for form in production-->
+<script type="text/javascript" src="https://issues.jgi.doe.gov/s/d41d8cd98f00b204e9800998ecf8427e-CDN/vyalq3/802003/98b099ed0399d35100f912dc1a497d3b/2.2.4.7/_/download/batch/com.atlassian.plugins.jquery:jquery/com.atlassian.plugins.jquery:jquery.js?collectorId=4c7588ab"></script><script type="text/javascript" src="https://issues.jgi.doe.gov/s/72f38e48d6774b40131164696ed4d9c4-T/vyalq3/802003/98b099ed0399d35100f912dc1a497d3b/3.0.7/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-US&collectorId=4c7588ab"></script>
+<script type="text/javascript" src="https://issues.jgi.doe.gov/s/d41d8cd98f00b204e9800998ecf8427e-CDN/vyalq3/802003/98b099ed0399d35100f912dc1a497d3b/2.2.4.7/_/download/batch/com.atlassian.plugins.jquery:jquery/com.atlassian.plugins.jquery:jquery.js?collectorId=bf33317f"></script><script type="text/javascript" src="https://issues.jgi.doe.gov/s/72f38e48d6774b40131164696ed4d9c4-T/vyalq3/802003/98b099ed0399d35100f912dc1a497d3b/3.0.7/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-US&collectorId=bf33317f"></script>
+
+<script type="text/javascript">
+	function IsEmail(email) {
+		var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+		return regex.test(email);
+	}
+
+	function emailCheck(e) {
+		//var email=document.jic-collector-form.email.customfield_10556.value;
+		var email = jQuery("#customfield_10556").val;
+		if (!IsEmail(email)) {
+			alert('Please input a valid email address!');
+			//.document.jic-collector-form.email.focus()
+			//e.preventDefault();
+			return;
+		}
+		//var emailVerify = document.jic-collector-form.email.customfield_10903.value;
+		var emailVerify = jQuery("#customfield_10903").val;
+		if (email !== emailVerify) {
+			alert('Email verification field must match email field. ' + email
+					+ ' !== ' + emailVerify);
+			//e.preventDefault(); 
+			return;
+		}
+	}
+
+	function InstallEmailValidationHandler() {
+		//					var v = jQuery("iframe#atlwdg-frame").contents().find("#customfield_10556");
+		//					var frame = jQuery("iframe").contents();
+		var v1 = jQuery("#atlwdg-frame").contents().find("#customfield_10556");
+		var v2 = jQuery("#atlwdg-frame").contents().find("#customfield_10903");
+		v1.on('blur', emailCheck);
+		v2.on('blur', emailCheck);
+	}
+
+
+	
+	window.ATL_JQ_PAGE_PROPS =  jQuery.extend(window.ATL_JQ_PAGE_PROPS, {
+			'4c7588ab': 	{
+			"triggerFunction": function(showCollectorDialog) {
+				//Requires that jQuery is available! 
+				jQuery(".feedback").click(function(e) {
+					e.preventDefault();
+					showCollectorDialog();
+				});
+			}},
+			'bf33317f': {
+				"triggerFunction": function(showCollectorDialog) {
+					//Requires that jQuery is available! 
+					jQuery(".feature-feedback").click(function(e) {
+						e.preventDefault();
+						showCollectorDialog();
+					});
+				}}});	
+		
+</script>
+<!-- end of script -->
+
+
+<!-- script for form in testing FD -->
+<!-- 
+    <script type="text/javascript" src="https://issues.jgi.doe.gov/s/0638579675be36eb33553e191477fe46-T/en_USyqhetd/6346/86/1.4.16/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-US&collectorId=bf33317f"></script>
+    <script type="text/javascript">window.ATL_JQ_PAGE_PROPS =  {
+	"triggerFunction": function(showCollectorDialog) {
+		//Requires that jQuery is available! 
+		jQuery(".feedback").click(function(e) {
+			e.preventDefault();
+			showCollectorDialog();
+		});
+	}};</script>
+ -->
+<!-- end of script --><div class="clear"></div>
+<div class="wrapper">
+	<div class="divider divider-tall"></div>
+	<div id="footer">
+		<ul class="float_left">
+			<li><a target="_parent" href="#" class="textlink feedback">Contact Us</a></li>
+			<li><a target="_parent"
+				href="http://www.jgi.doe.gov/whoweare/disclaimer.html"
+				class="textlink">Disclaimer</a></li>
+		</ul>
+		<ul class="float_left">
+			<li><a target="_parent" href="/portal/pages/citeUs.jsf"
+				class="textlink">Cite Us</a></li>
+			<li><a target="_parent" href="/portal/pages/credits.jsf"
+				class="textlink">Credits</a></li>
+		</ul>
+		 
+		<ul class="float_left">
+			<!--<li><a target="_parent" href="https://www.surveymonkey.com/r/W7783SJ"
+				class="textlink">Survey 2017</a></li>
+				 -->
+			<li><a target="_parent" class="textlink"
+				href="http://www.jgi.doe.gov/whoweare/accessibility.html">Accessibility/Section 508</a></li>
+		</ul>
+		<div class="float_right">
+			<span id="doelogo"><a href="http://science.energy.gov/"
+				target="_parent"><img src="/portal/images/DOE_logo.png" width="232"
+					height="39" alt="DOE logo" border="0" /></a></span>
+		</div>
+		<div class="clear"></div>
+		<ul>
+			<li>&#169;&#160;1997-2020 The Regents of the University of California.</li>
+			<li><span class="version">Genome Portal
+					version:8.18.51 content:d785ba3bdf jgi-portal-web-4 Release
+					Date:08-Oct-2020 16:11:27.583 PST Current Date:18-Nov-2020 07:11:04.364 PST</span>
+			</li>
+		</ul>
+	</div>
+	<div class="clear"></div>
+</div>
+</body>
+</html>

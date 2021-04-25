@@ -1,0 +1,812 @@
+---
+title: "rcpp学习"
+author: "xyz"
+date: "2020/1/2"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+<!--
+解决代码段内中文注释报错的问题
+Sys.setlocale('LC_ALL','C')
+-->
+<!--解决表格单元格宽度问题-->
+<style>
+th, td {
+    padding-left: 10px;
+    text-align: left;        
+}
+</style>
+
+## 1.直接连接字符串和数值
+
+R的安装路径不能有空格，不然Rcpp编译报错
+函数前加上// [[Rcpp::export]]注释才能被导出到r环境
+
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::export]]
+void rcpp_rcout(NumericVector v){
+  // printing value of vector
+  Rcout << "The value of v : " << v << "\n";
+
+  // printing error message
+  Rcerr << "Error message\n";
+}
+
+```
+
+```{r}
+rcpp_rcout(1:5)
+```
+
+
+## 2.printf格式输出
+
+Rprintf( format, variables)
+[详细的输出格式解释](http://www.cplusplus.com/reference/cstdio/printf/)
+
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::export]]
+void rcpp_rprintf(NumericVector v){
+    // printing values of all the elements of Rcpp vector  
+    for(int i=0; i<v.length(); ++i){
+        Rprintf("the value of v[%i] : %.2f \n", i, v[i]);
+    }
+}
+```
+
+```{r}
+rcpp_rprintf(1:5)
+```
+
+
+## 3.向量
+
+### 3.1向量初始化
+
+```{Rcpp 向量初始化}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+
+//Create a Vector object equivalent to
+// v <- rep(0, 3)
+NumericVector v1 (3);
+
+// v <- rep(1.2, 3)
+// NumericVector不加小数点编译报错 IntegerVector不用加小数点
+NumericVector v2 (3,1.2);
+
+// v <- c(1,2,3) 
+// C++11 Initializer list
+NumericVector v3 = {1,2,3}; 
+
+// v <- c(1,2,3)
+NumericVector v4 = NumericVector::create(1,2,3);
+
+// v <- c(x=1, y=2, z=3)
+NumericVector v5 =
+  NumericVector::create(Named("x",1), Named("y")=2 , _["z"]=3);
+
+// [[Rcpp::export]]
+void rcpp_print_vectors(){
+  Rcout << "v1=" << v1 << "\n"
+        << "v2=" << v2 << "\n" 
+        << "v3=" << v3 << "\n"
+        << "v4=" << v4 << "\n"
+        << "v5=" << v5 << "\n";
+}
+```
+
+```{r}
+rcpp_print_vectors()
+```
+
+### 3.2向量赋值
+
+```{Rcpp 向量赋值}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::export]]
+void rcpp_vector_access(){
+
+  // Creating vector
+  NumericVector v  {10,20,30,40,50};
+
+  // Setting element names
+  v.names() = CharacterVector({"A","B","C","D","E"});
+
+  // Preparing vector for access
+  NumericVector   numeric = {1,3};
+  IntegerVector   integer = {1,3};
+  CharacterVector character = {"B","D"};
+  LogicalVector   logical = {false, true, false, true, false};
+
+  // Getting values of vector elements
+  double x1 = v[0];
+  double x2 = v["A"];
+  NumericVector res1 = v[numeric];
+  NumericVector res2 = v[integer];
+  NumericVector res3 = v[character];
+  NumericVector res4 = v[logical];
+
+  // Assigning values to vector elements
+  v[0]   = 100;
+  v["A"] = 300;
+  NumericVector v2 {100,200};
+  v[numeric]   = v2;
+  v[integer]   = v2;
+  v[character] = v2;
+  v[logical]   = v2;
+  Rcout << v << "\n";
+  Rcout << res1 << "\n";
+}
+```
+
+```{r}
+rcpp_vector_access()
+```
+
+### 3.3成员函数/方法
+
+```{Rcpp 成员函数/方法}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::export]]
+void memberFunctions(){
+  NumericVector v={2,1,3,4,5};
+  int n=v.length();
+  // 返回长度和名称
+  Rcout << "长度为:" << n << "\n";
+  v.names()=CharacterVector({"A","B","C","D","E"});
+  CharacterVector names = v.names();
+  Rcout << "名字为:" << names << "\n";
+  // 返回名称对应的index
+  n = v.offset("C");
+  Rcout << "index为:" << n << "\n";
+  // 填充所有值为2
+  NumericVector v2 (6,1.0);
+  v2.fill(2);
+  Rcout << "v2为:" << v2 << "\n";
+  // 按升序排序
+  // 默认为浅拷贝，用clone函数可以实现深拷贝
+  NumericVector v3 = clone(v);
+  v3.sort();
+  Rcout << "v3为:" << v3 << "\n";
+  // 在末尾添加元素
+  v.push_back(3,"F");
+  Rcout << "v为:" << v << "\n";
+  // 在开头添加元素
+  v.push_front(1,"K");
+  Rcout << "v为:" << v << "\n";
+  // 返回指向开头的迭代器,末尾的用end(),常量迭代器cbegin()，cend()
+  NumericVector::iterator i = v.begin();
+  Rcout << "v第一个元素为:" << *i << "\n";
+  // 插入元素
+  v.insert(3,55);
+  Rcout << "v第3个元素为:" << v[3] << "\n";
+  // 删除一个元素
+  v.erase(3);
+  Rcout << "删除v的第三个元素后:" << v[3] << "\n";
+  // 删除多个
+  v.erase(1,3);
+  Rcout << "删除v的1到3个元素后:" << v << "\n";
+  // 查看元素的名称是否存在
+  Rcout << "F是否存在:" 
+        << v.containsElementNamed("F") 
+        << "\n";
+  // 通过静态函数（在类被创建时就可以使用的函数）创造NA
+  v2 = {NumericVector::get_na(),2};
+  // 检测第一个元素是否是NA
+  Rcout << "v2是否是NA:" << NumericVector::is_na(v2[0]) << "\n";
+  // 从一个元素的片段新建向量
+  v2 = NumericVector::import(v3.begin(),v3.begin()+3);
+  Rcout << "新建的v2:" << v2 << "\n";
+  // 在新建时进行数据转换
+  v2 = NumericVector::import_transform(v3.begin(),
+                                       v3.begin()+3,
+                                       [&](int x){return 2*x;});
+  Rcout << "新建的二倍的v2:" << v2 << "\n";
+}
+```
+
+```{r}
+memberFunctions()
+```
+
+
+```{Rcpp 成员函数不能写在函数外面，编译报错}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::export]]
+//NumericVector v  {10,20,30,40,50};
+//v.names() = CharacterVector({"A","B","C","D","E"});
+```
+
+## 4.矩阵
+
+### 4.1创建并导出矩阵
+
+```{Rcpp 创建并导出矩阵}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+
+// [[Rcpp::export]]
+void creatMatrix(){
+  // m <- matrix(0, nrow=2, ncol=2)
+  NumericMatrix m1( 2 );
+  
+  // m <- matrix(0, nrow=2, ncol=3)
+  NumericMatrix m2( 2 , 3 );
+  
+  // m <- matrix(v, nrow=2, ncol=3)
+  NumericVector v(6,1.0);
+  NumericMatrix m3( 2 , 3 , v.begin() );
+  Rcout << "m3: \n" << m3 << "\n";
+}
+
+// 给向量添加维度属性导入回R也是matrix
+
+// [[Rcpp::export]]
+NumericVector returnMatrix(){
+    NumericVector v = {1,2,3,4};
+
+    // 设置维度
+    v.attr("dim") = Dimension(2, 2);
+    
+    // 直接在Rcpp中转换为matrix
+    
+    NumericVector v2(4,1.0);
+    v2.attr("dim") = Dimension(2, 2);
+    Rcout << "转换为矩阵的v2: \n" << as<NumericMatrix>(v2) << "\n";
+    return v;
+}
+```
+
+```{r}
+creatMatrix()
+a=returnMatrix();class(a)
+```
+
+### 4.2获取矩阵中的元素
+
+```{Rcpp 获取矩阵中的元素}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::export]]
+
+void accessElements(){
+  // 构建 5x5 的矩阵
+  NumericVector v(25,1.0);
+  v.attr("dim") = Dimension(5, 5);
+  NumericMatrix m=as<NumericMatrix>(v);
+  m(0,1)=2;
+  Rcout << "m: \n" << m << "\n";
+  
+  // 取 row 0 ，col 2的元素
+  double x = m( 0 , 2 );
+  
+  // 取 row 0的元素
+  v = m( 0 , _ );
+  Rcout << "row 0:" << v << "\n";
+  
+  // 取col 2的元素
+  v = m( _ , 2 );
+  
+  // 取col 0-1，row 2-3的元素
+  NumericMatrix m2 = m( Range(0,1) , Range(2,3) );
+  
+  // 像向量一样取矩阵中的值，竖着转换，相当于m(0,1)
+  Rcout << "m[5]:" << m[5] << "\n";
+  
+  // 矩阵自带的引用类，对这些引用类的操作相当于对矩阵自身的操作
+  // 相当于浅拷贝
+  NumericMatrix::Column col = m( _ , 1);
+  NumericMatrix::Row    row = m( 1 , _ );
+  NumericMatrix::Sub    sub = m( Range(0,1) , Range(2,3) );
+  col = 2 * col;
+  m( _ , 2) = 3 * m( _ , 2);
+  Rcout << "m 部分加倍:\n" << m << "\n";
+}
+```
+
+```{r}
+accessElements()
+```
+
+### 4.3成员函数
+
+```{Rcpp 成员函数}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::export]]
+
+NumericMatrix memberFunctions(){
+  NumericMatrix m( 5, 5 );
+  Rcout << "nrow():" << m.nrow() << "\n" //相当于nrow
+        << "ncol():" << m.ncol() << "\n"; // 相当于ncol
+  NumericVector v = m.row(1);
+  Rcout << "row():" << v << "\n";
+  // 通过生成的引用类取第二列
+  v = m.column(1);
+  Rcout << "column():" << v << "\n";
+  // 返回相当于向量的index
+  // 编译器报错原因 error: within this context
+  // int i = m.offset(2,3)+1;
+  // Rcout << "offset():" << i << "\n";
+  // 强制转换为NumericVector后offset可以使用
+  // 参考 http://yixuan.cos.name/rcpp-note/api/Vector_funs.html
+  v = as<NumericVector>(m);
+  int i = v.offset(2,3)+1;
+  Rcout << "offset():" << i << "\n";
+  
+  // 填充对角线上的元素
+  m.fill_diag( 2 );
+  m(0,4)=1;
+  Rcout << "m填充后: \n" << m << "\n";
+  
+  // 静态函数生成对角矩阵
+  NumericMatrix m2 =NumericMatrix::diag( 5, 1 );
+  Rcout << "对角矩阵m2: \n" << m2 << "\n";
+  
+  // 矩阵转置
+  Rcout << "m转置后: \n" << transpose( m ) << "\n";
+
+  // 更改列名
+  rownames(m2) = CharacterVector({"A","B","C","D","E"});
+  colnames(m2) = CharacterVector({"A","B","C","D","E"});
+  Rcout << "m2改名后: \n";
+  return m2;
+}
+```
+
+```{r}
+memberFunctions()
+```
+
+## 5.向量运算
+
+### 5.1 数学运算符
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::export]]
+void arithmeticOperations(){
+  NumericVector x(4,1.0) ;
+  NumericVector y(4,2.0) ;
+  
+  // 向量之间
+  NumericVector res = x + y ;
+  res = x - y ;
+  res = x * y ;
+  res = x / y ;
+  
+  // 向量和数字之间
+  res = x + 2.0;
+  res = 2.0 - x;
+  res = y * 2.0;
+  res = 2.0 / y;
+  
+  // 混合的表达式
+  res = x * y + y / 2.0 ;
+  res = x * ( y - 2.0 ) ;
+  res = x / ( y * y ) ;
+  Rcout << "res:" << res << "\n";
+}
+```
+
+```{r}
+arithmeticOperations()
+```
+
+### 5.1 逻辑操作符
+
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::export]]
+void logicOperations(){
+  NumericVector x(4,1.0) ;
+  NumericVector y(4,2.0) ;
+  
+  // 向量之间
+  LogicalVector res = x < y ;
+  res = x > y ;
+  res = x <= y ;
+  res = x >= y ;
+  res = x == y ;
+  res = x != y ;
+  
+  // 向量和数字之间
+  res = x < 2 ;
+  res = 2 > x ;
+  res = y <= 2 ;
+  res = 2 != y ;
+  
+  // 混合的表达式
+  res = ( x + y ) < ( x*x ) ;
+  res = ( x + y ) >= ( x*x ) ;
+  res = ( x + y ) == ( x*x ) ;
+  Rcout << "res:" << res << "\n";
+  
+  // ! 取反
+  res = ! ( x < y );
+  // 取x中小于2的部分
+  res = x[x < 2];
+}
+```
+
+```{r}
+logicOperations()
+```
+
+### 5.2 逻辑型向量
+  
+| R	    | Rcpp     | int                     | bool     | 
+|-------|----------|-------------------------|----------| 
+| TRUE  |TRUE      |1(不是0或-2147483648的值)|    true  | 
+| FALSE |FALSE     |0                        |   false  | 
+|    NA |NA_LOGICAL|-2147483648              |    true  |  
+  
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::export]]
+
+List logicVector(){
+  LogicalVector v1 = {1,1,0,0};
+  LogicalVector v2 = {1,0,1,0};
+  
+  LogicalVector res1 = v1 & v2;
+  LogicalVector res2 = v1 | v2;
+  LogicalVector res3 = !(v1 | v2);
+  
+  Rcout << res1 << "\n"; // 1 0 0 0
+  Rcout << res2 << "\n"; // 1 1 1 0
+  Rcout << res3 << "\n"; // 0 0 0 1
+  
+  v1 = LogicalVector::create(1,1,1,NA_LOGICAL);
+  v2 = LogicalVector::create(0,1,0,NA_LOGICAL);
+
+  // 和R里面all的效果相同，判断是否全为真
+  LogicalVector lv1 = all( v1 );   // NA
+  LogicalVector lv2 = all( v2 );   // FALSE
+  // 和R里面any的效果相同，判断是否至少有一个为真
+  LogicalVector lv3 = any( v2 ); // TRUE
+
+  // 将只有一个元素的逻辑型向量转化为布尔型
+  bool b1 = is_true ( all(v1) );  // false
+  bool b2 = is_false( all(v1) );  // false
+  bool b3 = is_na   ( all(v1) );  // true
+
+  // 在if语句中使用布尔型变量
+  if(is_na(all( v1 ))) { // OK
+    Rcout << "all( v1 ) is NA\n";
+  }
+
+  return List::create(lv1, lv2, lv3, b1, b2, b3);
+}
+```
+
+```{r}
+logicVector()
+```
+
+### 5.3 ifelse函数
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::export]]
+void testIfElse(){
+  NumericVector v1={1.0,4.3,6.7};
+  NumericVector v2={-1.0,5.0,8.0};
+  
+  //获取向量长度
+  int n = v1.length();
+  
+  // ifeles只支持单个标量或者向量，第一个参数必须是逻辑型的标量或向量
+  // 后两个参数的向量长度必须和第一个参数等长
+  IntegerVector res1     = ifelse( v1>v2, 1, 0);
+  NumericVector res2     = ifelse( v1>v2, 1.0, 0.0);
+  //CharacterVector res3 = ifelse( v1>v2, "T", "F"); // 不支持
+  CharacterVector chr_v1 = rep(CharacterVector("TG"), n);
+  CharacterVector chr_v2 = rep(CharacterVector("FR"), n);
+  CharacterVector res3   = ifelse( v1>v2, chr_v1, chr_v2);
+  // Rf_mkChar可以将string类型转换为characterVector的元素
+  CharacterVector res4   = ifelse( v1>v2, chr_v1, Rf_mkChar("F"));
+  Rcout << "res1:" << res1 << "\n"
+        << "res2:" << res2 << "\n"
+        << "res3:" << res3 << "\n"
+        << "res4:" << res4 << "\n";
+}
+```
+
+```{r}
+testIfElse()
+```
+
+
+### 5.4 在if语句对NA的处理
+
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::export]]
+
+LogicalVector rcpp_logical(){
+
+  // 含有NA的integer向量
+  IntegerVector x = {1,2,3,4,NA_INTEGER};
+
+  // 遇到NA直接认为是True
+  LogicalVector v = (x >= 3);
+
+  for(int i=0; i<v.size();++i) {
+    if(v[i]) Rprintf("v[%i] is evaluated as true.\n",i);
+    else Rprintf("v[%i] is evaluated as false.\n",i);
+  }
+
+  // 用==确认NA
+  for(int i=0; i<v.size();++i) {
+    if(v[i]==TRUE) Rprintf("v[%i] is TRUE.\n",i);
+    else if (v[i]==FALSE) Rprintf("v[%i] is FALSE.\n",i);
+    else if (v[i]==NA_LOGICAL) Rprintf("v[%i] is NA.\n",i);
+    else Rcout << "v[" << i << "] is not 1\n";
+  }
+
+  // 直接显示 TRUE, FALSE 和 NA_LOGICAL 的值
+  Rcout << "TRUE " << TRUE << "\n";
+  Rcout << "FALSE " << FALSE << "\n";
+  Rcout << "NA_LOGICAL " << NA_LOGICAL << "\n";
+
+  return v;
+}
+```
+
+```{r}
+rcpp_logical()
+```
+
+## 6.data.frame
+
+### 6.1 新建data.frame
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::export]]
+DataFrame testDataFrame(){
+  NumericVector v1(2,1.0);
+  IntegerVector v2(2,1);
+  // 从向量直接建立data.frame，浅拷贝，只是引用向量的值
+  // 不指定列名运行时会报错
+  //DataFrame df = DataFrame::create(v1, v2);
+  // 指定列名
+  DataFrame df = DataFrame::create( Named("V1") = v1 , _["V2"] = v2 );
+  // 通过clone可以实现深拷贝
+  df = DataFrame::create( Named("V1") = v1,
+                          Named("V2") = clone(v1));
+  v1 = v1 * 2;
+  return df;
+}
+```
+
+```{r}
+testDataFrame()
+```
+
+### 6.2 取data.frame内部的值
+
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::export]]
+DataFrame getDataFrame() {
+  NumericVector v1(2,1.0);
+  IntegerVector v2(2,1);
+  DataFrame df = DataFrame::create( Named("V1") = v1 , _["V2"] = v2 );
+  // 浅拷贝，改变v3的值会影响df
+  NumericVector v3 = df[0];
+  // 深拷贝
+  // 直接使用clone会报错，需要先转换数据类型
+  // NumericVector v2 = clone(df[0]);
+  NumericVector v4 = clone(as<NumericVector>(df[0]));
+  v3 = v3 * 2;
+  v4 = v4 * 2;
+  Rcout << "v3:" << v3 << "\n"
+        << "v4:" << v4 << "\n";
+  return df;
+}
+```
+
+```{r}
+getDataFrame()
+```
+
+### 6.3 成员函数
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::export]]
+
+DataFrame DataFrameMemberFunction(){
+  NumericVector v1(3,1.0);
+  IntegerVector v2(3,1);
+  IntegerVector v3(3,4);
+  CharacterVector chr_v1 = rep(CharacterVector("TG"), 3);
+  DataFrame df = DataFrame::create( Named("V1") = v1 , _["V2"] = v2 );
+  // 返回列数
+  // 不转换为int报错
+  Rcout << "length:" << (int) df.length() << "\n"
+        << "ncol:" << df.ncol() << "\n"
+  // 返回行数
+        << "nrows:" << df.nrows() << "\n"
+  // 要先转换为CharacterVector不然报错
+        << "names:" << as<CharacterVector>(df.names()) << "\n"
+  // 返回列名的index
+        << "offset:" << df.offset("V2") << "\n";
+  // 追加v3到df的最后一列
+  df.push_back(v3,"V3");
+  // 追加v3到df的第一列
+  df.push_front(v3,"V4");
+  // 插入到指定位置
+  df.insert( df.begin()+2, v1 );
+  // 删除一列
+  df.erase(0);
+  // 删除前两列
+  df.erase(df.begin(), df.begin()+1);
+  // 使用v3填充df的每一列
+  df.fill(v3);
+  // 查看是否存在列名
+  Rcout << "V3存在:" << df.containsElementNamed("V3") << "\n";
+  // 查看df的扩展属性“class”是否包含list
+  df.push_front(chr_v1,"V4");
+  Rcout << "V3存在:" << df.inherits("list") << "\n";
+  return df;
+}
+```
+
+```{r}
+DataFrameMemberFunction()
+```
+
+## 7. list
+
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::export]]
+
+List testList() {
+  NumericVector v1(3,1.0);
+  IntegerVector v2(3,1);
+  // 新建List
+  List L = List::create(v1, v2);
+  L = List::create(Named("V1") = v1 , _["V2"] = v2);
+  // 取list中的元素
+  Rcout << "L[0]" << as<NumericVector>(L[0]) << "\n"
+        << "L[\"V1\"]" << as<NumericVector>(L["V1"]) << "\n";
+  return L;
+  // List的成员函数和Vector的相同
+}
+```
+
+## 8.R的类
+
+### 8.1 S3类
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+
+
+//输入lm()产生的S3对象计算RMSE，S3对象实际上是个list
+
+// [[Rcpp::export]]
+
+double rcpp_rmse(List lm_model) {
+  
+  // 如果不是lm对象则停止执行
+  if (! lm_model.inherits("lm")) 
+    stop("Input must be a lm() model object.");
+
+  // 取模型的残差
+  NumericVector resid  = lm_model["residuals"];
+
+  // 取残差个数
+  R_xlen_t n = resid.length();
+
+  // 求平方和
+  double rmse=0.0;
+  for(double r : resid){
+      rmse += r*r;
+  }
+
+  // 计算算术平方根
+  return(sqrt((1.0/n)*rmse));
+}
+```
+
+```{r}
+rcpp_rmse(lm(mpg ~ ., data = mtcars))
+```
+
+### 8.2 S4类
+  
+  S4类型只能在R中定义后，RCPP中创建实例才能返回R环境
+
+```{r}
+setClass (
+  # 类名
+  "Person",
+
+  # 定义 slot 的数据类型
+  representation (
+    name = "character",
+    birth = "Date"
+  ),
+
+  # 初始化 slot
+  prototype = list(
+    name = as.character(NULL),
+    birth = as.Date(as.character(NULL))
+  )
+)
+
+# 创建Person类的一个实例
+person_01 <- new("Person",
+                 name = "Ronald Fisher",
+                 birth = as.Date("1890-02-17"))
+# 取slot中的数据
+slot(person_01,"name")
+person_01@birth
+```
+  
+  在Rcpp中创建Person类的实例
+  
+```{Rcpp}
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::plugins("cpp11")]]
+// [[Rcpp::export]]
+S4 rcpp_s4(){
+
+    // 创建Person类的一个实例
+    S4 x("Person");
+
+    // Setting values to the slots
+    x.slot("name")  = "Sewall Wright";
+    x.slot("birth") = Date("1889-12-21");
+    // 取slot中的数据
+    Rcout<< as<CharacterVector>(x.slot("name")) << "\n"
+         << x.hasSlot("birth") << "\n";
+
+    return(x);
+}
+```
+
+```{r}
+rcpp_s4()
+class(rcpp_s4())
+```
+

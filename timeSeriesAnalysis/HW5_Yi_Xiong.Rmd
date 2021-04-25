@@ -1,0 +1,333 @@
+---
+title: "HW5_Yi_Xiong"
+author: "Yi Xiong"
+date: "2021/3/4"
+output: 
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1.(30 points) Following the developments in modules 4.3 and 4.4, derive the expressions for ACF for:
+
+## a.MA(1) and MA(2) models
+
+### MA(1)
+
+#### definition
+
+$$
+\begin{aligned}
+y_{t}&=\mu +\epsilon _{t}+\theta \epsilon _{t-1}
+\end{aligned}
+$$
+
+#### Autocovariance
+
+$$
+\begin{aligned}
+\gamma _{0}&=E[y_{t}-E(y_{t})]^{2} \\
+&=E[y_{t}-\mu] \\
+&=E[\epsilon_{t}+\theta\epsilon_{t-1}]^{2} \\
+&=E[\epsilon_{t}^{2}+2\theta\epsilon_{t}\epsilon_{t-1}+\theta^{2}\epsilon_{t-1}^{2}]\\
+&=\theta^{2}+0+\theta^{2}\sigma^{2}\\
+&=(1+\theta^{2})\sigma^{2}
+\end{aligned}
+$$
+
+$$
+\begin{aligned}
+\gamma_{j}&=E[(y_{t}-\mu)(y_{t-j}-\mu)]\\
+&=E[(\epsilon_{t}+\theta\epsilon_{t-1})(\epsilon_{t-j}+\theta\epsilon_{t-j-1})]\\
+&=\left\{
+	\begin{array}{ll}
+		\theta E[\epsilon^{2}_{t-1}]=\sigma\theta^{2} \;\; if\; j=1 \\
+		0 \;\; otherwise
+	\end{array}\right.
+\end{aligned}	
+$$
+
+#### Autocorrelation
+
+$$
+\begin{aligned}
+\rho_{j}=\frac{\gamma_{j}}{\gamma_{0}}
+=\frac{\theta\sigma^{2}}{(1+\theta^{2})\sigma^{2}}
+=\left\{
+	\begin{array}{ll}
+	  \frac{\theta}{(1+\theta^{2})} \;\; if\; j=1 \\
+	  0 \;\; if\; j\neq 1
+	\end{array}\right.
+\end{aligned}	
+$$
+
+### MA(2)
+
+
+#### MA(q) definition
+
+$$
+\begin{aligned}
+y_{t}&=\mu+\sum^{q}_{j=0}\theta_{j}\epsilon_{t-j},
+\;q\geqslant 1\;and \; \theta_{0}=1
+\end{aligned}	
+$$
+
+#### MA(2) definition
+
+$$
+\begin{aligned}
+y_{t}&=\mu+\epsilon_{t}+\theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}
+\end{aligned}	
+$$
+
+#### Autocovariance of MA(q)
+
+$$
+\begin{aligned}
+\gamma_{0}&=E(y_{t}-\mu)^{2}\\
+&=[\sum^{q}_{j=0}\theta_{j}^{2}]\sigma^{2}
+\end{aligned}	
+$$
+
+
+$$
+\begin{aligned}
+\gamma_{j}&=E[(y_{t}-\mu)(y_{t-j}-\mu)]\\
+\gamma_{j}&=\left\{
+	\begin{array}{ll}
+	  (\theta_{j}+\theta_{j+1}\theta_{1}+\theta_{j+2}\theta_{2}+...+\theta_{q}
+	  \theta_{q-j})\sigma^{2}\;for\;1\leqslant j\leqslant q\\
+	  0 \;\; for\; j>q
+	\end{array}\right.
+\end{aligned}	
+$$
+
+#### Autocovariance of MA(2)
+
+$$
+\begin{aligned}
+\gamma_{0}=(1+\theta^{2}_{1}+\theta^{2}_{2})\sigma^{2}\\
+\gamma_{1}=(\theta_{1}+\theta_{2}\theta_{1})\sigma^{2} \\
+\gamma_{2}=\theta_{2}\sigma^{2}\\
+\gamma_{j}=0,\;j\geqslant3
+\end{aligned}
+$$
+
+#### Autocorrelation of MA(2)
+
+$$
+\begin{aligned}
+\rho_{1}=\frac{(\theta_{1}+\theta_{2}\theta_{1})\sigma^{2}}
+  {(1+\theta^{2}_{1}+\theta^{2}_{2})\sigma^{2}}\\
+\rho_{2}=  \frac{\theta_{2}\sigma^{2}}
+  {(1+\theta^{2}_{1}+\theta^{2}_{2})\sigma^{2}}\\
+\rho_{j}=0,\;j\geqslant3
+\end{aligned}
+$$
+
+## b.AR(1) and AR(2) models 
+
+### AR(1)
+
+#### definition
+
+$$
+\begin{aligned}
+y_{t}=c+\phi y_{t-1}+\epsilon_{t}
+\end{aligned}	
+$$
+
+#### Autocovariance  
+  
+##### When $|\phi|$ < 1, y~t~ is weakly stationary and ergodic 
+
+$$
+\begin{aligned}
+y_{t}-\mu&=\phi(y_{t-1}-\mu)+\epsilon_{t}\\
+\\
+\gamma_{0}&=E[y_{t}-\mu]^{2}\\
+  &=\sigma^{2}[1+\phi^{2}+\phi^{4}+...+\phi^{2k}+...]\\
+  &=\frac{\sigma^2}{1-\phi^{2}}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+\gamma_{j}&=E[(y_{t}-\mu)(y_{t-j}-\mu)]\\
+  &=\sigma^{2}[\phi^{j}+\phi^{j+2}+\phi^{j+4}+...]\\
+  &=\sigma^{2}\phi^{j}[1+\phi^{2}+\phi^{4}+...]\\
+  &=\sigma^{2}\frac{\phi^{j}}{1-\phi^{2}}
+\end{aligned}	
+$$
+
+
+#### Autocorrelation
+
+$$
+\begin{aligned}
+\rho_{j}=\frac{\gamma_{j}}{\gamma_{0}}=\phi^{j}
+\end{aligned}	
+$$
+
+
+$$
+\begin{aligned}
+\end{aligned}	
+$$
+
+### AR(2)
+
+#### definition
+
+$$
+\begin{aligned}
+y_{t}=c+\phi_{1}y_{t-1}+\phi_{2}y_{t-2}+\epsilon_{t}
+\end{aligned}	
+$$
+
+##### For stationarity:
+
+$$
+\begin{aligned}
+&\lambda^{2}-\phi_{1}\lambda-\phi_{2}=0\\
+&\lambda=\frac{\phi_{1}\pm\sqrt{\phi^{2}_{1}+4\phi2}}{2}\\
+&|\lambda|<1
+\end{aligned}	
+$$
+
+#### Autocovariance
+
+$$
+\begin{aligned}
+y_{t}-\mu=\phi_{1}(y_{t-1}-\mu)+\phi_{2}(y_{t-2}-\mu)+\epsilon_{t}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+\gamma_{0}&=E[(y_{t}-\mu)(y_{t}-\mu)]\\
+  &=E[\phi_{1}(y_{t}-\mu)(y_{t-1}-\mu)]\\
+    &+E[\phi_{2}(y_{t}-\mu)(y_{t-2}-\mu)]\\
+    &+E[(y_{t}-\mu)\epsilon_{t}]\\
+  &=\phi_{1}\gamma_{1}+\phi_{2}\gamma_{2}+\sigma^{2}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+for \;j&\geqslant1\\
+\\
+\gamma_{j}&=E[(y_{t}-\mu)(y_{t-j}-\mu)]\\
+  &=E[\phi_{1}(y_{t-1}-\mu)(y_{t-j}-\mu)]\\
+    &+E[\phi_{2}(y_{t-2}-\mu)(y_{t-j}-\mu)]\\
+    &+E[(y_{t-j}-\mu)\epsilon_{t}]\\
+  &=\phi_{1}\gamma_{1}+\phi_{2}\gamma_{2}
+\end{aligned}	
+$$
+
+
+#### Autocorrelation
+
+
+$$
+\begin{aligned}
+for \;j&\geqslant1\\
+\\
+\rho_{j}&=\frac{\gamma_{j}}{\gamma_{0}}\\
+  &=\theta_{1}\frac{\gamma_{j-1}}{\gamma_{0}}+
+    \theta_{2}\frac{\gamma_{j-2}}{\gamma_{0}}\\
+  &=\phi_{1}\rho_{j-1}+\phi_{2}\rho_{j-2}
+\end{aligned}	
+$$
+
+
+$$
+\begin{aligned}
+\rho_{1}&=\phi_{1}\rho_{0}+\phi_{2}\rho_{-1}\\
+  \rho_{1}&=\frac{\phi_{1}}{1-\phi_{2}}\\
+\rho_{2}&=\phi_{1}\rho_{1}+\phi_{2}\rho_{0}\\
+  &=\phi_{1}\rho_{1}+\phi_{2}
+\end{aligned}	
+$$
+
+
+$$
+\begin{aligned}
+\gamma_{0}=\frac{(1-\phi_{2})\sigma^{2}}{(1+\phi_{2})
+  [(1-\phi_{2})^{2}-\phi^{2}_{1}]}
+\end{aligned}	
+$$
+
+#### Summary
+
+$$
+\begin{aligned}
+\rho_{1}&=\frac{\phi_{1}}{1-\phi_{2}}\\
+\rho_{2}&=\phi_{1}\rho_{1}+\phi_{2}\\
+\rho_{j}&=\phi_{1}\rho_{j-1}+\phi_{2}\rho_{j-2} \;\; for \; j\geqslant 3
+\end{aligned}	
+$$
+
+# c.ARMA(1,1) 
+
+#### definition
+
+$$
+\begin{aligned}
+y_{t}=c+\phi_{1}t_{t-1}+\epsilon_{t}+\theta_{1}\epsilon_{t-1}
+\end{aligned}	
+$$
+
+#### Autocovariance
+
+$$
+\begin{aligned}
+y_{t}-\mu&=\phi_{1}(y_{t-1}-\mu)+\epsilon_{t}+\theta_{1}\epsilon_{t-1}\\
+\\
+\gamma_{0}&=E[y_{t}-\mu]^{2}\\
+&=E[\phi_{1}(y_{t-1}-\mu)+\epsilon_{t}+\phi_{1}\epsilon_{t-1}]^{2}\\
+&=\phi_{1}^{2}\gamma_{0}+\sigma^{2}+\theta_{1}^{2}\sigma^{2}
+  +2\phi_{1}\theta_{1}\sigma^{2}\\
+\\
+\gamma_{0}&=\frac{\sigma^{2}[1+2\phi_{1}\theta_{1}+\theta_{1}^{2}]}
+{1-\theta_{1}^{2}}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+\gamma_{1}&=E[(y_{t}-\mu)(y_{t-1}-\mu)]\\
+&=E\{[\phi_{1}(y_{t-1}-\mu)+\epsilon_{t}+\phi_{1}\epsilon_{t-1}]
+[y_{t-1}-\mu]\}\\
+&=\phi_{1}\gamma_{0}+\theta_{1}\sigma^{2}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+for \;j&\geqslant 2\\
+\\
+\gamma_{j}&=E[(y_{t}-\mu)(y_{t-j}-\mu)]\\
+&=E\{[\phi_{1}(y_{t-1}-\mu)+\epsilon_{t}+\phi_{1}\epsilon_{t-1}]
+[y_{t-j}-\mu]\}\\
+&=\phi_{1}E[(y_{t-1}-\mu)(y_{t-j}-\mu)]\\
+&=\phi_{1}\gamma_{j-1}
+\end{aligned}	
+$$
+
+#### Autocorrelation
+
+$$
+\begin{aligned}
+\gamma_{0}=\frac{\sigma^{2}[1+2\phi_{1}\theta_{1}+\theta_{1}^{2}]}
+  {1-\phi_{1}^{2}}\\
+\gamma_{1}=\phi_{1}\gamma_{0}+\theta_{1}\sigma^{2}\\
+\gamma_{j}=\phi_{1}\gamma_{j-1} \;\; for \;j \geqslant 2\\
+\rho_{1}=\frac{\gamma_{1}}{\gamma_{0}}\\
+\rho_{j}=\frac{\gamma_{j}}{\gamma_{0}}
+\end{aligned}	
+$$

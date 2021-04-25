@@ -1,0 +1,144 @@
+---
+title: "Draw types and map of samples"
+author: "xyz"
+date: "2020/11/13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(dplyr)
+df <- read.delim("taxontable7261.xls")
+df <- df[, -19]
+df <-
+  filter(
+    df,
+    GOLD.Ecosystem == "Environmental",
+    GOLD.Analysis.Project.Type == "Metagenome Analysis",
+    log10(Genome.Size.....assembled) > 7,
+    !is.na(Latitude),
+    !is.na(Longitude),
+    Is.Public=="Yes"
+  )
+# 11404 samples
+nrow(df)
+```
+
+[world-map](https://www.r-bloggers.com/2013/04/r-beginners-plotting-locations-on-to-a-world-map/)
+[ggmap/Google map/openstreetmap](https://github.com/dkahle/ggmap)
+
+```{r world map}
+library(ggplot2)
+library(maps)
+# library(ggmap)
+# get_stamenmap(world, zoom = 2, maptype = "toner-lite") %>% ggmap()
+drawDf <- df[, c("GOLD.Ecosystem.Type", "Latitude", "Longitude")]
+top10 <-
+  names(sort(table(drawDf$GOLD.Ecosystem.Type), decreasing = T)[1:10])
+drawDf$`Ecosystem Type` <- drawDf$GOLD.Ecosystem.Type
+drawDf$`Ecosystem Type`[!(drawDf$`Ecosystem Type` %in% top10)] <-
+  "Others"
+drawDf$`Ecosystem Type` <-
+  factor(drawDf$`Ecosystem Type`, levels = c(top10, "Others"))
+p <-
+  ggplot(drawDf) + borders("world", colour = "black") +
+  geom_point(aes(x =
+                   Longitude, y = Latitude, colour = `Ecosystem Type`), size = 2)
+p<-p+scale_colour_manual(name='Ecosystem type', values=brewer.pal(11, "Paired"))
+p<-p+guides(colour = guide_legend(override.aes = list(size=5)))
+p + theme(text = element_text(size = 20),
+          panel.border = element_rect(color = 'black',fill=NA, size=1),
+          panel.background = element_blank()) + 
+  ggsave(
+  "sample world map.png",
+  width = 19.2,
+  height = 10.8,
+  dpi = 100
+)
+```
+
+```{r pieplot}
+library(ggrepel)
+library(RColorBrewer)
+dfc<-as.data.frame(table(drawDf$`Ecosystem Type`))
+colnames(dfc)<-c("Ecosystem Type","Count")
+dfc$`Ecosystem Type` <-factor(dfc$`Ecosystem Type`)
+dfc$Percent<-round(dfc$Count/sum(dfc$Count)*100,1)
+
+# number in plot
+p<-ggplot(dfc, aes("", Percent, fill = `Ecosystem Type`)) +
+    geom_bar(width = 1, size = 1, color = "white", stat = "identity") +
+    coord_polar("y") +
+    geom_text_repel(aes(label = paste0(Percent, "%")), 
+              position = position_stack(vjust = 0)) +
+    labs(x = NULL, y = NULL, fill = NULL)+
+    guides(fill = guide_legend()) +
+    theme_classic() +
+    theme(axis.line = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          plot.title = element_text(hjust = 0.5, color = "#666666"),
+          text = element_text(size = 20))
+p+ggsave(
+  "sample Ecosystem Type pieplot.png",
+  width = 9.6,
+  height = 10.8,
+  dpi = 100
+)
+
+# number in label
+
+label<-paste0(dfc$`Ecosystem Type`," ",dfc$Percent,"%")
+p<-ggplot(dfc, aes("", Percent, fill = `Ecosystem Type`)) +
+    geom_bar(width = 1, size = 1, color = "white", stat = "identity") +
+    coord_polar("y") +
+    labs(x = NULL, y = NULL, fill = NULL)+
+    scale_fill_manual(name='Ecosystem type',labels=label, values=brewer.pal(11, "Paired"))+
+    theme_classic() +
+    theme(axis.line = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          plot.title = element_text(hjust = 0.5, color = "#666666"),
+          text = element_text(size = 20))
+p+ggsave(
+  "sample Ecosystem Type pieplot number in label.png",
+  width = 19.2,
+  height = 10.8,
+  dpi = 100
+)
+
+
+#### Ecosystem Category ####
+
+dfc<-as.data.frame(sort(table(df$GOLD.Ecosystem.Subtype),decreasing = T))
+colnames(dfc)<-c("Ecosystem.subtype","Count")
+dfc$Percent<-round(dfc$Count/sum(dfc$Count)*100,1)
+dfc<-rbind(dfc[1:10,],data.frame(Ecosystem.subtype="Others",
+                                 Count=sum(dfc$Count[11:nrow(dfc)]),
+                                 Percent=sum(dfc$Percent[11:nrow(dfc)])))
+
+label<-paste0(dfc$Ecosystem.subtype," ",dfc$Percent,"%")
+p<-ggplot(dfc, aes("", Percent, fill = Ecosystem.subtype)) +
+    geom_bar(width = 1, size = 1, color = "white", stat = "identity") +
+    coord_polar("y") +
+    labs(x = NULL, y = NULL, fill = NULL)+
+    scale_fill_manual(name='Ecosystem subtype',labels=label, values=brewer.pal(11, "Paired"))+
+    theme_classic() +
+    theme(axis.line = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          plot.title = element_text(hjust = 0.5, color = "#666666"),
+          text = element_text(size = 20))
+p+ggsave(
+  "sample Ecosystem subtype pieplot number in label.png",
+  width = 19.2,
+  height = 10.8,
+  dpi = 100
+)
+```
+
+

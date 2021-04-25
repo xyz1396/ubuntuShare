@@ -1,0 +1,151 @@
+---
+title: "Homework–7"
+author: "Yi Xiong"
+date: "2021/4/7"
+output: 
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1.Derive an expression for the optimal forecast using AR(1) and MA(1) models 
+as described in Module 6.4 
+
+## AR(1)
+
+define
+
+$$
+\begin{aligned}
+x_{t}&=\phi x_{t-1}+\epsilon_{t} \qquad (1)\\
+\gamma_{0}&=\frac{\sigma^2}{1-\phi^2} \qquad (2)\\
+\gamma_j&=\frac{\sigma^2}{1-\phi^2}\phi^j \qquad (3)
+\end{aligned}	
+$$
+
+The best linear optimal forecast of $x_(n+1)$ given
+
+$$
+\begin{aligned}
+\hat{x}_{n+1}=b_1x_n+b_2x_{n-1}+...+b_nx_1 \qquad (4)
+\end{aligned}	
+$$
+where $b = (b_1, b_2, . . . , b_n)^T\in R^n$ is by
+
+$$
+\begin{aligned}
+\Gamma_n b=\gamma(1:n) \qquad (5)
+\end{aligned}	
+$$
+
+covariance matrix $\Gamma_n$
+
+$$
+\begin{aligned}
+\Gamma_n=\begin{bmatrix}
+ \gamma_0 & \gamma_1 & \gamma_2 & ... & \gamma_{n-1} \\ 
+ \gamma_1 & \gamma_0 & \gamma_1 & ... & \gamma_{n-2} \\ 
+ \gamma_2 & \gamma_1 & \gamma_0 & ... & \gamma_{n-3} \\ 
+ \gamma_{n-1} & \gamma_{n-2} & \gamma_1 & ... & \gamma_{0} 
+\end{bmatrix} \qquad (6)
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+\gamma(1:n)=(\gamma_1,\gamma_2,...,\gamma_n)^T\in R \qquad (7)
+\end{aligned}	
+$$
+
+combine (2) (3) (5) (6) (7) and solve
+
+$$
+\begin{aligned}
+b_1&=\phi \quad and \quad b_j=0 \quad 
+  for \quad 2 \leqslant j \leqslant n \qquad (8) \\
+\hat{x}_{n+1}&=\phi x_n \qquad (9) \\
+Min \; MSE &=E \left [(x_{n+1}-\phi x_n)^2  \right ] \qquad (10)\\
+&=\gamma_0-\phi^2\gamma_0 \\
+&=\sigma^2
+\end{aligned}	
+$$
+
+s-Step Prediction 
+
+$$
+\begin{aligned}
+x_{n+s}&=\phi x_{n+s-1}+\epsilon_{n+s} \qquad (11)\\
+\hat x_{n+s}&=\phi^s x_n \qquad (12)\\
+Min \; MSE&=E \left [(\sum_{j=1}^s \phi^{s-j}\epsilon_{n+j} )^2\right ] \qquad (13) \\
+&=\sigma^2(\frac{1-\phi^{2s}}{1-\phi^2})
+\end{aligned}	
+$$
+
+## MA(1)
+
+define
+
+$$
+\begin{aligned}
+x_t&=\epsilon_t+\theta\epsilon_{t-1} \quad for \; |\theta| <1 \qquad (14) \\
+\gamma_0&=\sigma^2(1+\theta^2) \qquad (15) \\
+\gamma_1&=\theta\sigma^2 \qquad (16) \\
+\gamma_j&=0 \quad for \; j \geqslant 2 \qquad (17) \\
+\end{aligned}	
+$$
+
+covariance matrix $\Gamma_n$
+
+$$
+\begin{aligned}
+\Gamma_n&=\sigma^2\begin{bmatrix}
+(1+\theta^2) & \theta & 0 & ... & 0 & 0 \\ 
+ \theta & (1+\theta^2) & \theta & ... & 0 & 0\\ 
+0 & \theta & (1+\theta^2) & \theta & ... & 0 \\ 
+\vdots  & \vdots  & \vdots  & \vdots  & \vdots  & \vdots \\ 
+0 & 0 & 0 & ...\; \theta & (1+\theta^2) & \theta\\ 
+0 & 0 & 0 & ... & \theta & (1+\theta^2)
+\end{bmatrix} \qquad (18) \\\\
+\gamma(1:n)&=\sigma^2((1+\theta^2),\theta,0,...,0)^T \in R \qquad (19) \\
+\Gamma_n &b=\gamma(1:n) \qquad (20) \\
+\end{aligned}	
+$$
+
+combine (4) (18) (19) (20) and solve, we get vector b
+
+$$
+\begin{aligned}
+Min \; MSE &=\gamma(0)-b^T\gamma(1:n) \qquad (21)
+\end{aligned}	
+$$
+
+s - Step Prediction
+
+$$
+\begin{aligned}
+\hat{x}_{n+s}&=b_1x_n+b_2x_{n-1}+...+b_nx_1 \qquad (22)
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+E\left [(x_{n+s}-\sum_{j=1}^nb_jx_{n-j+1})xi  \right ]&=0 \qquad (23) \\
+\Gamma_n b&=\gamma(s:n+s-1) \qquad (24)\\
+\gamma(s:n+s-1) &=(\gamma_s,\gamma_{s+1},...,\gamma_{n+s-1})^T \qquad (25)
+\end{aligned}	
+$$
+combine (24) (25) and solve, we get vector b
+
+$$
+\begin{aligned}
+for \; s&=1, \quad \gamma(1:n)=\sigma^2((1+\theta^2),0,..,0) ^T  \qquad (26)\\
+for \; s&=2, \quad \gamma(2:n+1)=\sigma^2(\theta,0,..,0) ^T \qquad (27)\\
+for \; s&=3, \quad \gamma(3:n+2)=\sigma^2(0,0,..,0) ^T \qquad (28)\\
+\end{aligned}	
+$$
+
+combining 26-28, we got $b=0 \quad for \; s\geq 3$
+

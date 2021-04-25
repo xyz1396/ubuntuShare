@@ -1,0 +1,21 @@
+---
+title: "KO ID to map ID"
+author: "Yi Xiong"
+date: "2021/2/28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(KEGGREST)
+library(tidyverse)
+KO2Pthway<-keggLink("pathway", "ko")
+KO2PthwayDf<-data.frame(KO=names(KO2Pthway),PathWay=KO2Pthway)
+KO2PthwayDf<-KO2PthwayDf[str_detect(KO2PthwayDf$PathWay,"map"),]
+KO2PthwayDf$KO<-str_sub(KO2PthwayDf$KO, 4)
+KO2PthwayDf$PathWay<-str_sub(KO2PthwayDf$PathWay, 6)
+```
+

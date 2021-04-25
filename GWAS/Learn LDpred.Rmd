@@ -1,0 +1,117 @@
+---
+title: "Learn LDpred"
+author: "Yi Xiong"
+date: "2021/3/24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# ldpred2
+
+[ldpred2 Tutorial](https://choishingwan.github.io/PRS-Tutorial/ldpred/)
+[ldpred2 home page](https://github.com/privefl/bigsnpr)
+
+```{r}
+
+```
+
+# ldpred
+
+[ldpred home page](https://github.com/bvilhjal/ldpred)
+[keyError: 'raw_snps'](https://github.com/bvilhjal/ldpred/issues/151)
+
+## merge files
+
+[If a line contains exactly three names, they are assumed to be the full filenames for a binary fileset (.bed, then .bim, then .fam).](https://www.cog-genomics.org/plink/1.9/data#merge_list)
+
+```{r}
+chr<-paste0("/work/biobank/ukb_data/1000G_3ph/all/bed_bim_fam/chr",1:22)
+chrList<-data.frame(bim=paste0(chr,".bed"),
+                    fam=paste0(chr,".bim"),
+                    bed=paste0(chr,".fam"))
+write.table(chrList,"ChrMergeList.txt",sep=" ",col.names = F,row.names = F,quote=F)
+```
+
+```{bash}
+conda activate gwas
+cp /work/biobank/ukb_data/scripts/merge.batch /scratch/yixiong
+cd /scratch/yixiong/ldpred_yixiong
+nohup plink \
+  --merge-list ChrMergeList.txt \
+  --make-bed \
+  --out all \
+  > ChrMerge.log.txt 2>&1 &   
+```
+
+## QC
+
+```{bash}
+nohup plink \
+  --threads 20 \
+  --bfile all \
+  --keep-allele-order \
+  --me 1 1 \
+  --set-me-missing \
+  --make-bed \
+  --out all1000g.nomendel \
+  > all1000gQC.log.txt 2>&1 &
+
+nohup plink \
+  --bfile all1000g.nomendel \
+  --keep-allele-order \
+  --geno 0.05 \
+  --mind 0.05 \
+  --maf 0.01 \
+  --hwe 1e-6 \
+  --make-bed \
+  --out all1000g.filter \
+  > all1000gQC2.log.txt 2>&1 &
+```
+
+## coord
+
+--gf LD Reference Genotype File.
+--ssf Summary Statistic File.
+--N Number of Individuals in Summary Statistic File.
+--vgf Validation genotype file.
+
+```{bash}
+nohup ldpred coord \
+  --gf all. \
+  --ssf /work/biobank/ukb_data/diabetes/p800k.csv \
+  --ssf-format CUSTOM \
+  --N 500000 \
+  --vgf /work/biobank/ukb_data/diabetes/train \
+  --out coord.xy.result \
+  > coord.xy.log.txt 2>&1 & 
+```
+
+
+
+```{bash "old test"}
+conda activate gwas
+pip install ldpred==1.0.10
+
+cd /work/biobank/ukb_data/
+nohup ldpred coord \
+  --gf diabetes/train \
+  --ssf p800k.csv \
+  --ssf-format CUSTOM \
+  --N 500000 \
+  --vgf diabetes/train \
+  --out step1.xy.result \
+  > step1.xy.log.txt 2>&1 & 
+  
+nohup ldpred coord \
+  --gf diabetes/train \
+  --ssf p800k.csv \
+  --ssf-format CUSTOM \
+  --N 500000 \
+  --vgf diabetes/train \
+  --out /scratch/yixiong/ldpred_yixiong/step1.xy.result \
+  > /scratch/yixiong/ldpred_yixiong/step1.xy.log.txt 2>&1 & 
+```
+

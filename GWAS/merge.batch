@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#SBATCH --partition=omicsbio
+#SBATCH --ntasks=20
+#SBATCH --time=60:00:00
+#SBATCH --job-name=plink
+#SBATCH --mem=150G
+#SBATCH --chdir=/work/biobank/ukb_data/1000G_3ph/all/bed_bim_fam/
+#SBATCH --output=plink_%J_stdout.txt
+#SBATCH --error=plink_%J_stderr.txt
+#SBATCH --mail-user=adrien.f.badre-1@ou.edu
+#SBATCH --mail-type=ALL
+
+
+plink --bfile chr1 --merge-list ../../../scripts/merge.txt --make-bed --out all
+

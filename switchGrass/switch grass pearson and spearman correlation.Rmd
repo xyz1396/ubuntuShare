@@ -1,0 +1,196 @@
+---
+title: "switch grass correlation"
+author: "xyz"
+date: "2021/2/1"
+output: html_document
+---
+
+### normalize
+
+```{r}
+library(readxl)
+# phy<-read.csv("new_data_wetchem.csv")
+phy<-read_excel("new_data_wetchem.xlsx")
+phy.scaled<-scale(phy[,-1])
+gene<-read.csv("new_gene_expression.csv")
+gene.abundance<-prop.table(as.matrix(gene[,-1]),2)
+sum(phy$...1==gene$X)
+```
+
+### Pearson
+
+#### Physiology to Gene
+
+```{r}
+library(psych)
+library(tidyverse)
+results <-
+  corr.test(phy.scaled, gene.abundance, method = "pearson", adjust = "none")
+results.fdr <-
+  corr.test(phy.scaled, gene.abundance, method = "pearson", adjust = "BH")
+r <- results$r
+r <- cbind(r, physiology = rownames(r))
+r.pearson <-
+  pivot_longer(as.data.frame(r),
+               -physiology,
+               names_to = "gene",
+               values_to = "r")
+p <- results$p
+p <- cbind(p, physiology = rownames(p))
+p.pearson <-
+  pivot_longer(as.data.frame(p),
+               -physiology,
+               names_to = "gene",
+               values_to = "p")
+q <- results.fdr$p
+q <- cbind(q, physiology = rownames(q))
+q.pearson <-
+  pivot_longer(as.data.frame(q),
+               -physiology,
+               names_to = "gene",
+               values_to = "q")
+sum(
+  paste0(r.pearson$physiology,
+         r.pearson$gene) == paste0(p.pearson$physiology,
+                                   p.pearson$gene)
+)
+sum(
+  paste0(r.pearson$physiology,
+         r.pearson$gene) == paste0(q.pearson$physiology,
+                                   q.pearson$gene)
+)
+results.pearson <- cbind(r.pearson, p = p.pearson$p, qOrFdr = q.pearson$q)
+write.csv(results.pearson, "Physiology2Gene.pearson.csv", row.names = F)
+```
+
+#### Physiology to Physiology
+
+```{r}
+library(psych)
+library(tidyverse)
+results <-
+  corr.test(phy.scaled, phy.scaled, method = "pearson", adjust = "none")
+results.fdr <-
+  corr.test(phy.scaled, phy.scaled, method = "pearson", adjust = "BH")
+r <- results$r
+r <- cbind(r, physiology = rownames(r))
+r.pearson <-
+  pivot_longer(as.data.frame(r),
+               -physiology,
+               names_to = "physiology2",
+               values_to = "r")
+p <- results$p
+p <- cbind(p, physiology = rownames(p))
+p.pearson <-
+  pivot_longer(as.data.frame(p),
+               -physiology,
+               names_to = "physiology2",
+               values_to = "p")
+q <- results.fdr$p
+q <- cbind(q, physiology = rownames(q))
+q.pearson <-
+  pivot_longer(as.data.frame(q),
+               -physiology,
+               names_to = "physiology2",
+               values_to = "q")
+sum(
+  paste0(r.pearson$physiology,
+         r.pearson$physiology2) == paste0(p.pearson$physiology,
+                                   p.pearson$physiology2)
+)
+sum(
+  paste0(r.pearson$physiology,
+         r.pearson$physiology2) == paste0(q.pearson$physiology,
+                                   q.pearson$physiology2)
+)
+results.pearson <- cbind(r.pearson, p = p.pearson$p, qOrFdr = q.pearson$q)
+write.csv(results.pearson, "Physiology2Physiology.pearson.csv", row.names = F)
+```
+
+### spearman
+
+#### Physiology to Gene
+
+```{r}
+results <-
+  corr.test(phy.scaled, gene.abundance, method = "spearman", adjust = "none")
+results.fdr <-
+  corr.test(phy.scaled, gene.abundance, method = "spearman", adjust = "BH")
+r <- results$r
+r <- cbind(r, physiology = rownames(r))
+r.spearman <-
+  pivot_longer(as.data.frame(r),
+               -physiology,
+               names_to = "gene",
+               values_to = "r")
+p <- results$p
+p <- cbind(p, physiology = rownames(p))
+p.spearman <-
+  pivot_longer(as.data.frame(p),
+               -physiology,
+               names_to = "gene",
+               values_to = "p")
+q <- results.fdr$p
+q <- cbind(q, physiology = rownames(q))
+q.spearman <-
+  pivot_longer(as.data.frame(q),
+               -physiology,
+               names_to = "gene",
+               values_to = "q")
+sum(
+  paste0(r.spearman$physiology,
+         r.spearman$gene) == paste0(p.spearman$physiology,
+                                   p.spearman$gene)
+)
+sum(
+  paste0(r.spearman$physiology,
+         r.spearman$gene) == paste0(q.spearman$physiology,
+                                   q.spearman$gene)
+)
+results.spearman <- cbind(r.spearman, p = p.spearman$p, qOrFdr = q.spearman$q)
+write.csv(results.spearman, "Physiology2Gene.spearman.csv", row.names = F)
+```
+
+#### Physiology to Physiology
+
+```{r}
+library(psych)
+library(tidyverse)
+results <-
+  corr.test(phy.scaled, phy.scaled, method = "spearman", adjust = "none")
+results.fdr <-
+  corr.test(phy.scaled, phy.scaled, method = "spearman", adjust = "BH")
+r <- results$r
+r <- cbind(r, physiology = rownames(r))
+r.pearson <-
+  pivot_longer(as.data.frame(r),
+               -physiology,
+               names_to = "physiology2",
+               values_to = "r")
+p <- results$p
+p <- cbind(p, physiology = rownames(p))
+p.pearson <-
+  pivot_longer(as.data.frame(p),
+               -physiology,
+               names_to = "physiology2",
+               values_to = "p")
+q <- results.fdr$p
+q <- cbind(q, physiology = rownames(q))
+q.pearson <-
+  pivot_longer(as.data.frame(q),
+               -physiology,
+               names_to = "physiology2",
+               values_to = "q")
+sum(
+  paste0(r.pearson$physiology,
+         r.pearson$physiology2) == paste0(p.pearson$physiology,
+                                   p.pearson$physiology2)
+)
+sum(
+  paste0(r.pearson$physiology,
+         r.pearson$physiology2) == paste0(q.pearson$physiology,
+                                   q.pearson$physiology2)
+)
+results.pearson <- cbind(r.pearson, p = p.pearson$p, qOrFdr = q.pearson$q)
+write.csv(results.pearson, "Physiology2Physiology.Spearman.csv", row.names = F)
+```

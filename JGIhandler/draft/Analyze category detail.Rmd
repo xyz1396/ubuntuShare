@@ -1,0 +1,28 @@
+---
+title: "Analyze category detail"
+author: "xyz"
+date: "2020/12/3"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+df <- read.delim("taxontable7261.xls")
+df <- df[, -19]
+df <-
+  filter(
+    df,
+    GOLD.Ecosystem == "Environmental",
+    GOLD.Analysis.Project.Type == "Metagenome Analysis",
+    log10(Genome.Size.....assembled) > 7,
+    !is.na(Latitude),
+    !is.na(Longitude),
+    Is.Public=="Yes"
+  )
+df<-df[,c("GOLD.Ecosystem.Type","GOLD.Ecosystem.Subtype")]
+df<-as.data.frame(table(df))
+df<-arrange(df,desc(Freq))
+df<-df[df$Freq>=100,]
+write.csv(df,"category detail freq more than 100.csv",row.names = F)
+```
+

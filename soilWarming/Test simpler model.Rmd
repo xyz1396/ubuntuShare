@@ -1,0 +1,76 @@
+---
+title: "Test simpler model"
+author: "Yi Xiong"
+date: "2021/3/13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### read data
+
+```{r}
+library(tidyverse)
+library(mice)
+cpm<-read.table("CPM/merge_all_samples_cpm.tsv",sep = "\t",header = T)
+colnames(cpm)[1]<-"KO"
+colnames(cpm)[-1]<-str_sub(colnames(cpm)[-1],1,-22)
+cpm[1,1]<-"Unknown"
+cpm<-cpm[rowSums(cpm[,-1])>0,]
+# cpm[,-1]<-prop.table(as.matrix(cpm[,-1]),2)
+row.names(cpm)<-cpm$KO
+cpm<-as.data.frame(t(cpm[,-1]))
+meta<-read.csv("summary of environmental data.csv")
+meta<-meta[match(rownames(cpm),meta$Sample_name),]
+# each block have 2 plots (S) with data of 2009,
+# 2 plots (N) with data of 2010 - 2016
+# the treatment of the same plot is the same
+# only in 2 plots (S) "Clip" is "Cliping"
+# 4*(2*1+2*7)= 64
+View(meta[meta$block=="B1",])
+
+meta2<-meta[,colnames(meta)!="root_biomass"]
+meta2<-mice(meta2, maxit = 5, m = 5, seed = 1)
+meta2<-complete(meta2)
+
+meta2$year<-meta2$year-min(meta2$year)
+meta2$year<-as.factor(meta2$year)
+```
+
+### wrap in function
+
+```{r}
+library(glmmTMB)
+
+
+# scale
+cpm2<-scale(cpm)
+ix <-
+  !(
+    colnames(meta2) %in% c("Sample_name", "block", 
+                           "plot", "year", "Precipitation", 
+                           "Clip","Warm", "warm", "precip", "clip")
+  )
+meta2[, ix] <- scale(meta2[, ix])
+getGlmmResult <- function(ko) {
+  df <- cbind(KO = cpm2[, ko], meta2)
+  model <-
+    glmmTMB(
+      formula = KO ~ ar1(year+ 0| block)+warm,
+      data = df,
+      family = gaussian()
+    )
+  results <- summary(model)$coefficients$cond
+  results <- cbind(KO = ko, ENV = rownames(results), results)
+  return(results)
+}
+# test
+View(getGlmmResult("K00002"))
+# test 20 KO
+results<-lapply(colnames(cpm)[1:20],getGlmmResult)
+# get all
+results<-lapply(colnames(cpm),getGlmmResult)
+saveRDS(results,"glmmResult.rds")
+```

@@ -1,0 +1,19 @@
+#!/bin/bash
+#SBATCH --partition=omicsbio
+#SBATCH --nodelist c651
+#SBATCH --ntasks=10
+#SBATCH --time=240:00:00
+#SBATCH --job-name=plink
+#SBATCH --mem=170G
+#SBATCH --chdir=/work/biobank/ukb_data/
+#SBATCH --output=plink_%J_stdout.txt
+#SBATCH --error=plink_%J_stderr.txt
+#SBATCH --mail-user=lizhang12@ou.edu
+#SBATCH --mail-type=ALL
+
+module load Python/3.6.4-foss-2018a 
+rm step1.result
+python /home/lizhang12/software/ldpred/LDpred.py coord --gf diabetes/train --ssf p800k.csv --ssf-format CUSTOM --N 500000 --vgf diabetes/train --out step1.result
+#python /home/lizhang12/software/ldpred/LDpred.py gibbs --cf=step1.result --ldr=180 --ldf=train1 --N 39289 --out=step2_gibbs
+#python /home/lizhang12/software/ldpred/LDpred.py score --gf=/work/breastcancer/clean_test/validation/validation --rf=step2_gibbs --out=step3_validationScore
+#python /home/lizhang12/software/ldpred/LDpred.py score --gf=/work/breastcancer/clean_test/test/test --rf=step2_gibbs --out=step3_testScore

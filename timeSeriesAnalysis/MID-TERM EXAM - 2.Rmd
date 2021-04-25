@@ -1,0 +1,94 @@
+---
+title: "MID-TERM EXAM - 2"
+author: "Yi Xiong"
+date: "2021/4/14"
+output: 
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1.(20+20 pts) Apply the method of module 7.2 for estimating the parameters a and b in the model 
+  
+  
+from a set of m samples $(y_i , x_i ),\; 1 \leqslant  i \leqslant m.$  
+  
+  
+## A) $y = a + e^{-bx}$  
+
+define a linear relation
+
+$$
+\begin{aligned}
+y_i=a+bx_i
+\end{aligned}	
+$$
+by the Least Squares method we estimate the parameters a and b 
+
+$$
+\begin{aligned}
+\hat{b}&=\frac{\bar{xy}-\bar{x}\bar{y}}{\bar{x^2}-(\bar{x})^2} \\
+  &=\frac{m\sum_{i=1}^{m}x_iy_i-(\sum_{i=1}^{m}x_i)(\sum_{i=1}^{m}y_i)}
+    {m(\sum_{i=1}^{m}x_i^2)-(\sum_{i=1}^{m}x_i)^2} \\
+\\    
+\hat{a}&=\frac{1}{m}\left [ \sum_{i=1}^{m}y_i-\hat{b}\sum_{i=1}^{m}x_i\right ]\\
+&=\bar{y}-\hat{b}\bar{x}
+\end{aligned}	
+$$
+
+convert
+
+$$
+\begin{aligned}
+y &= a + e^{-bx}\\
+\ln(y)&=\ln(a)-bx
+\end{aligned}	
+$$
+
+let ${y_i}'=\ln(y_i)$ ${a}'=\ln(a)$ ${b}'=-b$
+
+$$
+\begin{aligned}
+{y_i}'={a}'+{b}'x_i
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+\hat{{b}'}&=\frac{\bar{x\ln(y)}-\bar{x}\bar{ln(y)}}{\bar{x^2}-(\bar{x})^2} \\
+  &=\frac{m\sum_{i=1}^{m}x_i \ln(y_i)-(\sum_{i=1}^{m}x_i)(\sum_{i=1}^{m} \ln(y_i)}
+    {m(\sum_{i=1}^{m}x_i^2)-(\sum_{i=1}^{m}x_i)^2} \\
+\hat{b}&=-\hat{{b}'}\\
+\\    
+\hat{{a}'}&=\frac{1}{m}\left [ \sum_{i=1}^{m}\ln(y_i)-\hat{{b}}'\sum_{i=1}^{m}x_i\right ]\\
+&=\bar{\ln(y)}-\hat{{b}'}\bar{x}\\
+a&=e^{{a}'}\\
+a&=\bar{y}e^{\hat{b}\bar{x}}\\
+\end{aligned}	
+$$
+
+## B) $y = c + mx$ 
+
+let  ${a}'=c$ ${b}'=m$
+
+$$
+\begin{aligned}
+{y_i}={a}'+{b}'x_i
+\end{aligned}	
+$$
+
+convert
+
+$$
+\begin{aligned}
+\hat{m}&=\frac{\bar{xy}-\bar{x}\bar{y}}{\bar{x^2}-(\bar{x})^2} \\
+  &=\frac{m\sum_{i=1}^{m}x_iy_i-(\sum_{i=1}^{m}x_i)(\sum_{i=1}^{m}y_i)}
+    {m(\sum_{i=1}^{m}x_i^2)-(\sum_{i=1}^{m}x_i)^2} \\
+\\    
+\hat{c}&=\frac{1}{m}\left [ \sum_{i=1}^{m}y_i-\hat{m}\sum_{i=1}^{m}x_i\right ]\\
+&=\bar{y}-\hat{m}\bar{x}
+\end{aligned}	
+$$

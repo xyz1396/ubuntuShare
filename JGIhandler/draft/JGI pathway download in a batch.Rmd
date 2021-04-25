@@ -1,0 +1,160 @@
+---
+title: "JGI pathway download in a batch"
+author: "xyz"
+date: "2020/10/27"
+output: html_document
+---
+
+[JGI GOD meta data download](https://gold.jgi.doe.gov/downloads)
+
+[JGI GOD help](https://gold.jgi.doe.gov/help)
+
+Meta data in JGI GOD cannot link to IMG and JGI Genome Portal
+
+[JGI meta data download by Taxonomy](https://img.jgi.doe.gov/cgi-bin/mer/main.cgi?section=TreeFile&page=txdetails&type=taxonomy&domain=*Microbiome&domain=*Microbiome)
+
+[JGI meta data download by ecosystem](https://img.jgi.doe.gov/cgi-bin/mer/main.cgi?section=TreeFile&page=txdetails&type=ecosystem&ecosystem=Environmental&ecosystem=Environmental)
+
+[meta data detail, Sorted cell/s from water of Crystal Geyser, Green River, Utah, USA - CrystG Apr02-3-E10](https://img.jgi.doe.gov/cgi-bin/mer/main.cgi?section=TaxonDetail&page=taxonDetail&taxon_oid=3300024970)
+
+[download-btn, download link in download button ](https://genome.jgi.doe.gov/lookup?keyName=jgiProjectId&keyValue=1124942&app=Download)
+
+[download link redirect](https://genome.jgi.doe.gov/portal/pages/dynamicOrganismDownload.jsf?organism=uncmicCApr023E10_FD)
+
+[xml download link](https://genome.jgi.doe.gov/portal/ext-api/downloads/get-directory?organism=uncmicCApr023E10_FD&organizedByFileType=false)
+
+[JGI download api](https://genome.jgi.doe.gov/portal/help/download.jsf#/api)
+
+```{r JGI meta data analysis}
+# download link https://img.jgi.doe.gov/cgi-bin/mer/main.cgi?section=TreeFile&page=txdetails&type=taxonomy&domain=*Microbiome&domain=*Microbiome
+df<-read.delim("taxontable7261.xls")
+df<-df[,-19]
+df<-df[df$Genome.Size.....assembled!=0,]
+table(df$Sequencing.Status)
+```
+```{r}
+table(df$GOLD.Analysis.Project.Type)
+```
+```{r}
+sort(table(df$GOLD.Ecosystem.Type),decreasing = T)[1:10]
+```
+```{r}
+sort(table(df$GOLD.Ecosystem.Category),decreasing = T)[1:10]
+```
+
+
+```{r}
+library(ggplot2)
+ggplot(data.frame(Microbe=rep('Microbe',nrow(df)),Genome.Size=log10(df$Genome.Size.....assembled)),
+       aes(x=Microbe,y=Genome.Size))+
+  geom_violin(show.legend = FALSE)+
+  geom_boxplot(width=.1,show.legend = FALSE)+
+  ylab(expression(log[10]("Genome.Size")))+
+  theme(text = element_text(size = 30),axis.text=element_text(colour="black"),
+        axis.title.x=element_blank())
+ggplot(data.frame(Microbe=rep('Microbe',nrow(df)),Gene.Count=log10(df$Gene.Count.....assembled)),
+       aes(x=Microbe,y=Gene.Count))+
+  geom_violin(show.legend = FALSE)+
+  geom_boxplot(width=.1,show.legend = FALSE)+
+  ylab(expression(log[10]("Gene.Count")))+
+  theme(text = element_text(size = 30),axis.text=element_text(colour="black"),
+        axis.title.x=element_blank())
+```
+
+```{r output enviromental sample id}
+df2<-df[(df$GOLD.Ecosystem=="Environmental") & (log10(df$Genome.Size.....assembled)>7) 
+        & (df$GOLD.Analysis.Project.Type=="Metagenome Analysis"),]
+df10<-data.frame(id=df2$taxon_oid[1:10])
+write.table(df10,"first10Id.txt",row.names = F)
+```
+
+
+```{bash download by bash}
+curl 'https://signon.jgi.doe.gov/signon/create' --data-urlencode 'login=yixiong@ou.edu' --data-urlencode 'password=4963123yz' -c cookies > /dev/null
+curl 'https://genome.jgi.doe.gov/portal/ext-api/downloads/get-directory?organism=PhytozomeV10' -b cookies > files.xml
+```
+
+
+```{r download in R script}
+library(RCurl)
+library(XML)
+library(stringr)
+
+#### login ####
+
+login<-"https://signon.jgi.doe.gov/signon/create"
+payload<-c(login="yixiong@ou.edu",password="4963123yz")
+# Set error log
+d <- debugGatherer()
+# Construct the curl handle to collect login information and open the Cookiefile manager
+chandle <- getCurlHandle(debugfunction=d$update,followlocation=TRUE,cookiefile="",verbose = TRUE)
+# login, save cookie:
+null<-postForm(login,.params=payload,.encoding="UTF-8",curl=chandle,style="post")
+
+#### parse meta data detail page ####
+
+detail<-getURL(paste0("https://img.jgi.doe.gov/cgi-bin/mer/main.cgi?section=TaxonDetail&page=taxonDetail&taxon_oid=",df$taxon_oid[1]),curl = chandle)
+fileConn<-file("detail.xml")
+writeLines(detail, fileConn)
+close(fileConn)
+detail<-htmlParse(detail,encoding="utf-8")
+# get element "a"'s value 'href' 
+downloadLink<-getNodeSet(detail,"//a[@class='genome-btn download-btn']//@href")[[1]]
+# h <- basicHeaderGatherer()
+# downloadLink<-getURL(downloadLink,curl = chandle,headerfunction = h$update)
+# h$value()
+# fileConn<-file("downloadLink.xml")
+# writeLines(downloadLink, fileConn)
+# close(fileConn)
+downloadLink<-curlGetHeaders(downloadLink)
+downloadLink<-str_sub(str_extract(grep(downloadLink, pattern = "Location", value = T), pattern = "portal/.*/")[2],8,-2)
+downloadLink<-paste0("https://genome.jgi.doe.gov/portal/ext-api/downloads/get-directory?organism=",downloadLink,"&organizedByFileType=false")
+files<-getURL(downloadLink,curl = chandle)
+fileConn<-file(paste0(df$taxon_oid[1],".files.xml"))
+writeLines(files, fileConn)
+close(fileConn)
+files<-htmlParse(files,encoding="utf-8")
+# get element "file"'s value 'href' 
+downloadLink2<-getNodeSet(files,"//file[@filename='README.txt']//@url")[[1]]
+downloadLink2<-paste0("https://genome.jgi.doe.gov",downloadLink2)
+getBinaryURL(downloadLink2,curl=chandle) %>% writeBin("README.txt")
+```
+
+[Gene expression units explained: RPM, RPKM, FPKM, TPM, DESeq, TMM, SCnorm, GeTMM, and ComBat-Seq](https://reneshbedre.github.io/blog/expression_units.html)
+
+FPKM/RPKM = Number of reads mapped to gene×10**3×10**6/Total number of mapped reads/gene length in bp
+TPM = A×1/∑(A)×10**6
+Where A = total reads mapped to gene×10**3/gene length in bp
+
+depth = readN x readL/geneL
+
+FPKM = depth x geneL x 10**9 / ∑ (depth x geneL) / geneL
+TPM = depth / ∑ (depth) x 10**6
+
+```{r get FPKM and TPM}
+# conda install -c bioconda bioconductor-biostrings
+library(Biostrings)
+library(tidyverse)
+contig<-readDNAStringSet("3300024970/3300024970.a.fna")
+contigLength<-data.frame(id=names(contig),length=str_length(contig))
+contigDepth<-read.table("3300024970/3300024970.a.depth.txt",header = T)
+contigTable<-inner_join(contigLength,contigDepth,by=c("id"="ID"))
+
+temp<-contigTable$AvgFold*contigTable$length
+contigTable$FPKM<-temp*10**9/sum(temp)/contigTable$length
+
+contigTable$TPM<-contigTable$AvgFold/sum(contigTable$AvgFold)*10**6
+
+ggplot(gather(contigTable[,4:5],"type","value"),
+       aes(x=type,y=log10(value)))+
+  geom_violin(show.legend = FALSE)+
+  geom_boxplot(width=.1,show.legend = FALSE)+
+  ylab(expression(log[10]("value")))+
+  theme(text = element_text(size = 30),axis.text=element_text(colour="black"),
+        axis.title.x=element_blank())
+
+ko<-read.table("3300024970/3300024970.a.ko.txt",header = F)
+gff<-read.table("3300024970/3300024970.a.gff",header = F,sep = "\t")
+gff<-data.frame(contigID=gff$V1,geneID=str_sub(str_extract(gff$V9,"locus_tag=.*?;"),11,-2))
+```
+

@@ -1,0 +1,74 @@
+---
+title: "Impute2 work flow with demo datasets"
+author: "Yi Xiong"
+date: "2021/4/3"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# quality control
+
+```{bash}
+# "ukb_cal_chr22" is the first part of names of the 3 files in plink format 
+# of each chromosome
+
+# filter out trios and variants with Mendel error
+time plink \
+  --bfile ukb_cal_chr22 \
+  --keep-allele-order \
+  --me 1 1 \
+  --set-me-missing \
+  --make-bed \
+  --out chr22.nomendel
+
+# Exclude variants with missing call frequencies greater than 0.05
+plink \
+  --bfile chr22.nomendel \
+  --keep-allele-order \
+  --geno 0.05 \
+  --make-bed \
+  --out chr22.nomendel.filter 
+```
+
+# phasing
+
+```{bash}
+shapeit \
+ --input-bed gwas.bed gwas.bim gwas.fam \
+ --input-map genetic_map.txt \
+ --thread 8 \
+ --effective-size 11418 \
+ --output-max gwas.phased.haps gwas.phased.sample \
+ --output-log gwas.phasing.log
+```
+
+# impute
+
+```{bash}
+impute2 \
+ -use_prephased_g \
+ -m ./Example/example.chr22.map \
+ -h ./Example/example.chr22.1kG.haps \
+ -l ./Example/example.chr22.1kG.legend \
+ -known_haps_g ./Example/example.chr22.prephasing.impute2_haps \
+ -strand_g ./Example/example.chr22.study.strand \
+ -int 20.4e6 20.5e6 \
+ -Ne 20000 \
+ -o ./Example/example.chr22.one.phased.impute2 \
+ -phase
+ 
+impute2 \
+   -m ./Example/example.chr22.map \
+   -known_haps_g ../shapeit/example/gwas.phased.haps \
+   -h ./Example/example.chr22.1kG.haps \
+   -l ./Example/example.chr22.1kG.legend \
+   -Ne 20000 \
+   -int 20.4e6 20.5e6 \
+   -o gwas.phased.impute2 \
+   -allow_large_regions \
+   -seed 367946
+```
+

@@ -1,0 +1,152 @@
+---
+title: "C++learning"
+author: "XYZ"
+date: "2019/2/21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### 在rmd里插入rcpp chunk 
+
+```{Rcpp}
+// sum.cpp
+#include <Rcpp.h>
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+double rcpp_sum(NumericVector v){
+  double sum = 0;
+  for(int i=0; i<v.length();++i){
+    sum +=v[i];
+  }
+  return(sum);
+}
+/*** R
+a<-rcpp_sum(1:5)
+*/
+```
+
+### 直接从源码生成rcpp函数
+
+```{r}
+library(Rcpp)
+
+#### 从cpp源码生成函数 ####
+sourceCpp("sum.cpp")
+rcpp_sum(1:10)
+
+#### 加载头文件和命名空间的写法 ####
+src <-
+"
+#include <Rcpp.h>
+using namespace Rcpp;
+// [[Rcpp::export]]
+double rcpp_sum(NumericVector v){
+  double sum = 0;
+  for(int i=0; i<v.length(); ++i){
+    sum += v[i];
+  }
+  return(sum);
+}
+"
+sourceCpp(code = src)
+rcpp_sum(1:10)
+
+#### 不需要加载头文件和命名空间的写法 ####
+src <-
+"
+double rcpp_sum(NumericVector v){
+  double sum = 0;
+  for(int i=0; i<v.length(); ++i){
+    sum += v[i];
+  }
+  return(sum);
+}
+"
+cppFunction(src)
+rcpp_sum(1:10)
+
+#### 直接获取rcpp表达式的运行结果 ####
+
+# double 类型的最大值
+evalCpp("std::numeric_limits<double>::max()")
+evalCpp("sqrt(sin(M_PI/6))")
+```
+
+### C++11新特性
+
+```{r}
+#### 初始化list ####
+
+src<-
+"
+NumericVector cList(){
+NumericVector v = {1.0, 2.0, 3.0};
+return(v);
+}
+"
+cppFunction(src)
+cList()
+
+##### 自动分配变量类型 ####
+
+src<-
+"
+auto cList(){
+NumericVector v = {1.0, 2.0, 3.0};
+return(v);
+}
+"
+cppFunction(src)
+cList()
+
+#### 和r类似的循环写法 ####
+
+src<-
+"
+double rcpp_sum(NumericVector v){
+  double sum = 0;
+  for(auto x : v){
+    sum += x;
+  }
+  return(sum);
+}
+"
+cppFunction(src)
+rcpp_sum(1:10)
+
+####  匿名函数 ####
+
+# [] 禁止函数操纵所有局部变量的值
+# [=x,&y] x可以被复制到函数中，函数可以直接操纵y的值
+
+src<-
+"
+NumericVector rccp_lambda_1(NumericVector v){
+  double A =2.0;
+  NumericVector res =sapply(v, [&](double x){return A*x;});
+  return res ;
+}
+"
+cppFunction(src)
+rccp_lambda_1(1:4)
+```
+
+### 直接输出消息到终端
+
+```{r}
+# 无法编译嵌套的引号
+src<-
+"
+void rcpp_rcout(NumericVector v){
+Rcout << \"the value of v : \" << v << \"\n\";
+Rcerr << \"ERRO \n \";
+}
+"
+cppFunction(src)
+rcpp_rcout
+```
+

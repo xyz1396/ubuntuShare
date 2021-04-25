@@ -1,0 +1,53 @@
+---
+title: "adjust lambda"
+author: "Yi Xiong"
+date: "2021/3/20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(stringr)
+library(qvalue)
+library(tidyverse)
+fileName <- dir("old/")
+fileName <- fileName[str_detect(fileName, "csv")]
+fileName <-
+  fileName[fileName != "Physiology2Gene.withoutTFAsugars.gini.csv"]
+
+# get p of each file
+p <- c()
+for (i in fileName) {
+  df <- read.csv(paste0("old/", i))
+  p <- c(p, df$p)
+}
+pdf("p.histogram.pdf")
+boxplot(p)
+dev.off()
+
+q <- qvalue(p)$qvalues
+# fdr is as same as BH
+bh <- p.adjust(p,"BH")
+holm <- p.adjust(p,"holm")
+
+tempDf<-data.frame(p=p,Qvalue=q,FDR_bh=bh,holm=holm)
+tempDf<-pivot_longer(tempDf,everything(),values_to = "value")
+ggplot(data=tempDf,aes(x=name,y=value))+
+  geom_violin()+ggsave("adjusted_P.pdf")
+
+# write qvalue
+j <- 1
+for (i in fileName) {
+  df <- read.csv(paste0("old/", i))
+  n <- nrow(df)
+  df$qOrFdr <- q[j:(j + n - 1)]
+  df$BH <- bh[j:(j + n - 1)]
+  df$holm <- holm[j:(j + n - 1)]
+  write.csv(df, paste0("QandFDR/", i), row.names = F)
+  j <- j + n
+}
+```
+

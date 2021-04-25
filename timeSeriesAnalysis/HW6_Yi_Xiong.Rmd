@@ -1,0 +1,78 @@
+---
+title: "Homework–6"
+author: "Yi Xiong"
+date: "2021/3/4"
+output: 
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1.Derive the expression for the power spectrum of MA(2). Plot this power spectrum for $0 \leqslant \omega \leqslant \pi$
+
+## MA(2) definition
+
+$$
+\begin{aligned}
+y_{t}&=\mu+\epsilon_{t}+\theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}
+\end{aligned}	
+$$
+
+## Autocovariance of MA(2)
+
+$$
+\begin{aligned}
+\gamma_{0}=(1+\theta^{2}_{1}+\theta^{2}_{2})\sigma^{2}\\
+\gamma_{1}=(\theta_{1}+\theta_{2}\theta_{1})\sigma^{2} \\
+\gamma_{2}=\theta_{2}\sigma^{2}\\
+\gamma_{j}=0,\;j\geqslant3
+\end{aligned}
+$$
+
+## Generating functions for ACF of MA(2)
+
+$$
+\begin{aligned}
+\textsl{g}_{y}(z)&=\sum_{j=-\infty}^{\infty}\gamma_{j}z^{j},(\gamma_{-j}=\gamma_{j})\\
+&=\gamma_{2}z^{-2}+\gamma_{1}z^{-1}+\gamma_{0}+\gamma_{1}z^{1}+\gamma_{2}z^{-2}\\
+&=\sigma^{2}\left [\theta_{2} z^{-2}+(\theta_{1}+\theta_{2}\theta_{1})z^{-1}
+  +(1+\theta_{1}^{2}+\theta_{2}^{2})+(\theta_{1}+\theta_{2}\theta_{1})z
+  +\theta_{2} z^{2}\right ]\\
+&=\sigma^{2}\left [\theta_{2}(z^{-2}+z^{2})+(\theta_{1}+\theta_{2}\theta_{1})
+  (z^{-1}+z)+(1+\theta_{1}^{2}+\theta_{2}^{2}) \right ]
+\end{aligned}
+$$
+
+## Setting $z=e^{-iw}$ and simplifying
+
+$$
+\begin{aligned}
+S_{y}(\omega)&= \frac{1}{2\pi}\textsl{g}_{y}(e^{-i\omega})\\
+  &=\frac{1}{2\pi}\sigma^{2}[2\theta_{2} cos(2\omega)+2(\theta_{1}
+    +\theta_{2}\theta_{1})cos(\omega)+(1+\theta_{1}^{2}+\theta_{2}^{2})]\\
+  &=\frac{1}{2\pi}[\gamma_{0}+2\gamma_{1}cos(\omega)+2\gamma_{2}cos(2\omega)]
+\end{aligned}
+$$
+
+## Plot
+
+```{r}
+library(ggplot2)
+theta1<-0.5
+theta2<-0.5
+sigmaSQ<-1
+omega<-seq(0,pi,0.001)
+Sy<-1/2*pi*sigmaSQ*(2*theta2*cos(2*omega)
+                   +2*(theta1+theta2*theta1)*cos(omega)+1+theta1**2+theta2**2)
+dfP <- data.frame(x = omega, y = Sy)
+p <- ggplot(dfP, aes(x = x, y = y)) +
+  geom_line() +
+  xlab(expression(omega)) +
+  ylab(expression(Sy[(omega)]))
+p
+```
+
+

@@ -1,0 +1,137 @@
+---
+title: "learnImpute2"
+author: "Yi Xiong"
+date: "2021/3/27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###  install
+
+```{bash}
+conda install -c bioconda plink
+
+```
+
+ukb data path
+/work/biobank/ukb_data/GenData
+all files in this path are in format of plink
+
+[quality control](https://zhuanlan.zhihu.com/p/149947873)
+
+[quality control and phasing](https://www.jianshu.com/p/b1f28ea54963)
+
+[impute2 turorial](https://zhuanlan.zhihu.com/p/53564008)
+
+[impute2 turorial](https://mp.weixin.qq.com/s/2YdlMhfjh5acyy7D4hwZZA)
+
+[plink file format](https://www.cog-genomics.org/plink/1.9/formats)
+
+# quality control
+
+```{bash}
+ssh c657
+conda activate gwas
+conda install plink
+conda install -c dranew shapeit
+cd /work/biobank/ukb_data/GenData
+cp *chr22* /scratch/yixiong
+wget http://s3.amazonaws.com/plink1-assets/plink_linux_x86_64_20201019.zip
+
+# 12968 variants loaded from .bim file.
+# 488377 people (223467 males, 264797 females, 113 ambiguous) loaded from .fam.
+# 12968 variants and 488377 people pass filters and QC.
+# --me <t> <v> ['var-first'] : Filter out trios and variants with Mendel error
+time plink \
+  --bfile ukb_cal_chr22 \
+  --keep-allele-order \
+  --me 1 1 \
+  --set-me-missing \
+  --make-bed \
+  --out chr22.nomendel
+
+# 12010 variants and 488377 people pass filters and QC.
+# --geno [val] : Exclude variants with missing call frequencies greater than a threshold (default 0.1).
+# 0.05 is better for shapeit
+time plink \
+  --bfile chr22.nomendel \
+  --keep-allele-order \
+  --geno 0.05 \
+  --make-bed \
+  --out chr22.nomendel.filter 
+```
+
+# phasing
+
+```{bash}
+# get genetic map
+wget ftp://ftp.ncbi.nlm.nih.gov/hapmap/recombination/2011-01_phaseII_B37/genetic_map_HapMapII_GRCh37.tar.gz
+mkdir geneticMap
+tar -zxvf genetic_map_HapMapII_GRCh37.tar.gz -C geneticMap
+
+# keep last 3 columns of geneticMap
+cut geneticMap/genetic_map_GRCh37_chr22.txt -f 2- > \
+  geneticMap/genetic_map_GRCh37_chr22_last3.txt
+  
+wget https://mathgen.stats.ox.ac.uk/genetics_software/shapeit/shapeit.v2.r904.glibcv2.17.linux.tar.gz
+mkdir shapeit 
+tar -zxvf shapeit.v2.r904.glibcv2.17.linux.tar.gz -C shapeit
+
+nohup time shapeit \
+ --duohmm \
+ -W 5 \
+ --input-bed chr22.nomendel.filter.bed chr22.nomendel.filter.bim chr22.nomendel.filter.fam \
+ --input-map geneticMap/genetic_map_GRCh37_chr22_last3.txt \
+ -O hapData \
+ --thread 20 \
+> shapeit.log.txt 2>&1 & 
+ 
+ 
+# go to tmpfs
+cp geneticMap/genetic_map_GRCh37_chr22_last3.txt \
+  chr22.nomendel.filter.bed \
+  chr22.nomendel.filter.bim \
+  chr22.nomendel.filter.fam \
+  /run/user/17803
+
+cd /run/user/17803
+
+nohup /scratch/yixiong/shapeit/bin/shapeit \
+ --duohmm \
+ -W 5 \
+ --input-bed chr22.nomendel.filter.bed chr22.nomendel.filter.bim chr22.nomendel.filter.fam \
+ --input-map genetic_map_GRCh37_chr22_last3.txt \
+ -O hapData2 \
+ --thread 15 \
+> shapeit.log.txt 2>&1 & 
+```
+
+# impute
+
+[hap, legend, genetic_map and sample file for impute2](https://mathgen.stats.ox.ac.uk/impute/1000GP_Phase3.html)
+
+[1000_Genomes_Imputation_Cookbook](https://genome.sph.umich.edu/wiki/IMPUTE2:_1000_Genomes_Imputation_Cookbook#Pre-Phasing_using_SHAPEIT_.28recommended.29)
+
+```{bash}
+wget https://mathgen.stats.ox.ac.uk/impute/impute_v2.3.2_x86_64_dynamic.tgz
+wget https://mathgen.stats.ox.ac.uk/impute/1000GP_Phase3.tgz
+wget https://mathgen.stats.ox.ac.uk/impute/1000GP_Phase3_chrX.tgz
+impute2 \
+ -use_prephased_g \
+ -m ./Example/example.chr22.map \
+ -h ./Example/example.chr22.1kG.haps \
+ -l ./Example/example.chr22.1kG.legend \
+ -known_haps_g ./Example/example.chr22.prephasing.impute2_haps \
+ -strand_g ./Example/example.chr22.study.strand \
+ -int 20.4e6 20.5e6 \
+ -Ne 20000 \
+ -o ./Example/example.chr22.one.phased.impute2 \
+ -phase
+ 
+ # uzip 1000GP_Phase3.tgz
+ tar -zxvf 1000GP_Phase3.tgz -C impute1000g/data_files/
+```
+

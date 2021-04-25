@@ -1,0 +1,78 @@
+---
+title: "GLMM_learn"
+author: "xyz"
+date: "2021/1/25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### install
+
+[home page and tutorial](https://cran.r-project.org/web/packages/glmmTMB/index.html)
+
+```{r}
+install.packages("glmmTMB")
+# conda install r-glmmtmb
+```
+
+### Get the model design
+
+```{r}
+mixed_effects <- c(
+  'age_at_collection',
+  'delivery_simple',
+  'cc',
+  'breastfeeding',
+  'solid_food',
+  'pre_after_IA',
+  'dbgap_maskid'
+)
+fixed_effects <- mixed_effects[-which(mixed_effects == c('dbgap_maskid'))]
+glmm_formula <- paste("abundance",
+                     paste(
+                       'offset(log(si))',
+                       paste(fixed_effects, collapse = "+"),
+                       '(1|dbgap_maskid)',
+                       sep = '+'
+                     ),
+                     sep = "~")
+as.formula(glmm_formula)
+```
+### where "si" is from
+
+```{r}
+data_glmm[, 'si'] = meta_data[, 'num_wgs_reads']
+average = mean(data_glmm$si)
+total_reads = sum(data_glmm$si)
+data_glmm$si = data_glmm$si / average
+```
+
+### parallel
+
+```{r}
+library(glmmTMB)
+
+N <- 3e5
+xdata <- rnorm(N, 1, 2)
+groups <- 200
+data_use <- data.frame(obs = 1:N)
+data_use <- within(data_use,
+{
+  
+  group_var <- rep(seq(groups), times = nrow(data_use) / groups)
+  group_intercept <- rnorm(groups, 0, 0.1)[group_var]
+  xdata <- xdata
+  ydata <- 0.3 + group_intercept + 0.5*xdata + rnorm(N, 0, 0.25)
+})
+
+model3 <-
+  glmmTMB(
+    formula = ydata ~ 1 + xdata + (1 | group_var),
+    data = data_use,
+    control = glmmTMBControl(parallel = 11)
+  )
+```
+

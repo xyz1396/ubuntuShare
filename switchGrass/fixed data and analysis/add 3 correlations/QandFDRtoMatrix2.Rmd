@@ -1,0 +1,76 @@
+---
+title: "QandFDRtoMatrix"
+author: "Yi Xiong"
+date: "2021/3/30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r cars}
+library(tidyverse)
+library(xlsx)
+
+fileName <- dir("QandFDR/")
+fileName2<-c("A4_N(GE)_N+1(CW)",  
+"A4_N(GE)_N+2(CW)",  
+"A4_N(GE)_N(CW)",      
+"AP13_N(GE)_N+1(CW)",
+"AP13_N(GE)_N+2(CW)",
+"AP13_N(GE)_N(CW)",   
+"VS16_N(GE)_N+1(CW)",
+"VS16_N(GE)_N+2(CW)",
+"VS16_N(GE)_N(CW)",  
+"N(GE)_N+1(CW)",       
+"N(GE)_N+2(CW)",      
+"N(GE)_N(CW)",
+"R3_R3",
+"S1_R3",
+"S2_R3",
+"S3_R3",
+"SegmentsOnly_N(GE)_N+1(CW)",         
+"SegmentsOnly_N(GE)_N+2(CW)",        
+"SegmentsOnly_N(GE)_N(CW)",    
+"Stage_pairs_NGE_N+1CW_E4_R3 ",      
+"Stage_pairs_NGE_N+1CW_V3_E4",       
+"Stages_only_NGE_N+1CW",               
+"Stages_only_NGE_N+2CW",               
+"Stages_only_NGE_NCW")
+# check
+View(data.frame(fileName=fileName,fileName2=fileName2))
+j<-1
+for (i in fileName){
+  df<- read.csv(paste0("QandFDR/", i))
+  sheetName<-fileName2[j]
+  j<-j+1
+  
+  GCC<-pivot_wider(df[,1:3],names_from = gene,values_from = r)
+  GCC<-as.data.frame(GCC)
+  rownames(GCC)<-GCC$physiology
+  GCC<-GCC[,-1]
+  write.xlsx(GCC,"QandFDRtoMatrix2.xlsx",paste0(sheetName,"_GCC"),append = T)
+  
+  p_value<-pivot_wider(df[,c(1,2,4)],names_from = gene,values_from = p)
+  p_value<-as.data.frame(p_value)
+  rownames(p_value)<-p_value$physiology
+  p_value<-p_value[,-1]
+  write.xlsx(p_value,"QandFDRtoMatrix2.xlsx",paste0(sheetName,"_p_value"),append = T)
+  
+  q_value<-pivot_wider(df[,c(1,2,5)],names_from = gene,values_from = qOrFdr)
+  q_value<-as.data.frame(q_value)
+  rownames(q_value)<-q_value$physiology
+  q_value<-q_value[,-1]
+  write.xlsx(q_value,"QandFDRtoMatrix2.xlsx",paste0(sheetName,"_q_value"),append = T)
+  
+  BH_FDR<-pivot_wider(df[,c(1,2,6)],names_from = gene,values_from = BH)
+  BH_FDR<-as.data.frame(BH_FDR)
+  rownames(BH_FDR)<-BH_FDR$physiology
+  BH_FDR<-BH_FDR[,-1]
+  write.xlsx(BH_FDR,"QandFDRtoMatrix2.xlsx",paste0(sheetName,"_BH_FDR"),append = T)
+}
+```
+

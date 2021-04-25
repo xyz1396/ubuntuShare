@@ -1,0 +1,95 @@
+---
+title: "check meta data of soil warming"
+author: "xyz"
+date: "2021/1/25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### analyse experimental design
+
+```{r}
+library(tidyverse)
+meta<-read.csv("summary of environmental data.csv")
+# B1 B2 B3 B4 
+# 90 90 90 90
+table(meta$block)
+# N01-N24 have data points of 7 years (2010-2016) 
+# S01-S24 have data points of 8 years (2019-2016)
+table(meta$plot)
+table(meta[,c("plot","block")])
+# each block has 6 "N" plots and 6 "S" plots
+table(paste0(meta$block,meta$plot))
+View(meta[meta$plot=="N01",])
+View(meta[meta$plot=="S02",])
+metaSorted<-arrange(meta,block,plot,year)
+# each plot have the same treatment of Precipitation, Warm, precip, clip
+View(metaSorted)
+View(distinct(metaSorted,plot,.keep_all=T))
+#               Warm
+# Precipitation unwarming warming
+#        double        60      60
+#        half          60      60
+#        normal        60      60
+table(meta[,c("Precipitation","Warm")])
+#               Warm
+# Precipitation unwarming warming
+#        double        15      15
+#        half          15      15
+#        normal        15      15
+table(meta[meta$block=="B1",c("Precipitation","Warm")])
+```
+
+```{r}
+meta$year<-as.factor(meta$year)
+p <-
+  ggplot(data = meta,
+         mapping = aes(x = year, y = NO3.N)) +
+  geom_point(aes(
+    fill = Warm,
+    colour = Warm,
+    shape = Precipitation
+  ),size=2) +
+  xlab("Year") +
+  ylab("NO3") +
+  theme(text = element_text(size = 20))
+p+ggsave("NO3WarmPrecipitation.pdf",width = 12,height = 9)
+p <-
+  ggplot(data = meta,
+         mapping = aes(
+           x = year,
+           y = NO3.N,
+           fill = Warm
+         )) +
+  geom_boxplot() +
+  xlab("Year") +
+  ylab("NO3") +
+  theme(text = element_text(size = 20))
+p+ggsave("NO3Warm.pdf",width = 12,height = 9)
+p <-
+  ggplot(data = meta,
+         mapping = aes(
+           x = year,
+           y = NO3.N,
+           fill = Precipitation
+         )) +
+  geom_boxplot() +
+  xlab("Year") +
+  ylab("NO3") +
+  theme(text = element_text(size = 20))
+p+ggsave("NO3Precipitation.pdf",width = 12,height = 9)
+```
+
+### abundance data path
+
+```{bash}
+# on server
+cd /scratch/dywang/Metagenome_Warming_site/M8_NB/CPM
+tar -czf /scratch/yixiong/exchange/CPM.tar.gz -C . .
+# unzip locally
+tar -xzvf CPM.tar.gz
+```
+

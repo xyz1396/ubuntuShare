@@ -1,0 +1,30 @@
+---
+title: "estimate"
+author: "xyz"
+date: "2020/10/9"
+output: html_document
+---
+
+```{r}
+library(readxl)
+library(tidyverse)
+df<-read_xlsx("estimate.xlsx",sheet="Sheet1")
+df<-df[,c("Metabolites","Flux_relative_experiment","Flux_no_constrain",
+          "Flux_with_constrain_of_Cellohexaose","Flux_with_constrain_of_Cellohexaose_and_hydrogen")]
+colnames(df)<-c("Metabolites","E","NC","CC","CCH")
+df2<-pivot_longer(df,-Metabolites,names_to = "Type", values_to = "Flux")
+df2$Metabolites<-factor(df2$Metabolites,levels = df$Metabolites)
+df2$Type<-factor(df2$Type,levels = colnames(df))
+df2<-df2[!is.na(df2$Flux),]
+```
+
+```{r}
+ggplot(df2,aes(x=Metabolites, y=Flux, fill=Type)) + 
+  geom_bar(stat = "identity",position="dodge",width=0.8, col='black')+
+  # add numbers
+  geom_text(aes(label=round(Flux,2)), position=position_dodge(width=0.8), vjust=-1,size = 3)+
+  theme(axis.title.y=element_blank(),text = element_text(size = 10), axis.text=element_text(colour="black"))+
+  ggsave("Summary statistics of protein annotations.png",width = 12.80, height = 7.2,dpi=100)
+```
+
+

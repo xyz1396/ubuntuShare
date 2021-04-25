@@ -1,0 +1,191 @@
+---
+title: "Fix csv"
+author: "xyz"
+date: "2021/2/6"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### gene
+
+```{r}
+library(tidyverse)
+library(readxl)
+a4 <-
+  read_xlsx(
+    "../old code and data/SupplementaryTable2_CellwallandGeneExpressionData.xlsx",
+    "A4 qPCR"
+  )
+a4$Target[a4$Target == "CcoMT"] <- "CcOMT"
+a4 <-
+  pivot_longer(a4, !Sample:Target, names_to = "Repeat", values_to = "Expression")
+a4 <-
+  pivot_wider(a4,
+              c(!Sample, !Repeat),
+              names_from = "Target",
+              values_from = "Expression")
+
+ap13 <-
+  read_xlsx(
+    "../old code and data/SupplementaryTable2_CellwallandGeneExpressionData.xlsx",
+    "AP13 qPCR"
+  )
+ap13$Sample[ap13$Sample == "AP13S3"] <- "AP13-S3"
+ap13$Target[ap13$Target == "CcoMT"] <- "CcOMT"
+ap13 <-
+  pivot_longer(ap13,
+               !Sample:Target,
+               names_to = "Repeat",
+               values_to = "Expression")
+ap13 <-
+  pivot_wider(ap13,
+              c(!Sample, !Repeat),
+              names_from = "Target",
+              values_from = "Expression")
+
+vs16 <-
+  read_xlsx(
+    "../old code and data/SupplementaryTable2_CellwallandGeneExpressionData.xlsx",
+    "VS16 qPCR"
+  )
+vs16$Target[vs16$Target == "CcoMT"] <- "CcOMT"
+vs16 <-
+  pivot_longer(vs16,
+               !Sample:Target,
+               names_to = "Repeat",
+               values_to = "Expression")
+vs16 <-
+  pivot_wider(vs16,
+              c(!Sample, !Repeat),
+              names_from = "Target",
+              values_from = "Expression")
+
+# verify
+sum(colnames(a4) == colnames(ap13))
+sum(colnames(a4) == colnames(vs16))
+
+# merge
+gene <- rbind(a4, ap13, vs16)
+gene <- cbind(id = paste0(gene$Sample, "-", rep(1:3, 18)), gene[, -1:-2])
+colnames(gene)[2] <- "X4CL"
+colnames(gene)[8] <- "COMT1"
+colnames(gene)[10] <- "COMT3"
+
+# verify
+gene2 <- read.csv("../old code and data/new_gene_expression.csv")
+sum(colnames(gene) == colnames(gene2))
+sum(gene$id == gene2$X)
+View(gene[, -1] - gene2[, -1])
+
+gene<-arrange(gene,id)
+write.csv(gene,"GeneExpressionData.csv",row.names = F)
+```
+
+### phyisology
+
+```{r}
+lignin<-
+  read_xlsx(
+    "../old code and data/SupplementaryTable2_CellwallandGeneExpressionData.xlsx",
+    "Lignin"
+  )
+lignin <-
+  pivot_longer(lignin, !Sample:Component, names_to = "Repeat", values_to = "Concentration")
+
+fa<-
+  read_xlsx(
+    "../old code and data/SupplementaryTable2_CellwallandGeneExpressionData.xlsx",
+    "FA"
+  )
+fa <-
+  pivot_longer(fa, !Sample:Component, names_to = "Repeat", values_to = "Concentration")
+
+pCA<-
+  read_xlsx(
+    "../old code and data/SupplementaryTable2_CellwallandGeneExpressionData.xlsx",
+    "pCA"
+  )
+pCA <-
+  pivot_longer(pCA, !Sample:Component, names_to = "Repeat", values_to = "Concentration")
+
+ED8<-
+  read_xlsx(
+    "../old code and data/SupplementaryTable2_CellwallandGeneExpressionData.xlsx",
+    "ED8"
+  )
+colnames(ED8)[2]<-"Component"
+ED8$Component<-"ED8"
+ED8 <-
+  pivot_longer(ED8, !Sample:Component, names_to = "Repeat", values_to = "Concentration")
+
+ED16<-
+  read_xlsx(
+    "../old code and data/SupplementaryTable2_CellwallandGeneExpressionData.xlsx",
+    "ED16"
+  )
+colnames(ED16)[2]<-"Component"
+ED16$Component<-"ED16"
+ED16 <-
+  pivot_longer(ED16, !Sample:Component, names_to = "Repeat", values_to = "Concentration")
+
+ED24<-
+  read_xlsx(
+    "../old code and data/SupplementaryTable2_CellwallandGeneExpressionData.xlsx",
+    "ED24"
+  )
+colnames(ED24)[2]<-"Component"
+ED24$Component<-"ED24"
+ED24 <-
+  pivot_longer(ED24, !Sample:Component, names_to = "Repeat", values_to = "Concentration")
+
+phy<-rbind(fa,pCA,lignin,ED8,ED16,ED24)
+phy$Sample<-paste0(phy$Sample,"-",rep(1:3,108))
+phy<-phy[,-3]
+phy<-pivot_wider(phy,names_from = "Component",
+              values_from = "Concentration")
+
+TFA<-
+  read_xlsx(
+    "../old code and data/SupplementaryTable2_CellwallandGeneExpressionData.xlsx",
+    "TFA sugars",
+    skip = 1
+  )
+# maybe some mistake in original data, more repeats
+TFA<-TFA[c(-37:-39,-46),]
+colnames(TFA)[-1]<-str_to_title(str_sub(colnames(TFA)[-1],1,3))
+colnames(TFA)[2]<-"fucose"
+colnames(TFA)[8:9]<-c("GalA","GlcA")
+TFA$Sample<-paste0(TFA$Sample,"-",rep(1:3,18))
+
+phy2<-read.csv("../new_data_wetchem.csv")
+
+Cellulose<-
+  read_xlsx(
+    "../old code and data/SupplementaryTable2_CellwallandGeneExpressionData.xlsx",
+    "Cellulose",
+    skip = 1
+  )
+colnames(Cellulose)<-c("Samples","Concentration")
+# it seems cellulose is total_sugar
+Cellulose$Concentration-phy2$total_sugar
+sum(Cellulose$Samples==phy2$X)
+TFA$total_sugar <-
+  Cellulose[match(TFA$Sample, Cellulose$Samples), "Concentration", drop = T]
+
+phy<-left_join(TFA,phy,by=c("Sample"="Sample"))
+phy<-arrange(phy,Sample)
+phy2<-arrange(phy2,X)
+colnames(phy)<-colnames(phy2)
+colnames(phy)[1]<-"id"
+View(phy[,-1]-phy2[,-1])
+
+write.csv(phy,"CellWallComponent.csv",row.names = F)
+```
+
+
+
+
+

@@ -1,0 +1,28 @@
+\contentsline {section}{1.(30 points) Following the developments in modules 4.3 and 4.4, derive the expressions for ACF for:}{1}{section*.2}%
+\contentsline {subsection}{a.MA(1) and MA(2) models}{1}{section*.3}%
+\contentsline {subsubsection}{MA(1)}{1}{section*.4}%
+\contentsline {paragraph}{definition}{1}{section*.5}%
+\contentsline {paragraph}{Autocovariance}{1}{section*.6}%
+\contentsline {paragraph}{Autocorrelation}{1}{section*.7}%
+\contentsline {subsubsection}{MA(2)}{2}{section*.8}%
+\contentsline {paragraph}{MA(q) definition}{2}{section*.9}%
+\contentsline {paragraph}{MA(2) definition}{2}{section*.10}%
+\contentsline {paragraph}{Autocovariance of MA(q)}{2}{section*.11}%
+\contentsline {paragraph}{Autocovariance of MA(2)}{2}{section*.12}%
+\contentsline {paragraph}{Autocorrelation of MA(2)}{2}{section*.13}%
+\contentsline {subsection}{b.AR(1) and AR(2) models}{2}{section*.14}%
+\contentsline {subsubsection}{AR(1)}{2}{section*.15}%
+\contentsline {paragraph}{definition}{2}{section*.16}%
+\contentsline {paragraph}{Autocovariance}{2}{section*.17}%
+\contentsline {subparagraph}{When \(|\phi |\) \textless {} 1, y\textsubscript {t} is weakly stationary and ergodic}{3}{section*.18}%
+\contentsline {paragraph}{Autocorrelation}{3}{section*.19}%
+\contentsline {subsubsection}{AR(2)}{3}{section*.20}%
+\contentsline {paragraph}{definition}{3}{section*.21}%
+\contentsline {subparagraph}{For stationarity:}{3}{section*.22}%
+\contentsline {paragraph}{Autocovariance}{3}{section*.23}%
+\contentsline {paragraph}{Autocorrelation}{4}{section*.24}%
+\contentsline {paragraph}{Summary}{4}{section*.25}%
+\contentsline {section}{c.ARMA(1,1)}{4}{section*.26}%
+\contentsline {paragraph}{definition}{4}{section*.27}%
+\contentsline {paragraph}{Autocovariance}{4}{section*.28}%
+\contentsline {paragraph}{Autocorrelation}{5}{section*.29}%

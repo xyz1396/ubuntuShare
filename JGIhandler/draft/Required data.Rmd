@@ -1,0 +1,16 @@
+---
+title: "Required data"
+author: "xyz"
+date: "2021/1/21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The number in name column in alllinkAndNameMD5.txt is IMG taxon id. We need the *.a.depth.txt, *.a.gff,*.a.fna, and *.a.ko.txt file in the tar.gz file. For example, we need the 3300000221.a.fna, 3300000221.a.gff, 3300000221.a.fna, 3300000221.a.ko.txt in 3300000221.tar.gz. The link of the tar.gz file is also in alllinkAndNameMD5.txt. However, I cannot find any relations between taxon id and biosample id in goldData.xlsx. I reduplicate the taxon id according to the "Genome.Name...Sample.Name" in MetaDataWithTaxonIDandSampleName_reduplicated.csv.
+
+But only 106 files are removed. The genome.jgi.doe.gov/portal/ may forbid my account after downloading about 100 tar.gz files. As a result we need the access to download all of the about 10 thousand files.
+
+After we got all of the tar.gz files,We can re-run all KEGG annotations using HMM models.

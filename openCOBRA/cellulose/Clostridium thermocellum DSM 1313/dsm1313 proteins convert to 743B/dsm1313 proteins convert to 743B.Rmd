@@ -1,0 +1,58 @@
+---
+title: "dsm1313 proteins convert to 743B"
+author: "xyz"
+date: "2020/10/20"
+output: html_document
+---
+
+  [Clostridium thermocellum DSM 1313 genome](https://www.ncbi.nlm.nih.gov/nuccore/CP002416.1)  
+  
+  [Clostridium cellulovorans 743B, complete genome](https://www.ncbi.nlm.nih.gov/nuccore/CP002160)  
+  
+
+
+### convert protein name to gene id
+
+```{r}
+library(Biostrings)
+library(stringr)
+dsm<-readAAStringSet("CP002416.1.proteins.fasta",format="fasta")
+names(dsm)<-str_sub(str_extract(names(dsm),"\\[locus_tag=.*?]"),12,-2)
+writeXStringSet(dsm,"dsm1313.fasta")
+b743<-readAAStringSet("CP002160.1.proteins.fasta",format="fasta")
+names(b743)<-str_sub(str_extract(names(b743),"\\[locus_tag=.*?]"),12,-2)
+writeXStringSet(b743,"b743.fasta")
+```
+
+### blast
+
+```{bash}
+conda activate openCOBRA
+conda install blast
+nohup blastp -query dsm1313.fasta -subject b743.fasta -outfmt 5 -evalue 1e-6 -out "dsm1313 proteins convert to 743B.xml" &>"dsm1313 proteins convert to 743B.log" &
+python3 blastxml_to_tabular.py -o "dsm1313 proteins convert to 743B.xml.txt" -c std "dsm1313 proteins convert to 743B.xml"
+```
+
+### output the best hit
+
+```{r}
+library(tidyverse)
+df<-read.table("dsm1313 proteins convert to 743B.xml.txt")
+# 1	qseqid	Query Seq-id (ID of your sequence)
+# 2	sseqid	Subject Seq-id (ID of the database hit)
+# 3	pident	Percentage of identical matches
+# 4	length	Alignment length
+# 5	mismatch	Number of mismatches
+# 6	gapopen	Number of gap openings
+# 7	qstart	Start of alignment in query
+# 8	qend	End of alignment in query
+# 9	sstart	Start of alignment in subject (database hit)
+# 10	send	End of alignment in subject (database hit)
+# 11	evalue	Expectation value (E-value)
+# 12	bitscore	Bit score
+df<-arrange(df,V1,desc(V12))
+df<-distinct(df, V1, .keep_all = TRUE)
+colnames(df)[1:2] <- c("dsm1313","743B")
+write.csv(df[,1:2],"dsm1313 to 743B.csv",row.names =F)
+```
+

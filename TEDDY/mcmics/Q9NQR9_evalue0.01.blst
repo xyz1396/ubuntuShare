@@ -1,0 +1,309 @@
+BLASTP 2.9.0+
+
+
+Reference: Stephen F. Altschul, Thomas L. Madden, Alejandro A.
+Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J.
+Lipman (1997), "Gapped BLAST and PSI-BLAST: a new generation of
+protein database search programs", Nucleic Acids Res. 25:3389-3402.
+
+
+Reference for composition-based statistics: Alejandro A. Schaffer,
+L. Aravind, Thomas L. Madden, Sergei Shavirin, John L. Spouge, Yuri
+I. Wolf, Eugene V. Koonin, and Stephen F. Altschul (2001),
+"Improving the accuracy of PSI-BLAST protein database searches with
+composition-based statistics and other refinements", Nucleic Acids
+Res. 29:2994-3005.
+
+
+
+Database: /work/TEDDY/cluster/scaffolds/737protien_min50.fasta
+           158,247,178 sequences; 46,940,328,849 total letters
+
+
+
+Query= sp|Q9NQR9|G6PC2_HUMAN Glucose-6-phosphatase 2 OS=Homo sapiens
+OX=9606 GN=G6PC2 PE=1 SV=1
+
+Length=355
+                                                                      Score        E
+Sequences producing significant alignments:                          (Bits)     Value
+
+895056_NODE_6265_length_11908_cov_7.850924_2 # 3178 # 4122 # -1 #...  49.7       0.004
+966413_NODE_29_length_178563_cov_25.220466_7 # 9446 # 10390 # 1 #...  49.3       0.006
+716925_NODE_50218_length_1144_cov_2.269972_2 # 193 # 1137 # 1 # I...  49.3       0.006
+661783_NODE_16_length_162366_cov_14.404236_82 # 99886 # 100830 # ...  49.3       0.006
+425286_NODE_4824_length_4680_cov_5.406054_2 # 3091 # 4035 # -1 # ...  49.3       0.006
+811853_NODE_35287_length_1179_cov_1.734875_1 # 2 # 904 # 1 # ID=3...  48.9       0.006
+938864_NODE_6003_length_2513_cov_2.601302_1 # 3 # 920 # -1 # ID=6...  48.9       0.007
+248070_NODE_27596_length_2304_cov_4.176968_3 # 1785 # 2303 # 1 # ...  47.4       0.007
+521294_NODE_13096_length_3915_cov_4.580311_1 # 2 # 601 # -1 # ID=...  47.8       0.007
+893262_NODE_12670_length_5508_cov_3.691913_1 # 3 # 515 # -1 # ID=...  47.4       0.008
+6064400_NODE_5184_length_3475_cov_2.819883_1 # 2 # 880 # 1 # ID=5...  48.1       0.010
+
+
+>895056_NODE_6265_length_11908_cov_7.850924_2 # 3178 # 4122 # 
+-1 # ID=6265_2;partial=00;start_type=ATG;rbs_motif=None;rbs_spacer=None;gc_cont=0.458
+Length=315
+
+ Score = 49.7 bits (117),  Expect = 0.004, Method: Compositional matrix adjust.
+ Identities = 75/324 (23%), Positives = 127/324 (39%), Gaps = 51/324 (16%)
+
+Query  25   FLNFMSNVGDPRNIFFIYFPLCFQFNQTVGTKMIWVAVIGDWLNLIFKWILFGHRPYWWV  84
+            F +F++ +G+      +   + + FN+  GT M     +G  +N + K     +RP  W+
+Sbjct  23   FFSFITTLGESFIPVLLMAAVYWCFNKKAGTYMCLAEGVGGLVNSVLKISFCVYRP--WI  80
+
+Query  85   QETQIYPNHSSPCLEQFPTTCETGPGSPSGHAMGASCVWYVMVTAALSHTVCGMDKFSIT  144
+            ++  I P   +        T  TG   PSGH+  A+C +             G       
+Sbjct  81   RDPGIEPIAGA-------KTTATGYSFPSGHSTKATCYY-------------GSLALYFR  120
+
+Query  145  LHRLTWSFLWSVFWLIQISVCISRVFIATHFPHQVILGVIGGMLVAEAFEHTPGIQTASL  204
+             +R    FL+SV +L    V +SR F+  H P  V++G     LV     +        L
+Sbjct  121  KYRFVVVFLFSVIFL----VMLSRNFLGVHTPQDVLVGFGSAFLVILLMGYV-------L  169
+
+Query  205  GTYLKTNLFLFLFAVGFYLLLRVLNIDLLWSVPIAKKWCANP---DWIHIDTTPFAGLVR  261
+              YL+ N    ++ V   L+  VL I    +    + W       D   + T  F     
+Sbjct  170  NDYLEKNPEKDIWVVAAMLICGVLIIIYAMTKSYPQNWVDGKLLVDPAKMVTDVFG----  225
+
+Query  262  NLGVLFG--LGFAINSEMFLLSCRGGNNYTLSFRLLCALTSLTILQLYHFLQIPTHEEHL  319
+            N+G  FG  +G+ +       S  G    TL F++   L    ++ + H+  I  +  +L
+Sbjct  226  NVGFAFGGAIGWIVERRKIKFSVEG----TLYFKIRRYLIGAAVITVLHY--ILRNVFNL  279
+
+Query  320  F---YVLSFCKSASIPLTVVAFIP  340
+            F   Y  +F  +  +P  ++A  P
+Sbjct  280  FLDAYAAAFIYNFLVPFFILAIYP  303
+
+
+>966413_NODE_29_length_178563_cov_25.220466_7 # 9446 # 10390 # 
+1 # ID=29_7;partial=00;start_type=ATG;rbs_motif=AGGAG;rbs_spacer=5-10bp;gc_cont=0.436
+Length=315
+
+ Score = 49.3 bits (116),  Expect = 0.006, Method: Compositional matrix adjust.
+ Identities = 42/165 (25%), Positives = 70/165 (42%), Gaps = 26/165 (16%)
+
+Query  25   FLNFMSNVGDPRNIFFIYFPLCFQFNQTVGTKMIWVAVIGDWLNLIFKWILFGHRPYWWV  84
+            F +F++ +G+      +   + + FN+  GT M     +G  +N + K     +RP  W+
+Sbjct  23   FFSFITTLGESFIPVLLMAAVYWCFNKKAGTYMCLAEGVGGLVNSVLKISFCVYRP--WI  80
+
+Query  85   QETQIYPNHSSPCLEQFPTTCETGPGSPSGHAMGASCVWYVMVTAALSHTVCGMDKFSIT  144
+            ++ +I P   +        T  TG   PSGH+  A+C +             G       
+Sbjct  81   RDPRIEPIAGA-------KTTATGYSFPSGHSTKATCYY-------------GSLALYFR  120
+
+Query  145  LHRLTWSFLWSVFWLIQISVCISRVFIATHFPHQVILGVIGGMLV  189
+             +R    FL+SV +L    V +SR F+  H P  V++G     LV
+Sbjct  121  KYRFVVVFLFSVIFL----VMLSRNFLGVHTPQDVLIGFGSAFLV  161
+
+
+>716925_NODE_50218_length_1144_cov_2.269972_2 # 193 # 1137 # 1 
+# ID=50218_2;partial=00;start_type=ATG;rbs_motif=None;rbs_spacer=None;gc_cont=0.436
+Length=315
+
+ Score = 49.3 bits (116),  Expect = 0.006, Method: Compositional matrix adjust.
+ Identities = 42/165 (25%), Positives = 70/165 (42%), Gaps = 26/165 (16%)
+
+Query  25   FLNFMSNVGDPRNIFFIYFPLCFQFNQTVGTKMIWVAVIGDWLNLIFKWILFGHRPYWWV  84
+            F +F++ +G+      +   + + FN+  GT M     +G  +N + K     +RP  W+
+Sbjct  23   FFSFITTLGESFIPVLLMAAVYWCFNKKAGTYMCLAEGVGGLVNSVLKISFCVYRP--WI  80
+
+Query  85   QETQIYPNHSSPCLEQFPTTCETGPGSPSGHAMGASCVWYVMVTAALSHTVCGMDKFSIT  144
+            ++ +I P   +        T  TG   PSGH+  A+C +             G       
+Sbjct  81   RDPRIEPIAGA-------KTTATGYSFPSGHSTKATCYY-------------GSLALYFR  120
+
+Query  145  LHRLTWSFLWSVFWLIQISVCISRVFIATHFPHQVILGVIGGMLV  189
+             +R    FL+SV +L    V +SR F+  H P  V++G     LV
+Sbjct  121  KYRFVVVFLFSVIFL----VMLSRNFLGVHTPQDVLIGFGSAFLV  161
+
+
+>661783_NODE_16_length_162366_cov_14.404236_82 # 99886 # 100830 
+# 1 # ID=16_82;partial=00;start_type=ATG;rbs_motif=AGGAG;rbs_spacer=5-10bp;gc_cont=0.436
+Length=315
+
+ Score = 49.3 bits (116),  Expect = 0.006, Method: Compositional matrix adjust.
+ Identities = 42/165 (25%), Positives = 70/165 (42%), Gaps = 26/165 (16%)
+
+Query  25   FLNFMSNVGDPRNIFFIYFPLCFQFNQTVGTKMIWVAVIGDWLNLIFKWILFGHRPYWWV  84
+            F +F++ +G+      +   + + FN+  GT M     +G  +N + K     +RP  W+
+Sbjct  23   FFSFITTLGESFIPVLLMAAVYWCFNKKAGTYMCLAEGVGGLVNSVLKISFCVYRP--WI  80
+
+Query  85   QETQIYPNHSSPCLEQFPTTCETGPGSPSGHAMGASCVWYVMVTAALSHTVCGMDKFSIT  144
+            ++ +I P   +        T  TG   PSGH+  A+C +             G       
+Sbjct  81   RDPRIEPIAGA-------KTTATGYSFPSGHSTKATCYY-------------GSLALYFR  120
+
+Query  145  LHRLTWSFLWSVFWLIQISVCISRVFIATHFPHQVILGVIGGMLV  189
+             +R    FL+SV +L    V +SR F+  H P  V++G     LV
+Sbjct  121  KYRFVVVFLFSVIFL----VMLSRNFLGVHTPQDVLIGFGSAFLV  161
+
+
+>425286_NODE_4824_length_4680_cov_5.406054_2 # 3091 # 4035 # -1 
+# ID=4824_2;partial=00;start_type=ATG;rbs_motif=None;rbs_spacer=None;gc_cont=0.437
+Length=315
+
+ Score = 49.3 bits (116),  Expect = 0.006, Method: Compositional matrix adjust.
+ Identities = 42/165 (25%), Positives = 70/165 (42%), Gaps = 26/165 (16%)
+
+Query  25   FLNFMSNVGDPRNIFFIYFPLCFQFNQTVGTKMIWVAVIGDWLNLIFKWILFGHRPYWWV  84
+            F +F++ +G+      +   + + FN+  GT M     +G  +N + K     +RP  W+
+Sbjct  23   FFSFITTLGESFIPVLLMAAVYWCFNKKAGTYMCLAEGVGGLVNSVLKISFCVYRP--WI  80
+
+Query  85   QETQIYPNHSSPCLEQFPTTCETGPGSPSGHAMGASCVWYVMVTAALSHTVCGMDKFSIT  144
+            ++ +I P   +        T  TG   PSGH+  A+C +             G       
+Sbjct  81   RDPRIEPIAGA-------KTIATGYSFPSGHSTKATCYY-------------GSLALYFR  120
+
+Query  145  LHRLTWSFLWSVFWLIQISVCISRVFIATHFPHQVILGVIGGMLV  189
+             +R    FL+SV +L    V +SR F+  H P  V++G     LV
+Sbjct  121  KYRFVVVFLFSVIFL----VMLSRNFLGVHTPQDVLIGFGSAFLV  161
+
+
+>811853_NODE_35287_length_1179_cov_1.734875_1 # 2 # 904 # 1 # 
+ID=35287_1;partial=10;start_type=Edge;rbs_motif=None;rbs_spacer=None;gc_cont=0.446
+Length=301
+
+ Score = 48.9 bits (115),  Expect = 0.006, Method: Compositional matrix adjust.
+ Identities = 42/165 (25%), Positives = 70/165 (42%), Gaps = 26/165 (16%)
+
+Query  25   FLNFMSNVGDPRNIFFIYFPLCFQFNQTVGTKMIWVAVIGDWLNLIFKWILFGHRPYWWV  84
+            F +F++ +G+      +   + + FN+  GT M     +G  +N + K     +RP  W+
+Sbjct  9    FFSFITTLGESFIPVLLMAAVYWCFNKKAGTYMCLAEGVGGLVNSVLKISFCVYRP--WI  66
+
+Query  85   QETQIYPNHSSPCLEQFPTTCETGPGSPSGHAMGASCVWYVMVTAALSHTVCGMDKFSIT  144
+            ++ +I P   +        T  TG   PSGH+  A+C +             G       
+Sbjct  67   RDPRIEPIAGA-------KTTATGYSFPSGHSTKATCYY-------------GSLALYFR  106
+
+Query  145  LHRLTWSFLWSVFWLIQISVCISRVFIATHFPHQVILGVIGGMLV  189
+             +R    FL+SV +L    V +SR F+  H P  V++G     LV
+Sbjct  107  KYRFVVVFLFSVIFL----VMLSRNFLGVHTPQDVLIGFGSAFLV  147
+
+
+>938864_NODE_6003_length_2513_cov_2.601302_1 # 3 # 920 # -1 # 
+ID=6003_1;partial=10;start_type=ATG;rbs_motif=AGGAG;rbs_spacer=5-10bp;gc_cont=0.444
+Length=306
+
+ Score = 48.9 bits (115),  Expect = 0.007, Method: Compositional matrix adjust.
+ Identities = 42/165 (25%), Positives = 70/165 (42%), Gaps = 26/165 (16%)
+
+Query  25   FLNFMSNVGDPRNIFFIYFPLCFQFNQTVGTKMIWVAVIGDWLNLIFKWILFGHRPYWWV  84
+            F +F++ +G+      +   + + FN+  GT M     +G  +N + K     +RP  W+
+Sbjct  23   FFSFITTLGESFIPVLLMAAVYWCFNKKAGTYMCLAEGVGGLVNSVLKISFCVYRP--WI  80
+
+Query  85   QETQIYPNHSSPCLEQFPTTCETGPGSPSGHAMGASCVWYVMVTAALSHTVCGMDKFSIT  144
+            ++ +I P   +        T  TG   PSGH+  A+C +             G       
+Sbjct  81   RDPRIEPIAGA-------KTTATGYSFPSGHSTKATCYY-------------GSLALYFR  120
+
+Query  145  LHRLTWSFLWSVFWLIQISVCISRVFIATHFPHQVILGVIGGMLV  189
+             +R    FL+SV +L    V +SR F+  H P  V++G     LV
+Sbjct  121  KYRFVVVFLFSVIFL----VMLSRNFLGVHTPQDVLIGFGSAFLV  161
+
+
+>248070_NODE_27596_length_2304_cov_4.176968_3 # 1785 # 2303 # 
+1 # ID=27596_3;partial=01;start_type=ATG;rbs_motif=AAAA;rbs_spacer=4bp;gc_cont=0.343
+Length=173
+
+ Score = 47.4 bits (111),  Expect = 0.007, Method: Compositional matrix adjust.
+ Identities = 42/167 (25%), Positives = 65/167 (39%), Gaps = 38/167 (23%)
+
+Query  38   IFFIYFPLCFQFNQTVGTKMIWVAVIGDWLNLIFKWILFGHRPYWWVQETQIYPNHSSPC  97
+            I  IY+    +F + +G       ++ +W+  IFK      RP                 
+Sbjct  38   ILCIYWGYNKKFGEYIGYSYFTSCLLNNWIKNIFK----AERPI------------GKEG  81
+
+Query  98   LEQFPTTCETGPGSPSGHAMGASCVWYVMVTAALSHTVCGMDKFSITLHRLTWSFLWSVF  157
+            +    T   TG   PSGH  GAS  +                 F+I +     S  W   
+Sbjct  82   IRSLRTQTATGYSFPSGHTQGASSTY-----------------FAIGIFLKKRSIRWGSL  124
+
+Query  158  WLIQISVCISRVFIATHFPHQVILGVIGGMLVAEA----FEHTPGIQ  200
+             LI + V ISR+++  H+P  VI+G++ G++VA      +E T   Q
+Sbjct  125  LLILL-VAISRLYLGVHYPRDVIVGLLLGIIVATITYYLYERTENKQ  170
+
+
+>521294_NODE_13096_length_3915_cov_4.580311_1 # 2 # 601 # -1 # 
+ID=13096_1;partial=10;start_type=ATG;rbs_motif=AGGAGG;rbs_spacer=3-4bp;gc_cont=0.447
+Length=200
+
+ Score = 47.8 bits (112),  Expect = 0.007, Method: Compositional matrix adjust.
+ Identities = 41/165 (25%), Positives = 69/165 (42%), Gaps = 26/165 (16%)
+
+Query  25   FLNFMSNVGDPRNIFFIYFPLCFQFNQTVGTKMIWVAVIGDWLNLIFKWILFGHRPYWWV  84
+            F +F++ +G+      +   + + FN+  GT M     +G  +N + K     +RP  W+
+Sbjct  23   FFSFITTLGESFIPVLLMAAVYWCFNKKAGTYMCLAEGVGGLVNSVLKISFCVYRP--WI  80
+
+Query  85   QETQIYPNHSSPCLEQFPTTCETGPGSPSGHAMGASCVWYVMVTAALSHTVCGMDKFSIT  144
+            ++  I P   +        T  TG   PSGH+  A+C +             G       
+Sbjct  81   RDPGIEPIAGAK-------TTATGYSFPSGHSTKATCYY-------------GSLALYFR  120
+
+Query  145  LHRLTWSFLWSVFWLIQISVCISRVFIATHFPHQVILGVIGGMLV  189
+             +R    FL+SV +L+ +S    R F+  H P  V++G     LV
+Sbjct  121  KYRFVVVFLFSVIFLVMLS----RNFLGVHTPQDVLVGFGSAFLV  161
+
+
+>893262_NODE_12670_length_5508_cov_3.691913_1 # 3 # 515 # -1 # 
+ID=12670_1;partial=10;start_type=ATG;rbs_motif=AGGAGG;rbs_spacer=3-4bp;gc_cont=0.454
+Length=171
+
+ Score = 47.4 bits (111),  Expect = 0.008, Method: Compositional matrix adjust.
+ Identities = 37/141 (26%), Positives = 58/141 (41%), Gaps = 26/141 (18%)
+
+Query  49   FNQTVGTKMIWVAVIGDWLNLIFKWILFGHRPYWWVQETQIYPNHSSPCLEQFPTTCETG  108
+            FN+  GT M     +G  +N + K     +RP  W+++  I P   +        T  TG
+Sbjct  47   FNKKAGTYMCLAEGVGGLVNSVLKISFCVYRP--WIRDPGIEPIAGAK-------TTATG  97
+
+Query  109  PGSPSGHAMGASCVWYVMVTAALSHTVCGMDKFSITLHRLTWSFLWSVFWLIQISVCISR  168
+               PSGH+  A+C +             G        +R    FL+S+ +L+ +S    R
+Sbjct  98   YSFPSGHSTNATCYY-------------GSLALYFRKYRFVVVFLFSIVFLVMLS----R  140
+
+Query  169  VFIATHFPHQVILGVIGGMLV  189
+             F+  H P  V++G     LV
+Sbjct  141  NFLGVHTPQDVLVGFGSAFLV  161
+
+
+>6064400_NODE_5184_length_3475_cov_2.819883_1 # 2 # 880 # 1 # 
+ID=5184_1;partial=10;start_type=Edge;rbs_motif=None;rbs_spacer=None;gc_cont=0.469
+Length=293
+
+ Score = 48.1 bits (113),  Expect = 0.010, Method: Compositional matrix adjust.
+ Identities = 74/324 (23%), Positives = 126/324 (39%), Gaps = 51/324 (16%)
+
+Query  25   FLNFMSNVGDPRNIFFIYFPLCFQFNQTVGTKMIWVAVIGDWLNLIFKWILFGHRPYWWV  84
+            F +F++ +G+      +   + + FN+  GT M      G  +N + K     +RP  W+
+Sbjct  1    FFSFITTLGESFIPVLLMAAVYWCFNKKAGTYMCLAEGAGGLVNSVLKISFCVYRP--WI  58
+
+Query  85   QETQIYPNHSSPCLEQFPTTCETGPGSPSGHAMGASCVWYVMVTAALSHTVCGMDKFSIT  144
+            ++  I P   +        T  TG   PSGH+  A+C +             G       
+Sbjct  59   RDPGIEPIAGA-------KTTATGYSFPSGHSTKATCYY-------------GSLALYFR  98
+
+Query  145  LHRLTWSFLWSVFWLIQISVCISRVFIATHFPHQVILGVIGGMLVAEAFEHTPGIQTASL  204
+             +R    FL+SV +L+ +S    R F+  H P  V++G     LV     +        L
+Sbjct  99   KYRFVVVFLFSVIFLVMLS----RNFLGVHTPQDVLVGFGSAFLVILLMGYV-------L  147
+
+Query  205  GTYLKTNLFLFLFAVGFYLLLRVLNIDLLWSVPIAKKWCANP---DWIHIDTTPFAGLVR  261
+              YL+ N    ++ V   L+  VL I    +    + W       D   + T  F     
+Sbjct  148  NDYLEKNPEKDIWVVAAMLICGVLIIIYAMTKSYPQNWVDGKLLVDPAKMVTDVFG----  203
+
+Query  262  NLGVLFG--LGFAINSEMFLLSCRGGNNYTLSFRLLCALTSLTILQLYHFLQIPTHEEHL  319
+            N+G  FG  +G+ +       S  G    TL F++   L    ++ + H+  I  +  +L
+Sbjct  204  NVGFAFGGAIGWIVERRKIKFSVEG----TLYFKIRRYLIGAAVITVLHY--ILRNVFNL  257
+
+Query  320  F---YVLSFCKSASIPLTVVAFIP  340
+            F   Y  +F  +  +P  ++A  P
+Sbjct  258  FLDAYAAAFIYNFLVPFFILAIYP  281
+
+
+
+Lambda      K        H        a         alpha
+   0.330    0.142    0.480    0.792     4.96 
+
+Gapped
+Lambda      K        H        a         alpha    sigma
+   0.267   0.0410    0.140     1.90     42.6     43.6 
+
+Effective search space used: 4536622950837
+
+
+  Database: /work/TEDDY/cluster/scaffolds/737protien_min50.fasta
+    Posted date:  Jan 17, 2021  7:08 AM
+  Number of letters in database: 46,940,328,849
+  Number of sequences in database:  158,247,178
+
+
+
+Matrix: BLOSUM62
+Gap Penalties: Existence: 11, Extension: 1
+Neighboring words threshold: 11
+Window for multiple hits: 40
