@@ -132,7 +132,7 @@ nohup ldpred coord \
 
 [LDpred demo](https://hpc.nih.gov/apps/LDpred.html)
 
-```{bash "use autosome"}
+```{bash "use ukb autosome"}
 ldpred coord \
   --gf train.autosome \
   --ssf p800k.autosome.tsv \
@@ -140,6 +140,20 @@ ldpred coord \
   --ssf-format CUSTOM \
   --out coord.hdf5 \
   > coord.hdf5.log.txt 2>&1 & 
+```
+
+
+```{bash "use 1000 genome autosome"}
+
+# Error like "Did not find chromosome 1 in SS dataset."
+
+ldpred coord \
+  --gf all \
+  --ssf p800k.autosome.tsv \
+  --N 500000 \
+  --ssf-format CUSTOM \
+  --out all1000g.coord.hdf5 \
+  > all1000g.coord.hdf5.log.txt 2>&1 & 
 ```
 
 ```{bash "old test"}
@@ -164,5 +178,26 @@ nohup ldpred coord \
   --vgf diabetes/train \
   --out /scratch/yixiong/ldpred_yixiong/step1.xy.result \
   > /scratch/yixiong/ldpred_yixiong/step1.xy.log.txt 2>&1 & 
+```
+
+## gibbs
+
+```{bash}
+# 784256
+wc -l train.autosome.bim
+
+# --ldr LDR LD radius. A value corresponding M/3000, where M is the number of 
+# SNPs in the genome is recommended
+# 784256/3000=261
+
+# --N Number of individuals on which the summary statistics are assumed to be based on.
+
+nohup ldpred gibbs \
+  --cf coord.hdf5 \
+  --ldf ukb.gibbs.ldf_file \
+  --ldr 261 \
+  --out ukb.gibbs \
+  --N 500000 \
+> ukb.gibbs.log.txt 2>&1 &
 ```
 
