@@ -201,3 +201,27 @@ nohup ldpred gibbs \
 > ukb.gibbs.log.txt 2>&1 &
 ```
 
+## score
+
+```{bash "use 1000 genome autosome"}
+
+# error assert num_individs > 0, 'No phenotypes were found!'
+
+# --gf Validation genotype file.
+# --rf RF SNP weights file (prefix used for output in preceding step)
+
+nohup ldpred score \
+  --gf all \
+  --rf ukb.gibbs \
+  --out all.score \
+> all.score.log.txt 2>&1 &  
+```
+
+```{bash "use ukb"}
+
+nohup ldpred score \
+  --gf train.autosome \
+  --rf ukb.gibbs \
+  --out train.score \
+> train.score.log.txt 2>&1 &  
+```
