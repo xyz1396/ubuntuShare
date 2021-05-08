@@ -1,0 +1,57 @@
+---
+title: "impute2 100 individuals"
+author: "xyz"
+date: "2021/4/29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# filter 100 individuals
+
+```{bash}
+cd /scratch/yixiong/impute1000g/test100
+head ../results/chr22.filter.fam -n 100 | cut -f 1,2 -d " " > chr22.test100list.txt
+plink --bfile ../results/chr22.filter \
+  --keep chr22.test100list.txt \
+  --make-bed \
+  --out chr22.test100
+```
+
+# phasing
+
+```{bash}
+nohup time shapeit \
+  --force \
+  --input-bed chr22.test100.bed  chr22.test100.bim  chr22.test100.fam \
+  --input-map ../results/genetic_map_GRCh37_chr22_3.txt \
+  --thread 20 \
+  --effective-size 11418 \
+  --output-max chr22.test100.haps chr22.test100.sample \
+  --output-log chr22.test100 \
+> chr22.test100.log2.txt 2>&1 & 
+
+shapeit \
+  -convert \
+  --input-haps chr22.test100 \
+  --output-ref chr22.test100.phased.hap chr22.test100.phased.leg chr22.test100.phased.sam
+```
+
+# impute
+
+```{bash}
+impute2 \
+   -m ../results/genetic_map_GRCh37_chr22_3.txt \
+   -known_haps_g ../data_files/1000GP_Phase3/1000GP_Phase3_chr22.hap \
+   -h chr22.test100.phased.hap \
+   -l chr22.test100.phased.leg \
+   -Ne 20000 \
+   -int 20.4e6 20.5e6 \
+   -o chr22.test100.impute2 \
+   -allow_large_regions \
+   -seed 367946
+```
+
+

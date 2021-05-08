@@ -1,0 +1,134 @@
+---
+title: "FINAL EXAM"
+author: "Yi Xiong"
+date: "2021/5/8"
+output: 
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1.Consider the ARMA(1, 2) model 
+
+$$
+\begin{aligned}
+Z_{t}&=0.5+0.8Z_{t-1}+\epsilon_{t}+\epsilon_{t-1}+\epsilon_{t-2}
+\end{aligned}	
+$$
+
+## a.	Compute the theoretical ACF and plot it 
+
+### definition
+
+$$
+\begin{aligned}
+Z_{t}=c+\phi_{1}Z_{t-1}+\epsilon_{t}+
+  \theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}
+\end{aligned}	
+$$
+
+### theoretical Autocovariance
+
+$$
+\begin{aligned}
+Z_{t}-\mu&=\phi_{1}(Z_{t-1}-\mu)+\epsilon_{t}+
+  \theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}\\
+\\
+\gamma_{0}&=E[Z_{t}-\mu]^{2}\\
+&=E[\phi_{1}(Z_{t-1}-\mu)+\epsilon_{t}+\theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}]^{2}\\
+&=\phi_{1}^{2}\gamma_{0}+\sigma^{2}+\theta_{1}^{2}\sigma^{2}+\theta_{2}^{2}\sigma^{2}
+  +2\phi_{1}\theta_{1}\sigma^{2}+2\phi_{1}\theta_{2}(\phi_{1}+\theta_{1})\sigma^{2}\\
+\\
+\gamma_{0}&=\frac{\sigma^{2}[1+2\phi_{1}\theta_{1}+2\phi_{1}\theta_{2}(\phi_{1}+\theta_{1})+
+  \theta_{1}^{2}+\theta^{2}_{2}]}
+{1-\phi_{1}^{2}}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+\gamma_{1}&=E[(Z_{t}-\mu)(Z_{t-1}-\mu)]\\
+&=E\{[\phi_{1}(Z_{t-1}-\mu)+\epsilon_{t}+\theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}]
+  [Z_{t-1}-\mu]\}\\
+&=\phi_{1}\gamma_{0}+\theta_{1}\sigma^{2}+\theta_{2}(\phi_{1}+\theta_{1})\sigma^{2}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+\gamma_{2}&=E[(Z_{t}-\mu)(Z_{t-2}-\mu)]\\
+&=E\{[\phi_{1}(Z_{t-1}-\mu)+\epsilon_{t}+\theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}]
+  [Z_{t-2}-\mu]\}\\
+&=\phi_{1}\gamma_{1}+\theta_{2}\sigma^{2}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+for \;j&\geqslant 3\\
+\\
+\gamma_{j}&=E[(Z_{t}-\mu)(Z_{t-j}-\mu)]\\
+&=E\{[\phi_{1}(Z_{t-1}-\mu)+\epsilon_{t}+\theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}]
+[Z_{t-j}-\mu]\}\\
+&=\phi_{1}E[(Z_{t-1}-\mu)(Z_{t-j}-\mu)]\\
+&=\phi_{1}\gamma_{j-1}
+\end{aligned}	
+$$
+
+### theoretical Autocorrelation
+
+$$
+\begin{aligned}
+\phi_{1}&=0.8\\
+\theta_{1}&=1\\
+\theta_{2}&=1\\
+\gamma_{0}&=\frac{\sigma^{2}[1+2\phi_{1}\theta_{1}+2\phi_{1}\theta_{2}(\phi_{1}+\theta_{1})+
+  \theta_{1}^{2}+\theta^{2}_{2}]}
+{1-\phi_{1}^{2}}\\
+\gamma_{1}&==\phi_{1}\gamma_{0}+\theta_{1}\sigma^{2}
+  +\theta_{2}(\phi_{1}+\theta_{1})\sigma^{2}\\
+\gamma_{2}&==\phi_{1}\gamma_{1}+\theta_{2}\sigma^{2}\\
+\gamma_{j}&=\phi_{1}\gamma_{j-1} \;\; for \;j \geqslant 3\\
+\rho_{1}&=\frac{\gamma_{1}}{\gamma_{0}}\\
+\rho_{2}&=\frac{\gamma_{2}}{\gamma_{0}}\\
+\rho_{j}&=\frac{\gamma_{j}}{\gamma_{0}}
+\end{aligned}	
+$$
+
+### plot
+
+```{r}
+
+```
+
+
+
+$$
+\begin{aligned}
+x_{t}&=\phi 
+\end{aligned}	
+$$
+
+
+$$
+\begin{aligned}
+x_{t}&=\phi 
+\end{aligned}	
+$$
+
+
+$$
+\begin{aligned}
+x_{t}&=\phi 
+\end{aligned}	
+$$
+
+
+$$
+\begin{aligned}
+x_{t}&=\phi 
+\end{aligned}	
+$$
