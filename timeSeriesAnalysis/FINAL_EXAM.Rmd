@@ -153,9 +153,7 @@ p
 ## c.	Compute the empirical ACF using the samples and compare it with your answer from (a) 
   
    
-The trends of answer from (a) and (c) is almost the same. But the ACF of (c)  
-
-fluctuate around zero in the right tail.
+The trends of answers from (a) and (c) are almost the same. But the ACF of (c) fluctuate around zero in the right tail.
   
   
 ```{r}
