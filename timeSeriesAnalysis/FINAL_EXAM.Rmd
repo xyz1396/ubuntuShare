@@ -1,0 +1,498 @@
+---
+title: "FINAL EXAM"
+author: "Yi Xiong"
+date: "2021/5/8"
+output: 
+  pdf_document:
+    toc: true
+    latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1.Consider the ARMA(1, 2) model 
+
+$$
+\begin{aligned}
+Z_{t}&=0.5+0.8Z_{t-1}+\epsilon_{t}+\epsilon_{t-1}+\epsilon_{t-2}
+\end{aligned}	
+$$
+
+## a.	Compute the theoretical ACF and plot it 
+
+### definition
+
+$$
+\begin{aligned}
+Z_{t}=c+\phi_{1}Z_{t-1}+\epsilon_{t}+
+  \theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}
+\end{aligned}	
+$$
+
+### theoretical Autocovariance
+
+$$
+\begin{aligned}
+Z_{t}-\mu&=\phi_{1}(Z_{t-1}-\mu)+\epsilon_{t}+
+  \theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}\\
+\\
+\gamma_{0}&=E[Z_{t}-\mu]^{2}\\
+&=E[\phi_{1}(Z_{t-1}-\mu)+\epsilon_{t}+\theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}]^{2}\\
+&=\phi_{1}^{2}\gamma_{0}+\sigma^{2}+\theta_{1}^{2}\sigma^{2}+\theta_{2}^{2}\sigma^{2}
+  +2\phi_{1}\theta_{1}\sigma^{2}+2\phi_{1}\theta_{2}(\phi_{1}+\theta_{1})\sigma^{2}\\
+\\
+\gamma_{0}&=\frac{\sigma^{2}[1+2\phi_{1}\theta_{1}+2\phi_{1}\theta_{2}(\phi_{1}+\theta_{1})+
+  \theta_{1}^{2}+\theta^{2}_{2}]}
+{1-\phi_{1}^{2}}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+\gamma_{1}&=E[(Z_{t}-\mu)(Z_{t-1}-\mu)]\\
+&=E\{[\phi_{1}(Z_{t-1}-\mu)+\epsilon_{t}+\theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}]
+  [Z_{t-1}-\mu]\}\\
+&=\phi_{1}\gamma_{0}+\theta_{1}\sigma^{2}+\theta_{2}(\phi_{1}+\theta_{1})\sigma^{2}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+\gamma_{2}&=E[(Z_{t}-\mu)(Z_{t-2}-\mu)]\\
+&=E\{[\phi_{1}(Z_{t-1}-\mu)+\epsilon_{t}+\theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}]
+  [Z_{t-2}-\mu]\}\\
+&=\phi_{1}\gamma_{1}+\theta_{2}\sigma^{2}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+for \;j&\geqslant 3\\
+\\
+\gamma_{j}&=E[(Z_{t}-\mu)(Z_{t-j}-\mu)]\\
+&=E\{[\phi_{1}(Z_{t-1}-\mu)+\epsilon_{t}+\theta_{1}\epsilon_{t-1}+\theta_{2}\epsilon_{t-2}]
+[Z_{t-j}-\mu]\}\\
+&=\phi_{1}E[(Z_{t-1}-\mu)(Z_{t-j}-\mu)]\\
+&=\phi_{1}\gamma_{j-1}
+\end{aligned}	
+$$
+
+### theoretical Autocorrelation
+
+$$
+\begin{aligned}
+\phi_{1}&=0.8\\
+\theta_{1}&=1\\
+\theta_{2}&=1\\
+\gamma_{0}&=\frac{\sigma^{2}[1+2\phi_{1}\theta_{1}+2\phi_{1}\theta_{2}(\phi_{1}+\theta_{1})+
+  \theta_{1}^{2}+\theta^{2}_{2}]}
+{1-\phi_{1}^{2}}\\
+\gamma_{1}&==\phi_{1}\gamma_{0}+\theta_{1}\sigma^{2}
+  +\theta_{2}(\phi_{1}+\theta_{1})\sigma^{2}\\
+\gamma_{2}&==\phi_{1}\gamma_{1}+\theta_{2}\sigma^{2}\\
+\gamma_{j}&=\phi_{1}\gamma_{j-1} \;\; for \;j \geqslant 3\\
+\rho_{1}&=\frac{\gamma_{1}}{\gamma_{0}}\\
+\rho_{2}&=\frac{\gamma_{2}}{\gamma_{0}}\\
+\rho_{j}&=\frac{\gamma_{j}}{\gamma_{0}}
+\end{aligned}	
+$$
+
+### Plot the ACF
+
+```{r}
+library(ggplot2)
+sigma <- 1
+phi1 <- 0.8
+theta1 <- 1
+theta2 <- 1
+gamma0 <-
+  sigma ** 2 * (1 + 2 * phi1 * theta1 + 2 * phi1 * theta2 * (phi1 + theta1) +
+                  theta1 ** 2 + theta2 ** 2) / (1 - phi1 ** 2)
+gamma1 <- phi1 * gamma0 + theta1 * sigma ** 2 + theta2 * (phi1 + theta1) *
+  sigma ** 2
+gamma2 <- phi1 * gamma1 + theta2 * sigma ** 2
+gamma3 <- c(gamma0, gamma1, gamma2)
+t <- 3
+while (t < 101) {
+  gamma3 <- c(gamma3, phi1 * gamma3[t])
+  t <- t + 1
+}
+p <- gamma3 / gamma0
+df <- data.frame(x = 0:100, y = p)
+p <- ggplot(df, aes(x = x, y = y)) +
+  geom_line() +
+  xlab("k") +
+  ylab(expression(rho[k]))
+p
+```
+
+## b.	Generate $Z_{t}$ for $1\leqslant t \leqslant 1000$ and plot $Z_{t}$
+
+```{r}
+set.seed(9527)
+e<-rnorm(1000)
+z1<-0.5+e[1]
+z2<-0.5+0.8*z1+e[2]+e[1]
+z<-c(z1,z2)
+t<-3
+while(t<1001){
+  z[t]<-0.5+0.8*z[t-1]+e[t]+e[t-1]+e[t-2]
+  t<-t+1
+}
+
+df <- data.frame(x = 1:1000, y = z)
+p <- ggplot(df, aes(x = x, y = y)) +
+  geom_line() +
+  xlab("t") +
+  ylab(expression(Z[t]))
+p
+```
+
+## c.	Compute the empirical ACF using the samples and compare it with your answer from (a) 
+  
+   
+The trends of answer from (a) and (c) is almost the same. But the ACF of (c)  
+
+fluctuate around zero in the right tail.
+  
+  
+```{r}
+p <- acf(z,lag.max = 100,plot = F)$acf
+df <- data.frame(x = 0:100, y = p)
+p <- ggplot(df, aes(x = x, y = y)) +
+  geom_line() +
+  xlab("k") +
+  ylab(expression(rho[k]))
+p
+```
+
+# 2. Download 1 time series containing trend and seasonality from http://www.statsci.org/datasets.html 
+  
+  
+[Mauna Loa Carbon Dioxide MLCO2.DAT](http://www.statsci.org/data/books/timeslab.zip)
+  
+  
+## a.	Plot the series and compute its ACF and PACF 
+
+```{r}
+co<-scan("MLCO2.DAT",skip =2)
+t<-1:length(co)
+df<-data.frame(x=t,y=co)
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  xlab("t")+
+  ylab(expression(x[t]))
+  # scale_x_continuous(breaks = scales::pretty_breaks(n = 100))
+p
+
+```
+
+### ACF
+
+```{r}
+p <- acf(co,lag.max = 100,plot = F)$acf
+df <- data.frame(x = 0:100, y = p)
+p <- ggplot(df, aes(x = x, y = y)) +
+  geom_line() +
+  xlab("k") +
+  ylab(expression(rho[k]))
+p
+```
+
+### PACF
+
+```{r}
+p <- pacf(co,lag.max = 100,plot = F)$acf
+df <- data.frame(x = 1:100, y = p)
+p <- ggplot(df, aes(x = x, y = y)) +
+  geom_line() +
+  xlab("k") +
+  ylab(expression(rho[k]))
+p
+```
+
+## b.	Based on the ACF and PACF, pick 2 distinct models and estimate their parameters 
+
+### Model 1: estimate by AR1 with season
+
+```{r}
+coAR1 <- arima(co , order = c(1, 0, 0))
+coAR1
+coAR1Season <-
+  arima(co ,
+        order = c(1, 0, 0),
+        seasonal = list(order = c(1, 0, 0), period = 12))
+coAR1Season
+```
+
+### Model 2: estimate by AR1 with season and trend
+
+```{r}
+trend <- time(co)
+coAR1SeasonTrend <-
+  arima(co ,
+        order = c(1, 0, 0),
+        seasonal = list(order = c(1, 0, 0), period = 12),
+        xreg = trend)
+coAR1SeasonTrend
+```
+
+## c.	Compare the residual for each model 
+  
+The residual of model2 is less
+  
+```{r}
+coAR1Season.re<-residuals(coAR1Season)
+sum(coAR1Season.re**2)
+coAR1SeasonTrend.re<-residuals(coAR1SeasonTrend)
+sum(coAR1SeasonTrend.re**2)
+```
+
+
+## d.	Which model is better and why?
+  
+The model 2 is better because it has less residual and less AIC. And it considers
+the trend of the data
+  
+# 3. Derive an expression for the power spectral density, $S_{y}(\omega)$ for the ARMA(1,1) model and plot $S_{y}(\omega)$ for $0\leqslant \omega \leqslant \pi$
+  
+  
+Define ARMA(1,1) 
+
+$$
+\begin{aligned}
+x_{t}=c+\phi_{1}x_{t-1}+\epsilon_{t}+\theta_{1}\epsilon_{t-1}
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+S_{y}&=\frac{1}{2\pi}\left \{ \gamma_{0}+2\sum^{\infty}_{j=1} 
+  [\gamma_{j}cos(j\omega)]\right \}\\
+S_{y}&=\frac{\sigma^2}{2\pi}\bar{\psi}(e^{-i\omega})\bar{\psi}(e^{i\omega})\\
+  &=\frac{\sigma^2}{2\pi} \frac{\prod_{j=1}^{p}[1+\alpha^2_j-2\alpha_j cos\omega]}
+  {\prod_{j=1}^{q}[1+\beta^2_j-2\beta_j cos\omega]}\\
+  &=\frac{\sigma^2}{2\pi} \frac{1+\alpha^2_1-2\alpha_1 cos\omega}
+  {1+\beta^2_1-2\beta_1 cos\omega}
+\end{aligned}	
+$$
+  
+  
+
+$$
+\begin{aligned}
+\alpha_1 \; is \; root \; of \; \phi(L)&=1+\theta_1L=0\\
+  \beta_1 \; is \; root \; of \; \psi(L)&=1-\phi_1L=0\\
+\alpha_{1}&=-\frac{1}{\theta_1}\\
+\beta_{1}&=\frac{1}{\phi_1}
+\end{aligned}	
+$$
+```{r dev='cairo_pdf'}
+sigma <- 1
+phi1 <- 0.5
+theta1 <- 0.5
+alpha1 <- -1 / theta1
+beta1 <- 1 / phi1
+omega <- seq(0, pi, 0.001)
+sy <- sigma ** 2 / (2 * pi) * (1 + alpha1 ** 2 - 2 * alpha1 * cos(omega)) /
+  (1 + beta1 ** 2 - 2 * beta1 * cos(omega))
+dfP <- data.frame(x = omega, y = sy)
+p <- ggplot(dfP, aes(x = x, y = y)) +
+  geom_line() +
+  xlab(expression(omega)) +
+  ylab(expression(Sy[(omega)])) +
+  scale_x_continuous(
+    breaks  = c(seq(0, pi, pi / 2)),
+    labels = c("0", "\u03c0/2", "\u03c0")
+  )
+p
+```
+
+# 4. Prove that conditional expectation minimizes the mean square error.
+  
+Let  
+  
+$$
+\begin{aligned}
+E[x_{k+1}|F_k]&=\hat{x_{k+1}}|k \\
+e_{k+1}&=x_{k+1}-\hat{x}_{k+1}|k
+\end{aligned}	
+$$
+
+
+$$
+\begin{aligned}
+MSE=E[e^2_{k+1}]=E[(x_{k+1}-\hat{x}_{k+1})^2]
+\end{aligned}	
+$$
+
+Let $g_k$ , an arbitrary function of the available information in
+$F_k$ , be a candidate forecast
+
+$$
+\begin{aligned}
+MSE&=E[(x_{k+1}-g_k)^2] \\
+&=E[(x_{k+1}-\hat{x}_{k+1}|k+\hat{x}_{k+1}|k-g_k)^2] \\
+&=E[(x_{k+1}-\hat{x}_{k+1}|k)^2]+E[(\hat{x}_{k+1}|k-g_k)^2]+
+  2E[(x_{k+1}-\hat{x}_{k+1}|k)(\hat{x}_{k+1}|k-g_k)]\\
+\eta_{k+1} &=(x_{k+1}-\hat{x}_{k+1}|k)(\hat{x}_{k+1}|k-g_k)
+\end{aligned}	
+$$
+  
+Since both $\hat{x}_{k+1}|k$ and $g_k$ are functions of $F_k$  
+  
+$$
+\begin{aligned}
+E[\eta_{k+1|F_k}]&=[E[x_{k+1}|F_k]-\hat{x}_{k+1}|k]\cdot[\hat{x}_{k+1}|k-g_k]=0 \\
+E[\eta_{k+1}]&=0 \\
+MSE&=E[(x_{k+1}-\hat{x}_{k+1}|k)^2]+E[(\hat{x}_{k+1}|k-g_k)^2]
+\end{aligned}	
+$$
+
+MSE is minimum when $g_k = \hat{x}_{k+1}|k$, conditional expectation minimizes the mean square error  
+
+$$
+\begin{aligned}
+MSE&=E[(x_{k+1}-\hat{x}_{k+1}|k)^2]
+\end{aligned}	
+$$
+
+# 5. Compute expressions for the partial autocorrelation function for AR(1) and MA(1) models. 
+
+## AR(1)
+  
+Define  
+  
+$$
+\begin{aligned}
+x_t&=\phi x_{t-1}+\epsilon_t\\
+\\
+\phi_{11}&=\frac{cov(x_t,x_{t-1})}{var(x_t)}\\
+&=\frac{E[(\phi x_{t-1 + \epsilon_t})x_{t-1}]}{var(x_t)}\\
+&=\phi
+\end{aligned}	
+$$
+  
+projection of $x_{t+2}$ on $x_{t+1}$
+  
+$$
+\begin{aligned}
+\hat{x}_{t+2}&=P[x_{t+2}|x_{t+1}]=\alpha x_{t+1} \\
+e_{t+2}&=x_{t+2}-\alpha x_{t+1}\\
+E[e_{t+2}x_{t+1}]&=E[(x_{t+2}-\alpha x_{t+1})x_{t+1}]=0 \\
+\\
+\alpha&=\frac{E(x_{t+2}x_{t+1})}{var(x_t)}\\
+&=\frac{E[(\phi x_{t+1}+\epsilon_{t+2})x_{t+1}]}{var(x_t)}\\
+&=\phi
+\end{aligned}	
+$$
+  
+projection of $x_{t}$ on $x_{t+1}$ 
+  
+$$
+\begin{aligned}
+\hat{x}_{t}&=P[x_{t}|x_{t+1}]=\beta x_{t+1} \\
+e_{t}&=x_{t}-\beta x_{t+1}\\
+E[e_{t}x_{t+1}]&=E[(x_{t}-\beta x_{t+1})x_{t+1}]=0 \\
+\\
+\beta&=\frac{E(x_{t}x_{t+1})}{var(x_t)}\\
+&=\frac{E[(\phi x_{t}+\epsilon_{t+1})x_{t}]}{var(x_t)}\\
+&=\phi
+\end{aligned}	
+$$
+
+$$
+\begin{aligned}
+\phi_{22}&=\frac{cov(e_t,e_{t+2})}{[var(e_t)var(e_{t+2})]^{\frac{1}{2}}} \\
+cov(e_t,e_{t+2})&=E[(x_t-\phi x_{t+1})(x_{t+2}-\phi x_{t+1})]\\
+&=E[(x_t-\phi x_{t+1})\epsilon_{t+2}] \\
+&=0\\
+\phi_{22}&=0
+\end{aligned}	
+$$
+
+Similarly for $k \geqslant 2$ 
+
+$$
+\begin{aligned}
+\phi_{kk}&=0
+\end{aligned}	
+$$
+
+## MA(1)
+  
+Define  $x_t=\epsilon_t+\theta\epsilon_{t-1}$
+  
+$$
+\begin{aligned}
+var(x_t)&=(1+\theta^2)\sigma^2\\
+E(x_t x_{t+1})&=\theta\sigma^2\\
+E(x_t x_{t+2})&=0\\
+\\
+\phi_{11}&=\frac{E(x_t x_{t+1})}{var(x_t)}\\
+&=\frac{\theta}{1+\theta^2}
+\end{aligned}	
+$$
+  
+  projection of $x_{t+2}$ on $x_{t+1}$
+  
+$$
+\begin{aligned}
+e_{t+2}&=x_{t+2}-\alpha x_{t+1}\\
+E[e_{t+2}x_{t+1}]&=E[(x_{t+2}-\alpha x_{t+1})x_{t+1}]=0 \\
+\\
+\alpha&=\frac{E(x_{t+2}x_{t+1})}{var(x_t)}\\
+&=\frac{E[(\phi x_{t+1}+\epsilon_{t+2})x_{t+1}]}{var(x_t)}\\
+&=\frac{\theta}{1+\theta^2}
+\end{aligned}	
+$$
+ 
+  projection of $x_{t}$ on $x_{t+1}$
+  
+$$
+\begin{aligned}
+e_{t}&=x_{t}-\beta x_{t+1}\\
+E[e_{t}x_{t+1}]&=E[(x_{t}-\beta x_{t+1})x_{t+1}]=0 \\
+\\
+\beta&=\frac{E(x_{t}x_{t+1})}{var(x_t)}\\
+&=\frac{E[(\phi x_{t}+\epsilon_{t+1})x_{t}]}{var(x_t)}\\
+&=\frac{\theta}{1+\theta^2}
+\end{aligned}	
+$$
+
+
+$$
+\begin{aligned}
+cov(e_t,e_{t+2})&=E[(x_t-\alpha x_{t+1})(x_{t+2}-\beta x_{t+1})]\\
+&=E[x_tx_{t+2}]-\alpha E[x_tx_{t+1}]-\alpha E[x_{t+1}x_{{t+2}}]+
+  \alpha^2E[x_{t+1}^2]\\
+&=-\frac{\theta^2\sigma^2}{(1+\theta^2)}\\
+\\
+Var(e_{t+2})&=E[x_{t+2}-\alpha x_{t+1}]^2\\
+&=E(x_{t+2}^2)-2\alpha E(x_{t+2}x_{t+1})+\alpha^2E(x^2_{t+1})\\
+&=\frac{\sigma^2}{1+\theta^2}[1+\theta^2+\theta^4]\\
+\\
+Var(e_t)&=E[x_t-\beta x_{t+1}]^2\\
+&=E(x_t^2)-2\beta E(x_tx_{t+1})+\beta^2E(x^2_{t+1})\\
+&=\frac{\sigma^2}{1+\theta^2}[1+\theta^2+\theta^4]
+\end{aligned}	
+$$
+  
+
+$$
+\begin{aligned}
+\phi_{22}&=\frac{cov(e_t,e_{t+2})}{[var(e_t)var(e_{t+2})]^{\frac{1}{2}}}\\
+&=-\frac{\theta^2}{1+\theta^2+\theta^4}
+\end{aligned}	
+$$
+  
+  for $k \geqslant 2$ 
+
+$$
+\begin{aligned}
+\phi_{kk}&=\frac{(-1)^{k-1}\theta^k}{\sum^k_{j=0}(\theta^2)^j}\\
+&=\frac{(-1)^{k-1}\theta^k(1-\theta^2)}{1-\theta^{2(k+1)}}
+\end{aligned}	
+$$
