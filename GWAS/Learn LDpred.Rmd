@@ -133,7 +133,7 @@ nohup ldpred coord \
 [LDpred demo](https://hpc.nih.gov/apps/LDpred.html)
 
 ```{bash "use ukb autosome"}
-ldpred coord \
+nohup ldpred coord \
   --gf train.autosome \
   --ssf p800k.autosome.tsv \
   --N 500000 \
@@ -147,7 +147,7 @@ ldpred coord \
 
 # Error like "Did not find chromosome 1 in SS dataset."
 
-ldpred coord \
+nohup ldpred coord \
   --gf all \
   --ssf p800k.autosome.tsv \
   --N 500000 \
