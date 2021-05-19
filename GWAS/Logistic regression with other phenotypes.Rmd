@@ -1,0 +1,21 @@
+---
+title: "Logistic regression with other phenotypes"
+author: "xyz"
+date: "2021/5/19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# head /work/biobank/ukb_data/ukb38722.csv -n 1000 > ukbOtherPhynotype1000.csv
+df<-read.csv("ukbOtherPhynotype1000.csv")
+df[is.na(df)]<-""
+dfNA<-df==""
+# 273 col missing rate less than 0.1
+sum(colSums(dfNA)/999<=0.1)
+dfGood<-df[,colSums(dfNA)/999<=0.1]
+```
+
