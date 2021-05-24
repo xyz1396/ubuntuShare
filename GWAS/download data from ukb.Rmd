@@ -1,0 +1,49 @@
+---
+title: "download data from ukb"
+author: "xyz"
+date: "2021/5/24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[Systematic Review of Polygenic Risk Scores for Type 1 and Type 2 Diabetes](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7084489/)
+
+# download genotype in plink format
+
+[download page of genotype in plink format](http://biobank.ctsu.ox.ac.uk/crystal/label.cgi?id=263)
+
+Calls BED	Anon	ukb_cal_chrN_vZ.bed	gfetch 22418
+Calls BIM	Anon	ukb_snp_chrN_vZ.bim	Resource 1963 ukb_snp_bim.tar
+Calls FAM	Link	ukbA_cal_chrN_vZ_sP.fam	gfetch 22418 -m
+
+## download key path
+
+/work/biobank/ukb_data/k52970.key
+
+```{bash}
+wget -nd biobank.ctsu.ox.ac.uk/crystal/util/gfetch
+# rename to .ukbkey
+cp k52970.key /scratch/yixiong/test/.ukbkey
+# download chr22's fam file
+./gfetch 22418 -m -c22
+```
+
+# download phenotype data
+
+```{bash}
+ukbunpack ukb.enc 45b2b66f64b74eddf2fd0b4a1a6b9341a2a8d55a717f9bfbe5f2de92f2ada258
+ukbunpack ukb.enc .ukbkey
+# generates a data dictionary
+ukbconv ukb.enc_ukb docs
+# generates tab-separated txt file for R
+ukbconv ukb.enc_ukb r
+```
+
+```{r convert tab file to rds}
+source("ukb38722.r")
+saveRDS(bd,"ukb.enc_ukb.rds")
+```
+
