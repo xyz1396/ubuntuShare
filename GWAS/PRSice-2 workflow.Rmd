@@ -1,0 +1,88 @@
+---
+title: "PRSice-2 workflow"
+author: "xyz"
+date: "2021/5/30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# check summary statistics of diagram
+
+[diagram data set] (http://diagram-consortium.org/downloads.html)
+
+T2D GWAS meta-analysis
+Summary of T2D associations of HRC variants for only European UK Biobank subjects
+
+Mahajan.NatGenet2018b.UKBB.HRC.T2D.European.txt Read Me
+
+Chromosome and position (build 37, base-pairs).
+o Effect (EA) and non-effect allele (NEA), aligned to the forward strand.
+o Effect allele frequency (EAF).
+o Log-odds ratio for the effect allele (Beta) and the corresponding standard error (SE). 
+o P-value for association (Pvalue).
+o Total reported effective sample size (Neff) / total sample size for UK Biobank (N).
+
+bim file format
+
+Chromosome code
+Position in morgans or centimorgans
+Base-pair coordinate
+Allele 1 (usually minor)
+Allele 2 (usually major)
+
+```{r}
+library(data.table)
+library(stringr)
+# df<-fread("Mahajan.NatGenet2018b.UKBB.HRC.T2D.European.txt")
+# saveRDS(df,"diagram.UKB.summaryStats.rds")
+df <- readRDS("diagram.UKB.summaryStats.rds")
+df2 <- fread("train.autosome.bim")
+# 13583103 SNPs
+dim(df)
+# no sex chromosome exists
+unique(df$Chr)
+diagramPostion <- str_c(df$Chr, ":", df$Pos)
+# SNP name is the same as diagramPostion
+sum(diagramPostion!=df$SNP)
+diagramPostion.duplicated <- duplicated(diagramPostion)
+# 17642 SNP position is duplicated
+sum(diagramPostion.duplicated)
+diagramPostion.duplicated <- diagramPostion[diagramPostion.duplicated]
+View(df[df$SNP == diagramPostion.duplicated[1]], )
+View(df[df$SNP == diagramPostion.duplicated[2]], )
+ukbPostion <- str_c(df2$V1, ":", df2$V4)
+# 704708 positions are the same
+samePos <- intersect(diagramPostion, ukbPostion)
+length(samePos)
+# 89.86% in ukb can be found on diagram
+length(samePos) / nrow(df2) * 100
+df$diagramPostion <- diagramPostion
+df2$ukbPostion <- ukbPostion
+dfSame <- df[match(samePos, df$diagramPostion), ]
+df2Same <- df2[match(samePos, df2$ukbPostion), ]
+df3<-fread("p800k.autosome.tsv")
+colnames(df3)
+# get the shared SNPs and P value
+df4<-data.frame(CHR=df2Same$V1,
+                SNP=df2Same$V2,
+                BP=df2Same$V4,
+                A1=df2Same$V5,
+                A2=df2Same$V6,
+                OR=df2Same$V3,
+                P=dfSame$Pvalue)
+# 55140, in the paper is 50,224
+# maybe some alleles are missed due to the same position
+sum(df4$P<=0.05)
+
+#### get the unique match of SNP considering allele ####
+dfFilter<-df[df$Pvalue<=0.05,]
+```
+
+
+```{bash}
+
+```
+
