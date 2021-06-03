@@ -1,0 +1,68 @@
+---
+title: "COVID19 Sipros workflow"
+author: "xyz"
+date: "2021/5/31"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# install Sipros
+
+```{bash}
+conda create -n openmpi numpy scipy scikit-learn lxml python=2.7
+conda activate openmpi
+conda install -c conda-forge openmpi
+git clone https://github.com/guo-xuan/Sipros-Ensemble.git
+cd Sipros-Ensemble/
+vim compiler.mk
+# change following lines
+# MCC := mpic++
+# MGCC := mpicc
+make openmp
+```
+
+# Preparing the protein databases 
+
+```{bash}
+cd /scratch/yixiong/COVID19
+cp /work/omicsbio/dywang/Guangpu/database_2.fasta protein_database.fasta
+cd /scratch/yixiong/Sipros-Ensemble/Scripts/
+python sipros_prepare_protein_database.py \
+  -i /scratch/yixiong/COVID19/protein_database.fasta \
+  -o /scratch/yixiong/COVID19/decoy.fasta \
+  -c /scratch/yixiong/COVID19/SiprosConfig.cfg
+
+cd /scratch/yixiong/Sipros-Ensemble/bin
+
+```
+
+# convert raw to MS2
+
+[proteowizard](http://proteowizard.sourceforge.net/download.html)
+[proteowizard docker](https://hub.docker.com/r/chambm/pwiz-skyline-i-agree-to-the-vendor-licenses)
+
+```{bash}
+# docker version cannot work
+cd /scratch/yixiong/COVID19/proteowizard
+nohup cp /work/omicsbio/dywang/Guangpu/*.raw \
+  ../RAW \
+  > ../RAW/cp.log.txt 2>&1 & 
+mkdir /mywineprefix
+singularity pull --name skyline.simg \
+  docker://chambm/pwiz-skyline-i-agree-to-the-vendor-licenses
+singularity exec \
+  --bind=../RAW/:/RAW,mywineprefix:/mywineprefix,../MS2:/MS2 \
+  skyline.simg \
+  mywine msconvert /RAW/Pan_050721_COVID2.raw \
+  -o /MS2 --mzML --singleThreaded
+
+# Thermo RAW reader not implemented: Thermo DLLs only work on Windows    
+tar -jxvf pwiz-bin-linux-x86_64-gcc5-release-3_0_21149_88bef26.tar.bz2
+./msconvert /work/omicsbio/dywang/Guangpu/*.raw \
+  -o /scratch/yixiong/COVID19/ --ms2
+```
+
+
