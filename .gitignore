@@ -17,3 +17,4 @@
 *.tsv
 *.xml
 *.binary
+*.raw

@@ -63,6 +63,10 @@ singularity exec \
 tar -jxvf pwiz-bin-linux-x86_64-gcc5-release-3_0_21149_88bef26.tar.bz2
 ./msconvert /work/omicsbio/dywang/Guangpu/*.raw \
   -o /scratch/yixiong/COVID19/ --ms2
+  
+./msconvert /work/omicsbio/dywang/Guangpu/*.raw \
+  -o /scratch/yixiong/COVID19/ --ms2
 ```
+
 
 
