@@ -26,7 +26,24 @@ make openmp
 
 # Preparing the protein databases 
 
+[ensembl covid](ftp://ftp.ensemblgenomes.org/pub/viruses/fasta/sars_cov_2/pep/)
+[ensembl Human CH38](http://ftp.ensembl.org/pub/release-104/fasta/homo_sapiens/pep/)
+[cRAP protein sequences](https://www.thegpm.org/crap/)
+[sars-cov-2 protein from uniprot](https://www.uniprot.org/proteomes/UP000464024)
+[human protein from uniprot](https://www.uniprot.org/proteomes/UP000005640)
+
 ```{bash}
+# remove human proteins in cRAP pollution database
+cd /mnt/d/ubuntuShare/COVID19/proteinDB
+seqkit grep crap.fasta -p ".*HUMAN.*" -n -r -v > crap.NOhuman.fasta
+
+# combine all proteins
+cat crap.NOhuman.fasta \
+  Sars-cov-2_uniprot-proteome_UP000464024.fasta \
+  Sindbis_virus_uniprot-proteome_UP000006710.fasta\
+  Human_uniprot-proteome_UP000005640.fasta \
+  >ContaminationVirusHuman.fasta 
+  
 cd /scratch/yixiong/COVID19
 cp /work/omicsbio/dywang/Guangpu/database_2.fasta protein_database.fasta
 cd /scratch/yixiong/Sipros-Ensemble/Scripts/
@@ -35,8 +52,12 @@ python sipros_prepare_protein_database.py \
   -o /scratch/yixiong/COVID19/decoy.fasta \
   -c /scratch/yixiong/COVID19/SiprosConfig.cfg
 
+python sipros_prepare_protein_database.py \
+  -i /scratch/yixiong/COVID19/ContaminationVirusHuman.fasta \
+  -o /scratch/yixiong/COVID19/ContaminationVirusHumanDecoy.fasta \
+  -c /scratch/yixiong/COVID19/SiprosConfig.cfg
+  
 cd /scratch/yixiong/Sipros-Ensemble/bin
-
 ```
 
 # convert raw to MS2
@@ -63,10 +84,27 @@ singularity exec \
 tar -jxvf pwiz-bin-linux-x86_64-gcc5-release-3_0_21149_88bef26.tar.bz2
 ./msconvert /work/omicsbio/dywang/Guangpu/*.raw \
   -o /scratch/yixiong/COVID19/ --ms2
-  
+
+cd "C:\green\proteowizard"
 ./msconvert /work/omicsbio/dywang/Guangpu/*.raw \
   -o /scratch/yixiong/COVID19/ --ms2
 ```
 
+# run sipros
+
+```{bash}
+cd /scratch/yixiong/Sipros-Ensemble/bin
+nohup ./Sipros_OpenMP -o /scratch/yixiong/COVID19/output \
+  -w /scratch/yixiong/COVID19/MS2/MS2 \
+  -c /scratch/yixiong/COVID19/SiprosConfig.cfg \
+  > /scratch/yixiong/COVID19/Sipros.log.txt 2>&1 &
+  
+cd /scratch/yixiong/Sipros-Ensemble/Scripts 
+nohup  ./runSiprosFiltering.sh \
+  -in /scratch/yixiong/COVID19/output \
+  -o /scratch/yixiong/COVID19/FilteringOutput \
+  -c /scratch/yixiong/COVID19/SiprosConfig.cfg \
+  > /scratch/yixiong/COVID19/Filtering.log.txt 2>&1 &
+```
 
 
