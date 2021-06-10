@@ -31,6 +31,7 @@ make openmp
 [cRAP protein sequences](https://www.thegpm.org/crap/)
 [sars-cov-2 protein from uniprot](https://www.uniprot.org/proteomes/UP000464024)
 [human protein from uniprot](https://www.uniprot.org/proteomes/UP000005640)
+[Sindbis virus protein from uniprot](https://www.uniprot.org/proteomes/UP000006710)
 
 ```{bash}
 # remove human proteins in cRAP pollution database
@@ -107,4 +108,17 @@ nohup  ./runSiprosFiltering.sh \
   > /scratch/yixiong/COVID19/Filtering.log.txt 2>&1 &
 ```
 
+# run maxquant
+
+```{bash}
+conda install maxquant -c bioconda
+cd /scratch/yixiong/COVID19/maxquant
+# error: A required value not bound to option name is missing.
+maxquant --changeFolder=/scratch/yixiong/COVID19/maxquant/mqparAllHumanProteins2.xml\
+  /scratch/yixiong/COVID19/maxquant/proteinDB\
+  /scratch/yixiong/COVID19/RAW\
+  mqpar.xml
+# convert file path in xml by hand
+nohup maxquant mqparAllHumanProteins2.xml > maxquantLog.txt 2>&1 &
+```
 

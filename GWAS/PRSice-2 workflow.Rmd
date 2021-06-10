@@ -39,7 +39,7 @@ library(stringr)
 # df<-fread("Mahajan.NatGenet2018b.UKBB.HRC.T2D.European.txt")
 # saveRDS(df,"diagram.UKB.summaryStats.rds")
 df <- readRDS("diagram.UKB.summaryStats.rds")
-df2 <- fread("train.autosome.bim")
+df2 <- fread("train.autosome.bim.txt")
 # 13583103 SNPs
 dim(df)
 # no sex chromosome exists
