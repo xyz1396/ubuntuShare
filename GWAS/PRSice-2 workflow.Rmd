@@ -36,6 +36,7 @@ Allele 2 (usually major)
 ```{r}
 library(data.table)
 library(stringr)
+library(dplyr)
 # df<-fread("Mahajan.NatGenet2018b.UKBB.HRC.T2D.European.txt")
 # saveRDS(df,"diagram.UKB.summaryStats.rds")
 df <- readRDS("diagram.UKB.summaryStats.rds")
@@ -78,7 +79,40 @@ df4<-data.frame(CHR=df2Same$V1,
 sum(df4$P<=0.05)
 
 #### get the unique match of SNP considering allele ####
-dfFilter<-df[df$Pvalue<=0.05,]
+dfSame2 <- df[df$diagramPostion %in% samePos,]
+dfSame2 <- arrange(dfSame2, diagramPostion)
+df2Same2 <- df2[df2$ukbPostion %in% samePos,]
+df2Same2 <- arrange(df2Same2, ukbPostion)
+dfSame2$diagramPostionAllele <-
+  str_c(dfSame2$diagramPostion, dfSame2$EA, dfSame2$NEA)
+df2Same2$ukbPostionAllele1 <-
+  str_c(df2Same2$ukbPostion, df2Same2$V5, df2Same2$V6)
+df2Same2$ukbPostionAllele2 <-
+  str_c(df2Same2$ukbPostion, df2Same2$V6, df2Same2$V5)
+# 704336
+sum((df2Same2$ukbPostionAllele1 %in% dfSame2$diagramPostionAllele) + (df2Same2$ukbPostionAllele2 %in% dfSame2$diagramPostionAllele)
+)
+p<-dfSame2[,c(4,5,12,9)]
+dfP<-left_join(df2Same2,p,by=c("ukbPostionAllele1"="diagramPostionAllele"))
+dfP<-left_join(dfP,p,by=c("ukbPostionAllele2"="diagramPostionAllele"))
+# no row is matched twice
+unique(rowSums(is.na(dfP)))
+p<-dfSame2[,c(12,9)]
+dfP<-left_join(df2Same2,p,by=c("ukbPostionAllele1"="diagramPostionAllele"))
+dfP<-left_join(dfP,p,by=c("ukbPostionAllele2"="diagramPostionAllele"))
+dfP<-dfP[rowSums(is.na(dfP))!=2,]
+dfP[is.na(dfP)]<-0
+dfP$Pvalue<-dfP$Pvalue.x+dfP$Pvalue.y
+dfP2<-data.frame(CHR=dfP$V1,
+                SNP=dfP$V2,
+                BP=dfP$V4,
+                A1=dfP$V5,
+                A2=dfP$V6,
+                OR=dfP$V3,
+                P=dfP$Pvalue)
+# 55111
+sum(dfP2$P<=0.05)
+write.table(dfP2,"UKBdiagramShareSNP.tsv",sep = "\t",quote = F,row.names = F)
 ```
 
 
