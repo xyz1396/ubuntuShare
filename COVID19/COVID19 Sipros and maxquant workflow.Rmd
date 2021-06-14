@@ -122,3 +122,127 @@ maxquant --changeFolder=/scratch/yixiong/COVID19/maxquant/mqparAllHumanProteins2
 nohup maxquant mqparAllHumanProteins2.xml > maxquantLog.txt 2>&1 &
 ```
 
+# deal with output of maxquant
+
+Identification type: Indicates whether this experiment was identified by MS/MS 
+or only by matching between runs.
+  
+Reverse: When marked with '+', this particular protein group contains noprotein,
+made up of at least 50% of the peptides of the leading protein, 
+with a peptide derived from the reversed part of the decoy database.
+These should be removed for further data analysis. 
+
+```{r}
+library(data.table)
+library(stringr)
+library(VennDiagram)
+library(hrbrthemes)
+library(scales)
+library(pheatmap)
+df <- fread("proteinGroups.txt")
+write.csv(df, "proteinGroups.csv", row.names = F)
+# remove comtanmination
+df <- df[!str_detect(df$`Majority protein IDs`, "CON__"), ]
+df <- df[df$`Q-value` <= 0.01]
+df <- df[df$Reverse != "+", ]
+write.csv(df, "proteinGroupsFiltered.csv", row.names = F)
+# identified 4084 protein groups
+nrow(df)
+# identified 17042 proteins
+length(unlist(str_split(df$`Protein IDs`, ";")))
+
+#### Venn diagram ####
+
+COVID <- df$`Identification type COVID1` != "" |
+  df$`Identification type COVID2` != "" |
+  df$`Identification type COVID3` != ""
+CTRL <- df$`Identification type ctrl1` != "" |
+  df$`Identification type ctrl2` != "" |
+  df$`Identification type ctrl3` != ""
+S <- df$`Identification type S1` != "" |
+  df$`Identification type S2` != "" |
+  df$`Identification type S3` != ""
+p <- venn.diagram(
+  x = list(
+    COVID = (1:nrow(df))[COVID],
+    CTRL = (1:nrow(df))[CTRL],
+    S = (1:nrow(df))[S]
+  ),
+  filename = NULL,
+  output = TRUE ,
+  # imagetype="png" ,
+  height = 1200 ,
+  width = 1200 ,
+  resolution = 30,
+  compression = "lzw",
+  lwd = 1,
+  col = c("#440154ff", '#21908dff', '#fde725ff'),
+  fill = c(
+    alpha("#440154ff", 0.3),
+    alpha('#21908dff', 0.3),
+    alpha('#fde725ff', 0.3)
+  ),
+  cex = 2,
+  fontfamily = "sans",
+  cat.cex = 2,
+  cat.default.pos = "outer",
+  cat.pos = c(-27, 27, 135),
+  cat.dist = c(0.055, 0.055, 0.085),
+  cat.fontfamily = "sans",
+  cat.col = c("#440154ff", '#21908dff', '#fde725ff'),
+  rotation = 1
+)
+pdf(file = "identified proteins venn.pdf")
+grid.draw(p)
+dev.off()
+
+#### heatmap ####
+
+mat <- as.matrix(df[, 65:73])
+mat <- prop.table(mat,margin = 2)
+# 4009 proteins have abundance
+mat<-mat[rowSums(mat)!=0,]
+mat <-scale(mat)
+colnames(mat) <-
+  c(paste0(rep(c(
+    "COVID", "CTRL","S"
+  ), each = 3), c(1:3, 1:3)))
+colgroup <-
+  data.frame(Treatments = factor(rep(c(
+    "COVID", "CTRL","S"
+  ), each = 3)))
+row.names(colgroup) <- colnames(mat)
+
+pdf("protein abundance heatmap with cluster.pdf",width=8,height = 6)
+pheatmap(
+  mat,
+  show_rownames = F,
+  fontsize = 15,
+  # RdBu RdYlBu
+  color = colorRampPalette(rev(
+    RColorBrewer::brewer.pal(n = 7, name = "RdYlBu")
+  ))(100),
+  cluster_row = T,
+  cluster_col = T,
+  scale = "row",
+  annotation_col = colgroup
+)
+dev.off()
+
+pdf("protein abundance heatmap without cluster.pdf",width=8,height = 6)
+pheatmap(
+  mat,
+  show_rownames = F,
+  fontsize = 15,
+  # RdBu RdYlBu
+  color = colorRampPalette(rev(
+    RColorBrewer::brewer.pal(n = 7, name = "RdYlBu")
+  ))(100),
+  cluster_row = T,
+  cluster_col = F,
+  scale = "row",
+  annotation_col = colgroup
+)
+dev.off()
+```
+
