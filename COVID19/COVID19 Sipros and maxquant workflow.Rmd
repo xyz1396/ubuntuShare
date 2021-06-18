@@ -148,9 +148,9 @@ library(pheatmap)
 df <- fread("proteinGroups.txt")
 write.csv(df, "proteinGroups.csv", row.names = F)
 # remove comtanmination
-df <- df[!str_detect(df$`Majority protein IDs`, "CON__"), ]
+df <- df[!str_detect(df$`Majority protein IDs`, "CON__"),]
 df <- df[df$`Q-value` <= 0.01]
-df <- df[df$Reverse != "+", ]
+df <- df[df$Reverse != "+",]
 write.csv(df, "proteinGroupsFiltered.csv", row.names = F)
 # identified 4084 protein groups
 nrow(df)
@@ -205,21 +205,19 @@ dev.off()
 #### heatmap ####
 
 mat <- df[, 65:73]
-mat <-sapply(mat,as.numeric)
-mat <- prop.table(mat,margin = 2)
+mat <- sapply(mat, as.numeric)
+mat <- prop.table(mat, margin = 2)
 # 4009 proteins have abundance
-mat<-mat[rowSums(mat)!=0,]
+mat <- mat[rowSums(mat) != 0, ]
 colnames(mat) <-
-  c(paste0(rep(c(
-    "COVID", "CTRL","S"
-  ), each = 3), c(1:3, 1:3)))
+  c(paste0(rep(c("COVID", "CTRL", "S"), each = 3), c(1:3, 1:3)))
 colgroup <-
-  data.frame(Treatments = factor(rep(c(
-    "COVID", "CTRL","S"
-  ), each = 3)))
+  data.frame(Treatments = factor(rep(c("COVID", "CTRL", "S"), each = 3)))
 row.names(colgroup) <- colnames(mat)
 
-pdf("protein abundance heatmap with cluster.pdf",width=8,height = 6)
+pdf("protein abundance heatmap with cluster.pdf",
+    width = 8,
+    height = 6)
 pheatmap(
   mat,
   show_rownames = F,
@@ -235,7 +233,9 @@ pheatmap(
 )
 dev.off()
 
-pdf("protein abundance heatmap without cluster.pdf",width=8,height = 6)
+pdf("protein abundance heatmap without cluster.pdf",
+    width = 8,
+    height = 6)
 pheatmap(
   mat,
   show_rownames = F,
@@ -253,24 +253,23 @@ dev.off()
 
 # LFQ
 # LFQ has more zero
-sum(df[,84:92]==0);sum(df[,65:73]==0)
+sum(df[, 84:92] == 0)
+sum(df[, 65:73] == 0)
 
 mat <- df[, 84:92]
-mat <-sapply(mat,as.numeric)
-mat <- prop.table(mat,margin = 2)
+mat <- sapply(mat, as.numeric)
+mat <- prop.table(mat, margin = 2)
 # 4009 proteins have abundance
-mat<-mat[rowSums(mat)!=0,]
+mat <- mat[rowSums(mat) != 0, ]
 colnames(mat) <-
-  c(paste0(rep(c(
-    "COVID", "CTRL","S"
-  ), each = 3), c(1:3, 1:3)))
+  c(paste0(rep(c("COVID", "CTRL", "S"), each = 3), c(1:3, 1:3)))
 colgroup <-
-  data.frame(Treatments = factor(rep(c(
-    "COVID", "CTRL","S"
-  ), each = 3)))
+  data.frame(Treatments = factor(rep(c("COVID", "CTRL", "S"), each = 3)))
 row.names(colgroup) <- colnames(mat)
 
-pdf("protein LFQ abundance heatmap with cluster.pdf",width=8,height = 6)
+pdf("protein LFQ abundance heatmap with cluster.pdf",
+    width = 8,
+    height = 6)
 pheatmap(
   mat,
   show_rownames = F,
@@ -289,33 +288,27 @@ dev.off()
 #### PCA ####
 
 mat <- df[, 65:73]
-mat <-sapply(mat,as.numeric)
-mat <- prop.table(mat,margin = 2)
-mat<-mat[rowSums(mat)!=0,]
+mat <- sapply(mat, as.numeric)
+mat <- prop.table(mat, margin = 2)
+mat <- mat[rowSums(mat) != 0, ]
 
 pca <- rda(t(mat), scale = T)
 importance <- summary(pca)[["cont"]][["importance"]]
 siteScore <- summary(pca)[["sites"]]
-tempDf <- data.frame(
-  x = siteScore[, 1],
-  y = siteScore[, 2],
-  Treatments = colgroup$Treatments
-)
+tempDf <- data.frame(x = siteScore[, 1],
+                     y = siteScore[, 2],
+                     Treatments = colgroup$Treatments)
 ggplot(tempDf,
-       aes(
-         x = x,
-         y = y,
-         color = Treatments
-       )) +
+       aes(x = x,
+           y = y,
+           color = Treatments)) +
   geom_point(size = 3) +
   xlab(paste0("PC1(", round(importance[2, 1] * 100, 2), "%)")) +
   ylab(paste0("PC2(", round(importance[2, 2] * 100, 2), "%)")) +
   theme(text = element_text(size = 20)) +
-  ggsave(
-    "protein abundance PCA.pdf",
-    width = 8,
-    height = 6
-  )
+  ggsave("protein abundance PCA.pdf",
+         width = 8,
+         height = 6)
 ```
 
 # protein with different abundance
@@ -326,21 +319,21 @@ library(ggbreak)
 
 #### COVID vs CTRL ####
 mat <- df[, 65:70]
-mat <-sapply(mat,as.numeric)
+mat <- sapply(mat, as.numeric)
 # some is too large and overflow integer
-mat <- round(mat/1000)
-row.names(mat)<-df$`Majority protein IDs`
-mat<-mat[rowSums(mat)!=0,]
+mat <- round(mat / 1000)
+row.names(mat) <- df$`Majority protein IDs`
+mat <- mat[rowSums(mat) != 0, ]
 coldata <- data.frame(row.names = colnames(mat),
                       condition = factor(colgroup$Treatments[1:6]))
 dds <- DESeqDataSetFromMatrix(countData = mat,
                               colData = coldata,
                               design =  ~ condition)
 dds2 <- DESeq(dds)
-DEGs <- results(dds2, contrast=c("condition","COVID","CTRL"))
+DEGs <- results(dds2, contrast = c("condition", "COVID", "CTRL"))
 DEGsDf <- na.exclude(as.data.frame(DEGs))
-saveRDS(DEGsDf,"COVID vs CTRL.rds")
-write.csv(DEGsDf,"COVID vs CTRL.csv")
+saveRDS(DEGsDf, "COVID vs CTRL.rds")
+write.csv(DEGsDf, "COVID vs CTRL.csv")
 DEGsDf <-
   readRDS("COVID vs CTRL.rds")
 # The Standard of significance was fold change >= 2,
@@ -358,19 +351,21 @@ judgeSignificance <- function(x, y) {
   else
     return("no")
 }
-DEGsDf$significance<-mapply(judgeSignificance, DEGsDf$padj, DEGsDf$log2FoldChange)
-DEGsDfFiltered<-DEGsDf[DEGsDf$significance!="no",]
-write.csv(DEGsDfFiltered,"Protein with different abundance COVID vs CTRL.csv")
+DEGsDf$significance <-
+  mapply(judgeSignificance, DEGsDf$padj, DEGsDf$log2FoldChange)
+DEGsDfFiltered <- DEGsDf[DEGsDf$significance != "no", ]
+write.csv(DEGsDfFiltered,
+          "Protein with different abundance COVID vs CTRL.csv")
 # minimal padj is 0
 head(sort(log10(DEGsDf$padj)))
 # change to none zero minimal
-DEGsDf$padj[DEGsDf$padj==0]<-min(DEGsDf$padj[DEGsDf$padj>0])
+DEGsDf$padj[DEGsDf$padj == 0] <- min(DEGsDf$padj[DEGsDf$padj > 0])
 drawVolcanoPlot <- function(df) {
   colnames(df) <- c("FDR", "FC")
   df$size <- -log10(df$FDR)
   df <-
     cbind(df, significance = factor(mapply(judgeSignificance, df$FDR, df$FC)))
-  ggplot(df, aes(FC, -1 * log10(FDR))) +
+  ggplot(df, aes(FC,-1 * log10(FDR))) +
     geom_point(
       aes(
         fill = significance,
@@ -396,45 +391,53 @@ drawVolcanoPlot <- function(df) {
     scale_x_continuous(limits = c(-31, 31), breaks = sort(c(seq(
       -30,
       30, length.out = 6
-    ),-1, 1)))
+    ), -1, 1)))
 }
 
-p<-drawVolcanoPlot(DEGsDf[, c("padj", "log2FoldChange")], )
+p <- drawVolcanoPlot(DEGsDf[, c("padj", "log2FoldChange")],)
 # Limit the scope of the drawing and add linear coordinates
-p<-p+ scale_y_continuous(limits = c(0, 95), breaks = c(1.3, 10, 20, 40, 80))
-p+ggsave("COVID vs CTRL volcano plot.pdf",width = 8,height = 6)
+p <-
+  p + scale_y_continuous(limits = c(0, 95), breaks = c(1.3, 10, 20, 40, 80))
+p + ggsave("COVID vs CTRL volcano plot.pdf",
+           width = 8,
+           height = 6)
 
 #### S vs CTRL ####
 
-mat <- df[, c(71:73,68:70)]
-mat <-sapply(mat,as.numeric)
+mat <- df[, c(71:73, 68:70)]
+mat <- sapply(mat, as.numeric)
 # some is too large and overflow integer
-mat <- round(mat/1000)
-row.names(mat)<-df$`Majority protein IDs`
-mat<-mat[rowSums(mat)!=0,]
+mat <- round(mat / 1000)
+row.names(mat) <- df$`Majority protein IDs`
+mat <- mat[rowSums(mat) != 0, ]
 coldata <- data.frame(row.names = colnames(mat),
-                      condition = factor(colgroup$Treatments[c(7:9,4:6)]))
+                      condition = factor(colgroup$Treatments[c(7:9, 4:6)]))
 dds <- DESeqDataSetFromMatrix(countData = mat,
                               colData = coldata,
                               design =  ~ condition)
 dds2 <- DESeq(dds)
-DEGs <- results(dds2, contrast=c("condition","S","CTRL"))
+DEGs <- results(dds2, contrast = c("condition", "S", "CTRL"))
 DEGsDf <- na.exclude(as.data.frame(DEGs))
-saveRDS(DEGsDf,"S vs CTRL.rds")
-write.csv(DEGsDf,"S vs CTRL.csv")
+saveRDS(DEGsDf, "S vs CTRL.rds")
+write.csv(DEGsDf, "S vs CTRL.csv")
 DEGsDf <-
   readRDS("S vs CTRL.rds")
-DEGsDf$significance<-mapply(judgeSignificance, DEGsDf$padj, DEGsDf$log2FoldChange)
-DEGsDfFiltered<-DEGsDf[DEGsDf$significance!="no",]
-write.csv(DEGsDfFiltered,"Protein with different abundance S vs CTRL.csv")
+DEGsDf$significance <-
+  mapply(judgeSignificance, DEGsDf$padj, DEGsDf$log2FoldChange)
+DEGsDfFiltered <- DEGsDf[DEGsDf$significance != "no", ]
+write.csv(DEGsDfFiltered, "Protein with different abundance S vs CTRL.csv")
 head(sort(log10(DEGsDf$padj)))
-DEGsDf$padj[DEGsDf$padj==0]<-min(DEGsDf$padj[DEGsDf$padj>0])
-p<-drawVolcanoPlot(DEGsDf[, c("padj", "log2FoldChange")])
+DEGsDf$padj[DEGsDf$padj == 0] <- min(DEGsDf$padj[DEGsDf$padj > 0])
+p <- drawVolcanoPlot(DEGsDf[, c("padj", "log2FoldChange")])
 # Limit the scope of the drawing and add linear coordinates
-p<-p+ scale_y_continuous(limits = c(0, 162), breaks = c(1.3, 10, 20, 40, 80, 160))
+p <-
+  p + scale_y_continuous(limits = c(0, 162),
+                         breaks = c(1.3, 10, 20, 40, 80, 160))
 # scale_y_break conflict with geom_hline and geom_vline
 # p<-p+ scale_y_break(c(40, 150))
-p+ggsave("S vs CTRL volcano plot.pdf",width = 8,height = 6)
+p + ggsave("S vs CTRL volcano plot.pdf",
+           width = 8,
+           height = 6)
 ```
 
 # get protein annotation
@@ -449,8 +452,11 @@ ah <- AnnotationHub()
 # job::job({display(ah)})
 # Homo sapiens OrgDb
 hm <- ah[["AH92581"]]
-hmDf <-AnnotationDbi::select(hm, keys=keys(hm), columns = c("UNIPROT","GO","PATH","ENZYME"))
-hmDf <- hmDf[!is.na(hmDf$UNIPROT),]
+hmDf <-
+  AnnotationDbi::select(hm,
+                        keys = keys(hm),
+                        columns = c("UNIPROT", "GO", "PATH", "ENZYME"))
+hmDf <- hmDf[!is.na(hmDf$UNIPROT), ]
 goName <-
   AnnotationDbi::select(
     x = GO.db::GO.db,
@@ -461,77 +467,146 @@ goName <-
 
 #### COVID ####
 
-covid <-read.csv("Protein with different abundance COVID vs CTRL.csv")
-covidList<-unlist(str_split(covid$X,";"))
-covidList<-unlist(str_split(covidList,"\\|",simplify = T)[,2])
+covid <-
+  read.csv("Protein with different abundance COVID vs CTRL.csv")
+covidList <- unlist(str_split(covid$X, ";"))
+covidList <- unlist(str_split(covidList, "\\|", simplify = T)[, 2])
 
-goMF <- enrichGO(gene = covidList,OrgDb = hm,keyType = "UNIPROT",ont = "MF",pvalueCutoff=0.05)
+goMF <-
+  enrichGO(
+    gene = covidList,
+    OrgDb = hm,
+    keyType = "UNIPROT",
+    ont = "MF",
+    pvalueCutoff = 0.05
+  )
 goMFdf <- as.data.frame(goMF)
-write.csv(goMFdf,"COVID vs CTRL MF enrich.csv",row.names = F)
-p<-dotplot(goMF,font.size=10)
-p+ggsave("COVID vs CTRL MF enrich.pdf",width = 8,height = 6)
+write.csv(goMFdf, "COVID vs CTRL MF enrich.csv", row.names = F)
+p <- dotplot(goMF, font.size = 10)
+p + ggsave("COVID vs CTRL MF enrich.pdf",
+           width = 8,
+           height = 6)
 
-goBP <- enrichGO(gene = covidList,OrgDb = hm,keyType = "UNIPROT",ont = "BP",pvalueCutoff=0.05)
+goBP <-
+  enrichGO(
+    gene = covidList,
+    OrgDb = hm,
+    keyType = "UNIPROT",
+    ont = "BP",
+    pvalueCutoff = 0.05
+  )
 goBPdf <- as.data.frame(goBP)
-write.csv(goBPdf,"COVID vs CTRL BP enrich.csv",row.names = F)
-p<-dotplot(goBP,font.size=10)
-p+ggsave("COVID vs CTRL BP enrich.pdf",width = 8,height = 6)
+write.csv(goBPdf, "COVID vs CTRL BP enrich.csv", row.names = F)
+p <- dotplot(goBP, font.size = 10)
+p + ggsave("COVID vs CTRL BP enrich.pdf",
+           width = 8,
+           height = 6)
 
-goCC <- enrichGO(gene = covidList,OrgDb = hm,keyType = "UNIPROT",ont = "CC",pvalueCutoff=0.05)
+goCC <-
+  enrichGO(
+    gene = covidList,
+    OrgDb = hm,
+    keyType = "UNIPROT",
+    ont = "CC",
+    pvalueCutoff = 0.05
+  )
 goCCdf <- as.data.frame(goCC)
-write.csv(goCCdf,"COVID vs CTRL CC enrich.csv",row.names = F)
-p<-dotplot(goCC,font.size=10)
-p+ggsave("COVID vs CTRL CC enrich.pdf",width = 8,height = 6)
+write.csv(goCCdf, "COVID vs CTRL CC enrich.csv", row.names = F)
+p <- dotplot(goCC, font.size = 10)
+p + ggsave("COVID vs CTRL CC enrich.pdf",
+           width = 8,
+           height = 6)
 
-kegg <- enrichKEGG(gene = covidList,organism = "hsa",keyType = "uniprot",pvalueCutoff=0.05)
+kegg <-
+  enrichKEGG(
+    gene = covidList,
+    organism = "hsa",
+    keyType = "uniprot",
+    pvalueCutoff = 0.05
+  )
 keggDf <- as.data.frame(kegg)
-write.csv(keggDf,"COVID vs CTRL KEGG enrich.csv",row.names = F)
-p<-dotplot(kegg,font.size=10)
-p+ggsave("COVID vs CTRL KEGG enrich.pdf",width = 8,height = 6)
+write.csv(keggDf, "COVID vs CTRL KEGG enrich.csv", row.names = F)
+p <- dotplot(kegg, font.size = 10)
+p + ggsave("COVID vs CTRL KEGG enrich.pdf",
+           width = 8,
+           height = 6)
 
 #### S ####
 
-S <-read.csv("Protein with different abundance S vs CTRL.csv")
-SList<-unlist(str_split(S$X,";"))
-SList<-unlist(str_split(SList,"\\|",simplify = T)[,2])
+S <- read.csv("Protein with different abundance S vs CTRL.csv")
+SList <- unlist(str_split(S$X, ";"))
+SList <- unlist(str_split(SList, "\\|", simplify = T)[, 2])
 
-goMF <- enrichGO(gene = SList,OrgDb = hm,keyType = "UNIPROT",ont = "MF",pvalueCutoff=0.05)
+goMF <-
+  enrichGO(
+    gene = SList,
+    OrgDb = hm,
+    keyType = "UNIPROT",
+    ont = "MF",
+    pvalueCutoff = 0.05
+  )
 goMFdf <- as.data.frame(goMF)
-write.csv(goMFdf,"S vs CTRL MF enrich.csv",row.names = F)
-p<-dotplot(goMF,font.size=10)
-p+ggsave("S vs CTRL MF enrich.pdf",width = 8,height = 6)
+write.csv(goMFdf, "S vs CTRL MF enrich.csv", row.names = F)
+p <- dotplot(goMF, font.size = 10)
+p + ggsave("S vs CTRL MF enrich.pdf", width = 8, height = 6)
 
-goBP <- enrichGO(gene = SList,OrgDb = hm,keyType = "UNIPROT",ont = "BP",pvalueCutoff=0.05)
+goBP <-
+  enrichGO(
+    gene = SList,
+    OrgDb = hm,
+    keyType = "UNIPROT",
+    ont = "BP",
+    pvalueCutoff = 0.05
+  )
 goBPdf <- as.data.frame(goBP)
-write.csv(goBPdf,"S vs CTRL BP enrich.csv",row.names = F)
-p<-dotplot(goBP,font.size=10)
-p+ggsave("S vs CTRL BP enrich.pdf",width = 8,height = 6)
+write.csv(goBPdf, "S vs CTRL BP enrich.csv", row.names = F)
+p <- dotplot(goBP, font.size = 10)
+p + ggsave("S vs CTRL BP enrich.pdf", width = 8, height = 6)
 
-goCC <- enrichGO(gene = SList,OrgDb = hm,keyType = "UNIPROT",ont = "CC",pvalueCutoff=0.05)
+goCC <-
+  enrichGO(
+    gene = SList,
+    OrgDb = hm,
+    keyType = "UNIPROT",
+    ont = "CC",
+    pvalueCutoff = 0.05
+  )
 goCCdf <- as.data.frame(goCC)
-write.csv(goCCdf,"S vs CTRL CC enrich.csv",row.names = F)
-p<-dotplot(goCC,font.size=10)
-p+ggsave("S vs CTRL CC enrich.pdf",width = 8,height = 6)
+write.csv(goCCdf, "S vs CTRL CC enrich.csv", row.names = F)
+p <- dotplot(goCC, font.size = 10)
+p + ggsave("S vs CTRL CC enrich.pdf", width = 8, height = 6)
 
-kegg <- enrichKEGG(gene = SList,organism = "hsa",keyType = "uniprot",pvalueCutoff=1)
+kegg <-
+  enrichKEGG(
+    gene = SList,
+    organism = "hsa",
+    keyType = "uniprot",
+    pvalueCutoff = 1
+  )
 keggDf <- as.data.frame(kegg)
-write.csv(keggDf,"S vs CTRL KEGG enrich.csv",row.names = F)
+write.csv(keggDf, "S vs CTRL KEGG enrich.csv", row.names = F)
 ```
 
 # gseGO
 
 ```{r}
 library(tidyr)
-covid <-readRDS("COVID vs CTRL.rds")
-covid$padj[covid$padj==0]<-min(covid$padj[covid$padj>0])
-covid <- data.frame(name=row.names(covid),p=-log10(covid$padj))
-covid <- separate_rows(covid,name,sep = ";")
-covid$name <- str_split(covid$name,"\\|",simplify = T)[,2]
-covid <- arrange(covid,desc(p))
-proteinList<-covid$p
-names(proteinList)<-covid$name
-goMF <- gseGO(gene = proteinList,OrgDb = hm,keyType = "UNIPROT",ont = "MF")
-dotplot(goMF,font.size=10)
+covid <- readRDS("COVID vs CTRL.rds")
+covid$padj[covid$padj == 0] <- min(covid$padj[covid$padj > 0])
+covid <- data.frame(name = row.names(covid), p = -log10(covid$padj))
+covid <- separate_rows(covid, name, sep = ";")
+covid$name <- str_split(covid$name, "\\|", simplify = T)[, 2]
+covid <- arrange(covid, desc(p))
+proteinList <- covid$p
+names(proteinList) <- covid$name
+goMF <-
+  gseGO(
+    gene = proteinList,
+    OrgDb = hm,
+    keyType = "UNIPROT",
+    ont = "MF"
+  )
+dotplot(goMF, font.size = 10)
 ```
 
 # sipros result
@@ -539,21 +614,19 @@ dotplot(goMF,font.size=10)
 ```{r}
 library(data.table)
 library(ggvenn)
-siDf<-fread("Pan_050721.pro.txt",skip = 58)
-si<-siDf$ProteinID
-si<-si[!str_detect(si,"Rev2_")]
-si<-str_replace(si,"\\{","")
-si<-str_replace(si,"\\}","")
-si<-unlist(str_split(si,","))
-mq<-read.csv("proteinGroupsFiltered.csv")
-mq<-mq$Majority.protein.IDs
-mq<-unlist(str_split(mq,";"))
+siDf <- fread("Pan_050721.pro.txt", skip = 58)
+si <- siDf$ProteinID
+si <- si[!str_detect(si, "Rev2_")]
+si <- str_replace(si, "\\{", "")
+si <- str_replace(si, "\\}", "")
+si <- unlist(str_split(si, ","))
+mq <- read.csv("proteinGroupsFiltered.csv")
+mq <- mq$Majority.protein.IDs
+mq <- unlist(str_split(mq, ";"))
 sum(si %in% mq)
 p <- venn.diagram(
-  x = list(
-    Sipros = si,
-    Maxquant = mq
-  ),
+  x = list(Sipros = si,
+           Maxquant = mq),
   filename = NULL,
   output = F ,
   height = 1200 ,
@@ -564,11 +637,9 @@ pdf(file = "Sipros Maxquant venn.pdf")
 grid.draw(p)
 dev.off()
 
-a <- list(
-    Sipros = si,
-    Maxquant = mq
-  )
-p<-ggvenn(a, c("Sipros", "Maxquant"))
-p+ggsave("Sipros Maxquant venn2.pdf")
+a <- list(Sipros = si,
+          Maxquant = mq)
+p <- ggvenn(a, c("Sipros", "Maxquant"))
+p + ggsave("Sipros Maxquant venn2.pdf")
 ```
 
