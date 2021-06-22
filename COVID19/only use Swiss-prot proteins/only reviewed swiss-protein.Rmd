@@ -1,0 +1,58 @@
+---
+title: "only reviewed swiss-protein"
+author: "xyz"
+date: "2021/6/22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# make DB
+
+reviewed:yes AND organism:"Homo sapiens (Human) [9606]" AND proteome:up000005640
+
+reviewed:yes AND organism:"Severe acute respiratory syndrome coronavirus 2 (2019-nCoV) (SARS-CoV-2) [2697049]" AND proteome:up000464024
+
+reviewed:yes AND organism:"Sindbis virus (SINV) [11034]" AND proteome:up000006710
+
+```{bash}
+seqkit seq *yes.fasta > COVIDdb.fasta
+# file           format  type     num_seqs     sum_len  min_len  avg_len  max_len
+# COVIDdb.fasta  FASTA   Protein    20,390  11,378,347        2      558   34,350
+seqkit stat COVIDdb.fasta
+```
+
+# maxquant
+
+```{bash}
+cd /scratch/yixiong/COVID19/maxquantOutPut20210622
+conda activate openmpi
+nohup maxquant COVID.xml > maxquantLog.txt 2>&1 &
+```
+
+# sipros
+
+```{bash}
+cd /scratch/yixiong/Sipros-Ensemble/Scripts/
+python sipros_prepare_protein_database.py \
+  -i /scratch/yixiong/COVID19/maxquantOutPut20210622/COVIDdb.fasta \
+  -o /scratch/yixiong/COVID19/SiprosOutPut20210622/COVIDdbReverse.fasta \
+  -c /scratch/yixiong/COVID19/SiprosConfig.cfg
+  
+cd /scratch/yixiong/Sipros-Ensemble/bin
+nohup ./Sipros_OpenMP -o /scratch/yixiong/COVID19/SiprosOutPut20210622/ \
+  -w /scratch/yixiong/COVID19/MS2/MS2 \
+  -c /scratch/yixiong/COVID19/SiprosOutPut20210622/SiprosConfig20210622.cfg \
+  > /scratch/yixiong/COVID19/SiprosOutPut20210622/Sipros.log.txt 2>&1 &
+  
+cd /scratch/yixiong/Sipros-Ensemble/Scripts 
+nohup  ./runSiprosFiltering.sh \
+  -in /scratch/yixiong/COVID19/SiprosOutPut20210622 \
+  -o /scratch/yixiong/COVID19/SiprosOutPut20210622/FilteringOutput \
+  -c /scratch/yixiong/COVID19/SiprosOutPut20210622/SiprosConfig20210622.cfg \
+  > /scratch/yixiong/COVID19/SiprosOutPut20210622/Filtering.log.txt 2>&1 &
+```
+
+
