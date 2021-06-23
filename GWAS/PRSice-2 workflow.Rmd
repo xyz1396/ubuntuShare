@@ -115,8 +115,32 @@ sum(dfP2$P<=0.05)
 write.table(dfP2,"UKBdiagramShareSNP.tsv",sep = "\t",quote = F,row.names = F)
 ```
 
+# prsice demo
+
+[tutorial](https://choishingwan.github.io/PRS-Tutorial/prsice/)
+
+```{r}
+library(data.table)
+covariate <- fread("prsiceDemo/EUR.cov")
+pcs <- fread("prsiceDemo/EUR.eigenvec", header=F)
+colnames(pcs) <- c("FID","IID", paste0("PC",1:6))
+cov <- merge(covariate, pcs)
+fwrite(cov,"prsiceDemo/EUR.covariate", sep="\t")
+```
 
 ```{bash}
-
+cd prsiceDemo
+Rscript bin/PRSice.R \
+    --prsice bin/PRSice_linux \
+    --base Height.QC.gz \
+    --target EUR.QC \
+    --binary-target F \
+    --pheno EUR.height \
+    --cov EUR.covariate \
+    --base-maf MAF:0.01 \
+    --base-info INFO:0.8 \
+    --stat OR \
+    --or \
+    --out EUR
 ```
 
