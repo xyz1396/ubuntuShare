@@ -1,0 +1,60 @@
+---
+title: "extract table"
+author: "xyz"
+date: "2021/6/26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# identified proteins in repeats
+
+```{r}
+library(ggvenn)
+library(dplyr)
+pGroup <- read.csv("proteinGroupsFiltered.csv"
+                   # not convert space to .
+                   # ,check.names=FALSE
+                   )
+nProtein<- 1:nrow(pGroup)
+COVID1 <- nProtein[pGroup$Identification.type.COVID1 != ""]
+COVID2 <- nProtein[pGroup$`Identification.type.COVID2` != ""]
+COVID3 <- nProtein[pGroup$`Identification.type.COVID3` != ""]
+CTRL1 <- nProtein[pGroup$`Identification.type.ctrl1` != ""]
+CTRL2 <- nProtein[pGroup$`Identification.type.ctrl2` != ""]
+CTRL3 <- nProtein[pGroup$`Identification.type.ctrl3` != ""]
+S1 <- nProtein[pGroup$`Identification.type.S1` != ""]
+S2 <- nProtein[pGroup$`Identification.type.S2` != ""]
+S3 <- nProtein[pGroup$`Identification.type.S3` != ""]
+
+pList <- list(COVID1 = COVID1,
+              COVID2 = COVID2,
+              COVID3 = COVID3)
+p <- ggvenn(pList)
+p + ggsave("COVID repeats.pdf",width = 8,height = 6)
+pList <- list(CTRL1 = CTRL1,
+              CTRL2 = CTRL2,
+              CTRL3 = CTRL3)
+p <- ggvenn(pList)
+p + ggsave("CTRL repeats.pdf",width = 8,height = 6)
+pList <- list(S1 = S1,
+              S2 = S2,
+              S3 = S3)
+p <- ggvenn(pList)
+p + ggsave("S repeats.pdf",width = 8,height = 6)
+```
+
+# identified proteins in each treatment
+
+```{r}
+COVID <- unique(c(COVID1, COVID2, COVID3))
+CTRL <- unique(c(CTRL1, CTRL2, CTRL3))
+S <- unique(c(S1, S2, S3))
+write.csv(pGroup[COVID, ], "COVID.csv", row.names = F)
+write.csv(pGroup[CTRL, ], "CTRL.csv", row.names = F)
+write.csv(pGroup[S, ], "S.csv", row.names = F)
+```
+
+

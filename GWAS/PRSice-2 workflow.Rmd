@@ -16,7 +16,8 @@ knitr::opts_chunk$set(echo = TRUE)
 T2D GWAS meta-analysis
 Summary of T2D associations of HRC variants for only European UK Biobank subjects
 
-Mahajan.NatGenet2018b.UKBB.HRC.T2D.European.txt Read Me
+Mahajan.NatGenet2018b.UKBB.HRC.T2D.European.txt 
+[Read Me](http://diagram-consortium.org/downloads/Mahajan.et.al.2018b.European.GWAS.readme.pdf)
 
 Chromosome and position (build 37, base-pairs).
 o Effect (EA) and non-effect allele (NEA), aligned to the forward strand.
@@ -39,80 +40,111 @@ library(stringr)
 library(dplyr)
 # df<-fread("Mahajan.NatGenet2018b.UKBB.HRC.T2D.European.txt")
 # saveRDS(df,"diagram.UKB.summaryStats.rds")
-df <- readRDS("diagram.UKB.summaryStats.rds")
-df2 <- fread("train.autosome.bim.txt")
+dfDiagram <- readRDS("diagram.UKB.summaryStats.rds")
+dfTrain <- fread("train.autosome.bim.txt")
 # 13583103 SNPs
-dim(df)
+dim(dfDiagram)
 # no sex chromosome exists
-unique(df$Chr)
-diagramPostion <- str_c(df$Chr, ":", df$Pos)
+unique(dfDiagram$Chr)
+diagramPostion <- str_c(dfDiagram$Chr, ":", dfDiagram$Pos)
 # SNP name is the same as diagramPostion
-sum(diagramPostion!=df$SNP)
+sum(diagramPostion != dfDiagram$SNP)
 diagramPostion.duplicated <- duplicated(diagramPostion)
 # 17642 SNP position is duplicated
 sum(diagramPostion.duplicated)
-diagramPostion.duplicated <- diagramPostion[diagramPostion.duplicated]
-View(df[df$SNP == diagramPostion.duplicated[1]], )
-View(df[df$SNP == diagramPostion.duplicated[2]], )
-ukbPostion <- str_c(df2$V1, ":", df2$V4)
+diagramPostion.duplicated <-
+  diagramPostion[diagramPostion.duplicated]
+View(dfDiagram[dfDiagram$SNP == diagramPostion.duplicated[1]],)
+View(dfDiagram[dfDiagram$SNP == diagramPostion.duplicated[2]],)
+ukbPostion <- str_c(dfTrain$V1, ":", dfTrain$V4)
 # 704708 positions are the same
 samePos <- intersect(diagramPostion, ukbPostion)
 length(samePos)
 # 89.86% in ukb can be found on diagram
-length(samePos) / nrow(df2) * 100
-df$diagramPostion <- diagramPostion
-df2$ukbPostion <- ukbPostion
-dfSame <- df[match(samePos, df$diagramPostion), ]
-df2Same <- df2[match(samePos, df2$ukbPostion), ]
-df3<-fread("p800k.autosome.tsv")
-colnames(df3)
+length(samePos) / nrow(dfTrain) * 100
+dfDiagram$diagramPostion <- diagramPostion
+dfTrain$ukbPostion <- ukbPostion
+dfDiagramSame <-
+  dfDiagram[match(samePos, dfDiagram$diagramPostion),]
+dfTrainSame <- dfTrain[match(samePos, dfTrain$ukbPostion),]
+dfTrainSammary <- fread("p800k.autosome.tsv")
+colnames(dfTrainSammary)
 # get the shared SNPs and P value
-df4<-data.frame(CHR=df2Same$V1,
-                SNP=df2Same$V2,
-                BP=df2Same$V4,
-                A1=df2Same$V5,
-                A2=df2Same$V6,
-                OR=df2Same$V3,
-                P=dfSame$Pvalue)
+dfShare <- data.frame(
+  CHR = dfTrainSame$V1,
+  SNP = dfTrainSame$V2,
+  BP = dfTrainSame$V4,
+  A1 = dfTrainSame$V5,
+  A2 = dfTrainSame$V6,
+  OR = dfTrainSame$V3,
+  P = dfDiagramSame$Pvalue
+)
 # 55140, in the paper is 50,224
 # maybe some alleles are missed due to the same position
-sum(df4$P<=0.05)
+sum(dfShare$P <= 0.05)
 
 #### get the unique match of SNP considering allele ####
-dfSame2 <- df[df$diagramPostion %in% samePos,]
-dfSame2 <- arrange(dfSame2, diagramPostion)
-df2Same2 <- df2[df2$ukbPostion %in% samePos,]
-df2Same2 <- arrange(df2Same2, ukbPostion)
-dfSame2$diagramPostionAllele <-
-  str_c(dfSame2$diagramPostion, dfSame2$EA, dfSame2$NEA)
-df2Same2$ukbPostionAllele1 <-
-  str_c(df2Same2$ukbPostion, df2Same2$V5, df2Same2$V6)
-df2Same2$ukbPostionAllele2 <-
-  str_c(df2Same2$ukbPostion, df2Same2$V6, df2Same2$V5)
+
+dfDiagramSame <- dfDiagram[dfDiagram$diagramPostion %in% samePos, ]
+dfDiagramSame <- arrange(dfDiagramSame, diagramPostion)
+dfTrainSame <- dfTrain[dfTrain$ukbPostion %in% samePos, ]
+dfTrainSame <- arrange(dfTrainSame, ukbPostion)
+dfDiagramSame$diagramPostionAllele <-
+  str_c(dfDiagramSame$diagramPostion,
+        dfDiagramSame$EA,
+        dfDiagramSame$NEA)
+dfTrainSame$ukbPostionAllele1 <-
+  str_c(dfTrainSame$ukbPostion, dfTrainSame$V5, dfTrainSame$V6)
+dfTrainSame$ukbPostionAllele2 <-
+  str_c(dfTrainSame$ukbPostion, dfTrainSame$V6, dfTrainSame$V5)
 # 704336
-sum((df2Same2$ukbPostionAllele1 %in% dfSame2$diagramPostionAllele) + (df2Same2$ukbPostionAllele2 %in% dfSame2$diagramPostionAllele)
+sum((
+  dfTrainSame$ukbPostionAllele1 %in% dfDiagramSame$diagramPostionAllele
+) + (
+  dfTrainSame$ukbPostionAllele2 %in% dfDiagramSame$diagramPostionAllele
 )
-p<-dfSame2[,c(4,5,12,9)]
-dfP<-left_join(df2Same2,p,by=c("ukbPostionAllele1"="diagramPostionAllele"))
-dfP<-left_join(dfP,p,by=c("ukbPostionAllele2"="diagramPostionAllele"))
+)
+P <- dfDiagramSame[, c(4, 5, 12, 7, 9)]
+# convert odd ratio
+P$Beta <- exp(P$Beta)
+dfP <-
+  left_join(dfTrainSame,
+            P,
+            by = c("ukbPostionAllele1" = "diagramPostionAllele"))
+dfP <-
+  left_join(dfP, P, by = c("ukbPostionAllele2" = "diagramPostionAllele"))
 # no row is matched twice
 unique(rowSums(is.na(dfP)))
-p<-dfSame2[,c(12,9)]
-dfP<-left_join(df2Same2,p,by=c("ukbPostionAllele1"="diagramPostionAllele"))
-dfP<-left_join(dfP,p,by=c("ukbPostionAllele2"="diagramPostionAllele"))
-dfP<-dfP[rowSums(is.na(dfP))!=2,]
-dfP[is.na(dfP)]<-0
-dfP$Pvalue<-dfP$Pvalue.x+dfP$Pvalue.y
-dfP2<-data.frame(CHR=dfP$V1,
-                SNP=dfP$V2,
-                BP=dfP$V4,
-                A1=dfP$V5,
-                A2=dfP$V6,
-                OR=dfP$V3,
-                P=dfP$Pvalue)
+P <- dfDiagramSame[, c(12, 7, 9)]
+P$Beta <- exp(P$Beta)
+dfP <-
+  left_join(dfTrainSame,
+            P,
+            by = c("ukbPostionAllele1" = "diagramPostionAllele"))
+dfP <-
+  left_join(dfP, P, by = c("ukbPostionAllele2" = "diagramPostionAllele"))
+dfP <- dfP[rowSums(is.na(dfP)) != 4, ]
+dfP[is.na(dfP)] <- 0
+dfP$Pvalue <- dfP$Pvalue.x + dfP$Pvalue.y
+dfP$Beta <- dfP$Beta.x + dfP$Beta.y
+dfP <- data.frame(
+  CHR = dfP$V1,
+  SNP = dfP$V2,
+  BP = dfP$V4,
+  A1 = dfP$V5,
+  A2 = dfP$V6,
+  OR = dfP$Beta,
+  P = dfP$Pvalue
+)
 # 55111
-sum(dfP2$P<=0.05)
-write.table(dfP2,"UKBdiagramShareSNP.tsv",sep = "\t",quote = F,row.names = F)
+sum(dfP$P <= 0.05)
+write.table(
+  dfP,
+  "UKBdiagramShareSNP.tsv",
+  sep = "\t",
+  quote = F,
+  row.names = F
+)
 ```
 
 # prsice demo
@@ -126,6 +158,9 @@ pcs <- fread("prsiceDemo/EUR.eigenvec", header=F)
 colnames(pcs) <- c("FID","IID", paste0("PC",1:6))
 cov <- merge(covariate, pcs)
 fwrite(cov,"prsiceDemo/EUR.covariate", sep="\t")
+
+demoDf<-fread("prsiceDemo/Height.QC")
+shareDf<-fread("UKBdiagramShareSNP.tsv")
 ```
 
 ```{bash}
@@ -143,4 +178,64 @@ Rscript bin/PRSice.R \
     --or \
     --out EUR
 ```
+
+# QC
+
+```{bash}
+nohup plink \
+  --bfile /work/biobank/ukb_data/GenData/plink \
+  --autosome \
+  --make-bed \
+  --out all.autosome \
+  > filterUKBautosome.log.txt 2>&1 &
+  
+cd /scratch/yixiong/prsice
+nohup plink \
+  --threads 20 \
+  --bfile train.autosome \
+  --keep-allele-order \
+  --me 1 1 \
+  --set-me-missing \
+  --make-bed \
+  --out train.autosome.nomendel \
+  > QCnomendel.log.txt 2>&1 &
+  
+nohup plink \
+  --bfile /work/biobank/ukb_data/diabetes/train \
+  --autosome \
+  --make-bed \
+  --out train.autosome \
+  > filterUKBautosome.log.txt 2>&1 &
+
+# --geno Exclude variants with missing call frequencies greater than a threshold (default 0.1)
+# --mind Exclude samples with missing call frequencies greater than a threshold (default 0.1).
+# --maf Exclude variants with minor allele frequency lower than a threshold (default 0.01).
+# --hwe Exclude variants with Hardy-Weinberg equilibrium exact test p-values below a threshold.
+
+nohup plink \
+  --threads 20 \
+  --bfile train.autosome.nomendel \
+  --keep-allele-order \
+  --geno 0.2 \
+  --mind 0.2 \
+  --maf 0.03 \
+  --hwe 1e-6 \
+  --make-bed \
+  --out train.autosome.filter \
+  > QCfilter.log.txt 2>&1 &
+```
+
+# PCA
+
+[plink PCA tutorial](https://zhuanlan.zhihu.com/p/72490817)
+
+```{bash}
+nohup plink2 \
+  --bfile train.autosome.filter \
+  --pca approx 10 \
+  --memory 204800 \
+  --out train.autosome.filter.PCA \
+  > PCA.log.txt 2>&1 &
+```
+
 
