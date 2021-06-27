@@ -87,6 +87,7 @@ df <- df[df$`Q-value` <= 0.01]
 df <- df[df$Reverse != "+",]
 write.csv(df, "proteinGroupsFiltered.csv", row.names = F)
 # identified 4085 protein groups
+df<-read.csv("proteinGroupsFiltered.csv", check.names = F)
 nrow(df)
 # identified 4476 proteins
 length(unlist(str_split(df$`Protein IDs`, ";")))
@@ -202,6 +203,36 @@ colgroup <-
 row.names(colgroup) <- colnames(mat)
 
 pdf("protein LFQ abundance heatmap with cluster.pdf",
+    width = 8,
+    height = 6)
+pheatmap(
+  mat,
+  show_rownames = F,
+  fontsize = 15,
+  # RdBu RdYlBu
+  color = colorRampPalette(rev(
+    RColorBrewer::brewer.pal(n = 7, name = "RdYlBu")
+  ))(100),
+  cluster_row = T,
+  cluster_col = T,
+  scale = "row",
+  annotation_col = colgroup
+)
+dev.off()
+
+# MS2 count
+
+mat <- df[, 93:101]
+mat <- sapply(mat, as.numeric)
+mat <- mat[rowSums(mat) != 0, ]
+mat <- prop.table(mat,2)
+colnames(mat) <-
+  c(paste0(rep(c("COVID", "CTRL", "S"), each = 3), c(1:3, 1:3)))
+colgroup <-
+  data.frame(Treatments = factor(rep(c("COVID", "CTRL", "S"), each = 3)))
+row.names(colgroup) <- colnames(mat)
+
+pdf("protein MS2 count heatmap.pdf",
     width = 8,
     height = 6)
 pheatmap(

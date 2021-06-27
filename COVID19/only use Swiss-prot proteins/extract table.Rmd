@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # identified proteins in repeats
 
+[intensity LFQ IBAQ difference](https://www.researchgate.net/post/What_is_the_difference_between_LFQ_intensity_and_plain_intensity)
+
 ```{r}
 library(ggvenn)
 library(dplyr)
@@ -57,4 +59,77 @@ write.csv(pGroup[CTRL, ], "CTRL.csv", row.names = F)
 write.csv(pGroup[S, ], "S.csv", row.names = F)
 ```
 
+# identified virus proteins
+
+```{r}
+library(stringr)
+library(pheatmap)
+pGroup <- read.csv("proteinGroupsFiltered.csv",check.names=FALSE)
+
+#### COVID ####
+
+covid<-pGroup[str_detect(pGroup$`Majority protein IDs`,"_SARS2"),]
+write.csv(covid,"COVID protein.csv",row.names = F)
+mat <- covid[, 65:73]
+mat <- sapply(mat, as.numeric)
+mat <- prop.table(mat, margin = 2)
+rownames(mat)<-covid$`Majority protein IDs`
+mat <- mat[rowSums(mat) != 0, ]
+colnames(mat) <-
+  c(paste0(rep(c("COVID", "CTRL", "S"), each = 3), c(1:3, 1:3)))
+colgroup <-
+  data.frame(Treatments = factor(rep(c("COVID", "CTRL", "S"), each = 3)))
+row.names(colgroup) <- colnames(mat)
+
+pdf("COVID protein abundance heatmap.pdf",
+    width = 16,
+    height = 6)
+pheatmap(
+  mat,
+  show_rownames = T,
+  fontsize = 15,
+  # RdBu RdYlBu
+  color = colorRampPalette(rev(
+    RColorBrewer::brewer.pal(n = 7, name = "RdYlBu")
+  ))(100),
+  cluster_row = T,
+  cluster_col = F,
+  scale = "row",
+  annotation_col = colgroup
+)
+dev.off()
+
+mat <- covid[, 93:101]
+mat <- sapply(mat, as.numeric)
+rownames(mat)<-covid$`Majority protein IDs`
+mat <- mat[rowSums(mat) != 0, ]
+colnames(mat) <-
+  c(paste0(rep(c("COVID", "CTRL", "S"), each = 3), c(1:3, 1:3)))
+colgroup <-
+  data.frame(Treatments = factor(rep(c("COVID", "CTRL", "S"), each = 3)))
+row.names(colgroup) <- colnames(mat)
+
+pdf("COVID MS2 count heatmap.pdf",
+    width = 16,
+    height = 6)
+pheatmap(
+  mat,
+  show_rownames = T,
+  fontsize = 15,
+  # RdBu RdYlBu
+  color = colorRampPalette(rev(
+    RColorBrewer::brewer.pal(n = 7, name = "RdYlBu")
+  ))(100),
+  cluster_row = T,
+  cluster_col = F,
+  scale = "row",
+  annotation_col = colgroup
+)
+dev.off()
+
+# Sindbis virus
+
+S<-pGroup[str_detect(pGroup$`Majority protein IDs`,"_SINDV"),]
+write.csv(S,"Sindbis virus proteins.csv",row.names = F)
+```
 
