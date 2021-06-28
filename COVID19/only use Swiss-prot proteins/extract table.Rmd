@@ -9,13 +9,21 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+library(ggvenn)
+library(dplyr)
+library(stringr)
+library(pheatmap)
+library(stringr)
+library(pheatmap)
+```
+
 # identified proteins in repeats
 
 [intensity LFQ IBAQ difference](https://www.researchgate.net/post/What_is_the_difference_between_LFQ_intensity_and_plain_intensity)
 
+
 ```{r}
-library(ggvenn)
-library(dplyr)
 pGroup <- read.csv("proteinGroupsFiltered.csv"
                    # not convert space to .
                    # ,check.names=FALSE
@@ -62,8 +70,6 @@ write.csv(pGroup[S, ], "S.csv", row.names = F)
 # identified virus proteins
 
 ```{r}
-library(stringr)
-library(pheatmap)
 pGroup <- read.csv("proteinGroupsFiltered.csv",check.names=FALSE)
 
 #### COVID ####
@@ -132,4 +138,70 @@ dev.off()
 S<-pGroup[str_detect(pGroup$`Majority protein IDs`,"_SINDV"),]
 write.csv(S,"Sindbis virus proteins.csv",row.names = F)
 ```
+
+# annotation of proteins with different abundance
+
+```{r}
+ah <- AnnotationHub(localHub = TRUE)
+hm <- ah[["AH92581"]]
+keytypes(hm)
+
+KO <- keggList("pathway")
+KOdf <- data.frame(id = names(KO), term = KO)
+KOdf$id <- str_sub(KOdf$id, 9)
+
+addAnnotation <- function(filePath) {
+  SvsCTRL <-
+    read.csv(filePath, check.names = F)
+  colnames(SvsCTRL)[1] <- "ID"
+  SvsCTRL <- separate_rows(SvsCTRL, ID, sep = ";")
+  id <- unlist(str_split(SvsCTRL$ID, "\\|", simplify = T)[, 2])
+  SvsCTRL$UNIPROT <- id
+  annoDf <-
+    AnnotationDbi::select(
+      hm,
+      keys = id,
+      keytype = "UNIPROT",
+      columns = c("UNIPROT", "GENENAME", "GO", "PATH", "ENZYME")
+    )
+  goName <-
+    AnnotationDbi::select(GO.db,
+                          keys = annoDf$GO,
+                          keytype = "GOID",
+                          columns = "TERM")
+  kName <- KOdf$term[match(annoDf$PATH, KOdf$id)]
+  annoDf <- cbind(annoDf,
+                  GO_annotation = goName$TERM,
+                  KEGG_annotation = kName)
+  annoDf <- as_tibble(annoDf)
+  annoDf <- group_by(annoDf, UNIPROT)
+  # merge rows by same value in one column
+  pasteSemi <- function(x)
+    paste(unique(x), collapse = " | ")
+  annoDf <-
+    summarise(annoDf, across(GENENAME:KEGG_annotation, pasteSemi))
+  annoDf <-
+    left_join(SvsCTRL, annoDf, by = c("UNIPROT" = "UNIPROT"))
+  return(annoDf)
+}
+
+SvsCTRL <-
+  addAnnotation("Protein with different abundance S vs CTRL.csv")
+write.csv(SvsCTRL,
+          "Protein with different abundance with annotation S vs CTRL.csv",
+          row.names = F)
+COVIDvsCTRL <-
+  addAnnotation("Protein with different abundance COVID vs CTRL.csv")
+write.csv(
+  SvsCTRL,
+  "Protein with different abundance with annotation COVID vs CTRL.csv",
+  row.names = F
+)
+COVIDvsS <-
+  addAnnotation("Protein with different abundance COVID vs S.csv")
+write.csv(SvsCTRL,
+          "Protein with different abundance with annotation COVID vs S.csv",
+          row.names = F)
+```
+
 
