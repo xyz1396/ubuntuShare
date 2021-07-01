@@ -1,0 +1,207 @@
+---
+title: "extract table"
+author: "xyz"
+date: "2021/6/26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggvenn)
+library(dplyr)
+library(stringr)
+library(pheatmap)
+library(stringr)
+library(pheatmap)
+```
+
+# identified proteins in repeats
+
+[intensity LFQ IBAQ difference](https://www.researchgate.net/post/What_is_the_difference_between_LFQ_intensity_and_plain_intensity)
+
+
+```{r}
+pGroup <- read.csv("proteinGroupsFiltered.csv"
+                   # not convert space to .
+                   # ,check.names=FALSE
+                   )
+nProtein<- 1:nrow(pGroup)
+COVID1 <- nProtein[pGroup$Identification.type.COVID1 != ""]
+COVID2 <- nProtein[pGroup$`Identification.type.COVID2` != ""]
+COVID3 <- nProtein[pGroup$`Identification.type.COVID3` != ""]
+CTRL1 <- nProtein[pGroup$`Identification.type.ctrl1` != ""]
+CTRL2 <- nProtein[pGroup$`Identification.type.ctrl2` != ""]
+CTRL3 <- nProtein[pGroup$`Identification.type.ctrl3` != ""]
+S1 <- nProtein[pGroup$`Identification.type.S1` != ""]
+S2 <- nProtein[pGroup$`Identification.type.S2` != ""]
+S3 <- nProtein[pGroup$`Identification.type.S3` != ""]
+
+pList <- list(COVID1 = COVID1,
+              COVID2 = COVID2,
+              COVID3 = COVID3)
+p <- ggvenn(pList)
+p + ggsave("COVID repeats.pdf",width = 8,height = 6)
+pList <- list(CTRL1 = CTRL1,
+              CTRL2 = CTRL2,
+              CTRL3 = CTRL3)
+p <- ggvenn(pList)
+p + ggsave("CTRL repeats.pdf",width = 8,height = 6)
+pList <- list(S1 = S1,
+              S2 = S2,
+              S3 = S3)
+p <- ggvenn(pList)
+p + ggsave("S repeats.pdf",width = 8,height = 6)
+```
+
+# identified proteins in each treatment
+
+```{r}
+COVID <- unique(c(COVID1, COVID2, COVID3))
+CTRL <- unique(c(CTRL1, CTRL2, CTRL3))
+S <- unique(c(S1, S2, S3))
+write.csv(pGroup[COVID, ], "COVID.csv", row.names = F)
+write.csv(pGroup[CTRL, ], "CTRL.csv", row.names = F)
+write.csv(pGroup[S, ], "S.csv", row.names = F)
+```
+
+# identified virus proteins
+
+```{r}
+pGroup <- read.csv("proteinGroupsFiltered.csv",check.names=FALSE)
+
+#### COVID ####
+
+covid<-pGroup[str_detect(pGroup$`Majority protein IDs`,"_SARS2"),]
+write.csv(covid,"COVID protein.csv",row.names = F)
+mat <- covid[, 65:73]
+mat <- sapply(mat, as.numeric)
+mat <- prop.table(mat, margin = 2)
+rownames(mat)<-covid$`Majority protein IDs`
+mat <- mat[rowSums(mat) != 0, ]
+colnames(mat) <-
+  c(paste0(rep(c("COVID", "CTRL", "S"), each = 3), c(1:3, 1:3)))
+colgroup <-
+  data.frame(Treatments = factor(rep(c("COVID", "CTRL", "S"), each = 3)))
+row.names(colgroup) <- colnames(mat)
+
+pdf("COVID protein abundance heatmap.pdf",
+    width = 16,
+    height = 6)
+pheatmap(
+  mat,
+  show_rownames = T,
+  fontsize = 15,
+  # RdBu RdYlBu
+  color = colorRampPalette(rev(
+    RColorBrewer::brewer.pal(n = 7, name = "RdYlBu")
+  ))(100),
+  cluster_row = T,
+  cluster_col = F,
+  scale = "row",
+  annotation_col = colgroup
+)
+dev.off()
+
+mat <- covid[, 93:101]
+mat <- sapply(mat, as.numeric)
+rownames(mat)<-covid$`Majority protein IDs`
+mat <- mat[rowSums(mat) != 0, ]
+colnames(mat) <-
+  c(paste0(rep(c("COVID", "CTRL", "S"), each = 3), c(1:3, 1:3)))
+colgroup <-
+  data.frame(Treatments = factor(rep(c("COVID", "CTRL", "S"), each = 3)))
+row.names(colgroup) <- colnames(mat)
+
+pdf("COVID MS2 count heatmap.pdf",
+    width = 16,
+    height = 6)
+pheatmap(
+  mat,
+  show_rownames = T,
+  fontsize = 15,
+  # RdBu RdYlBu
+  color = colorRampPalette(rev(
+    RColorBrewer::brewer.pal(n = 7, name = "RdYlBu")
+  ))(100),
+  cluster_row = T,
+  cluster_col = F,
+  scale = "row",
+  annotation_col = colgroup
+)
+dev.off()
+
+# Sindbis virus
+
+S<-pGroup[str_detect(pGroup$`Majority protein IDs`,"_SINDV"),]
+write.csv(S,"Sindbis virus proteins.csv",row.names = F)
+```
+
+# annotation of proteins with different abundance
+
+```{r}
+ah <- AnnotationHub(localHub = TRUE)
+hm <- ah[["AH92581"]]
+keytypes(hm)
+
+KO <- keggList("pathway")
+KOdf <- data.frame(id = names(KO), term = KO)
+KOdf$id <- str_sub(KOdf$id, 9)
+
+addAnnotation <- function(filePath) {
+  SvsCTRL <-
+    read.csv(filePath, check.names = F)
+  colnames(SvsCTRL)[1] <- "ID"
+  SvsCTRL <- separate_rows(SvsCTRL, ID, sep = ";")
+  id <- unlist(str_split(SvsCTRL$ID, "\\|", simplify = T)[, 2])
+  SvsCTRL$UNIPROT <- id
+  annoDf <-
+    AnnotationDbi::select(
+      hm,
+      keys = id,
+      keytype = "UNIPROT",
+      columns = c("UNIPROT", "GENENAME", "GO", "PATH", "ENZYME")
+    )
+  goName <-
+    AnnotationDbi::select(GO.db,
+                          keys = annoDf$GO,
+                          keytype = "GOID",
+                          columns = "TERM")
+  kName <- KOdf$term[match(annoDf$PATH, KOdf$id)]
+  annoDf <- cbind(annoDf,
+                  GO_annotation = goName$TERM,
+                  KEGG_annotation = kName)
+  annoDf <- as_tibble(annoDf)
+  annoDf <- group_by(annoDf, UNIPROT)
+  # merge rows by same value in one column
+  pasteSemi <- function(x)
+    paste(unique(x), collapse = " | ")
+  annoDf <-
+    summarise(annoDf, across(GENENAME:KEGG_annotation, pasteSemi))
+  annoDf <-
+    left_join(SvsCTRL, annoDf, by = c("UNIPROT" = "UNIPROT"))
+  return(annoDf)
+}
+
+SvsCTRL <-
+  addAnnotation("Protein with different abundance S vs CTRL.csv")
+write.csv(SvsCTRL,
+          "Protein with different abundance with annotation S vs CTRL.csv",
+          row.names = F)
+COVIDvsCTRL <-
+  addAnnotation("Protein with different abundance COVID vs CTRL.csv")
+write.csv(
+  SvsCTRL,
+  "Protein with different abundance with annotation COVID vs CTRL.csv",
+  row.names = F
+)
+COVIDvsS <-
+  addAnnotation("Protein with different abundance COVID vs S.csv")
+write.csv(SvsCTRL,
+          "Protein with different abundance with annotation COVID vs S.csv",
+          row.names = F)
+```
+
+

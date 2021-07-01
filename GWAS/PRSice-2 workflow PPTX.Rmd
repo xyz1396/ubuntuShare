@@ -339,7 +339,7 @@ nohup plink2 \
   --threads 20 \
   --bfile all.autosome.filter \
   --pca approx 100 \
-  --memory 204800 \
+  --memory 250000 \
   --out all.autosome.filter.PCA \
   > allPCA.log.txt 2>&1 &
 
