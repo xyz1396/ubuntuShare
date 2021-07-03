@@ -9,52 +9,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# make DB
-
-reviewed:yes AND organism:"Homo sapiens (Human) [9606]" AND proteome:up000005640
-
-reviewed:yes AND organism:"Severe acute respiratory syndrome coronavirus 2 (2019-nCoV) (SARS-CoV-2) [2697049]" AND proteome:up000464024
-
-reviewed:yes AND organism:"Sindbis virus (SINV) [11034]" AND proteome:up000006710
-
-```{bash}
-seqkit seq *yes.fasta > COVIDdb.fasta
-# file           format  type     num_seqs     sum_len  min_len  avg_len  max_len
-# COVIDdb.fasta  FASTA   Protein    20,390  11,378,347        2      558   34,350
-seqkit stat COVIDdb.fasta
-```
-
-# maxquant
-
-```{bash}
-cd /scratch/yixiong/COVID19/maxquantOutPut20210622
-conda activate openmpi
-nohup maxquant COVID.xml > maxquantLog.txt 2>&1 &
-```
-
-# sipros
-
-```{bash}
-cd /scratch/yixiong/Sipros-Ensemble/Scripts/
-python sipros_prepare_protein_database.py \
-  -i /scratch/yixiong/COVID19/maxquantOutPut20210622/COVIDdb.fasta \
-  -o /scratch/yixiong/COVID19/SiprosOutPut20210622/COVIDdbReverse.fasta \
-  -c /scratch/yixiong/COVID19/SiprosConfig.cfg
-  
-cd /scratch/yixiong/Sipros-Ensemble/bin
-nohup ./Sipros_OpenMP -o /scratch/yixiong/COVID19/SiprosOutPut20210622/ \
-  -w /scratch/yixiong/COVID19/MS2/MS2 \
-  -c /scratch/yixiong/COVID19/SiprosOutPut20210622/SiprosConfig20210622.cfg \
-  > /scratch/yixiong/COVID19/SiprosOutPut20210622/Sipros.log.txt 2>&1 &
-  
-cd /scratch/yixiong/Sipros-Ensemble/Scripts 
-nohup  ./runSiprosFiltering.sh \
-  -in /scratch/yixiong/COVID19/SiprosOutPut20210622 \
-  -o /scratch/yixiong/COVID19/SiprosOutPut20210622/FilteringOutput \
-  -c /scratch/yixiong/COVID19/SiprosOutPut20210622/SiprosConfig20210622.cfg \
-  > /scratch/yixiong/COVID19/SiprosOutPut20210622/Filtering.log.txt 2>&1 &
-```
-
 # deal with output of maxquant
 
 Identification type: Indicates whether this experiment was identified by MS/MS 
@@ -73,69 +27,46 @@ library(vegan)
 library(ggplot2)
 library(scales)
 library(pheatmap)
+library(ggvenn)
+library(AnnotationHub)
+library(clusterProfiler)
+library(stringr)
+library(dplyr)
+```
 
-# library(extrafont)
-# fonts()
-# # Show entire table
-# fonttable()
+```{r}
 
-df <- fread("proteinGroups.txt")
-write.csv(df, "proteinGroups.csv", row.names = F)
-# remove comtanmination
-df <- df[!str_detect(df$`Majority protein IDs`, "CON__"),]
-df <- df[df$`Q-value` <= 0.01]
-df <- df[df$Reverse != "+",]
-write.csv(df, "proteinGroupsFiltered.csv", row.names = F)
-# identified 4085 protein groups
-df<-read.csv("proteinGroupsFiltered.csv", check.names = F)
+df<-read.csv("../only use Swiss-prot proteins/proteinGroupsFiltered.csv", check.names = F)
 nrow(df)
 # identified 4476 proteins
 length(unlist(str_split(df$`Protein IDs`, ";")))
 
 #### Venn diagram ####
 
-COVID <- df$`Identification type COVID1` != "" |
-  df$`Identification type COVID2` != "" |
-  df$`Identification type COVID3` != ""
-CTRL <- df$`Identification type ctrl1` != "" |
-  df$`Identification type ctrl2` != "" |
-  df$`Identification type ctrl3` != ""
-S <- df$`Identification type S1` != "" |
-  df$`Identification type S2` != "" |
-  df$`Identification type S3` != ""
-p <- venn.diagram(
-  x = list(
-    COVID = (1:nrow(df))[COVID],
-    CTRL = (1:nrow(df))[CTRL],
-    S = (1:nrow(df))[S]
-  ),
-  filename = NULL,
-  output = F ,
-  # imagetype="png" ,
-  height = 1200 ,
-  width = 1200 ,
-  resolution = 30,
-  compression = "lzw",
-  lwd = 1,
-  col = c("#440154ff", '#21908dff', '#fde725ff'),
-  fill = c(
-    alpha("#440154ff", 0.3),
-    alpha('#21908dff', 0.3),
-    alpha('#fde725ff', 0.3)
-  ),
-  cex = 2,
-  fontfamily = "sans",
-  cat.cex = 2,
-  cat.default.pos = "outer",
-  cat.pos = c(-27, 27, 135),
-  cat.dist = c(0.055, 0.055, 0.085),
-  cat.fontfamily = "sans",
-  cat.col = c("#440154ff", '#21908dff', '#fde725ff'),
-  rotation = 1
-)
-pdf(file = "identified proteins venn.pdf")
-grid.draw(p)
-dev.off()
+COVID <- df$`Identification type COVID1` == "By MS/MS" |
+  df$`Identification type COVID2` == "By MS/MS" |
+  df$`Identification type COVID3` == "By MS/MS"
+CTRL <- df$`Identification type ctrl1` == "By MS/MS" |
+  df$`Identification type ctrl2` == "By MS/MS" |
+  df$`Identification type ctrl3` == "By MS/MS"
+S <- df$`Identification type S1` == "By MS/MS" |
+  df$`Identification type S2` == "By MS/MS" |
+  df$`Identification type S3` == "By MS/MS"
+pN<-1:nrow(df)
+pList <- list(
+    COVID = pN[COVID],
+    CTRL = pN[CTRL],
+    S = pN[S]
+  )
+p <- ggvenn(pList)
+p + ggsave("identified proteins venn.pdf",width = 8,height = 6)
+
+#### if MS2 count==0 convert intensity to 0 ####
+
+isZero<-df[,93:101]==0
+df[,65:73][isZero]<-0
+
+write.csv(df,"proteinGroupsFilteredFixed.csv",row.names = F)
 
 #### heatmap ####
 
@@ -150,7 +81,7 @@ colgroup <-
   data.frame(Treatments = factor(rep(c("COVID", "CTRL", "S"), each = 3)))
 row.names(colgroup) <- colnames(mat)
 
-pdf("protein abundance heatmap with cluster.pdf",
+pdf("protein intensity heatmap with cluster.pdf",
     width = 8,
     height = 6)
 pheatmap(
@@ -293,7 +224,7 @@ coldata <- data.frame(row.names = colnames(mat),
 dds <- DESeqDataSetFromMatrix(countData = mat,
                               colData = coldata,
                               design =  ~ condition)
-dds2 <- DESeq(dds)
+dds2 <- DESeq(dds, fitType = 'local')
 DEGs <- results(dds2, contrast = c("condition", "COVID", "CTRL"))
 DEGsDf <- na.exclude(as.data.frame(DEGs))
 saveRDS(DEGsDf, "COVID vs CTRL.rds")
@@ -361,7 +292,7 @@ drawVolcanoPlot <- function(df) {
 p <- drawVolcanoPlot(DEGsDf[, c("padj", "log2FoldChange")])
 # Limit the scope of the drawing and add linear coordinates
 p <-
-  p + scale_y_continuous(limits = c(0, 280), breaks = c(1.3, 10, 20, 40, 80, 160))
+  p + scale_y_continuous(limits = c(0, 110), breaks = c(1.3, 10, 20, 40, 80, 160))
 p + ggsave("COVID vs CTRL volcano plot.pdf",
            width = 8,
            height = 6)
@@ -379,7 +310,7 @@ coldata <- data.frame(row.names = colnames(mat),
 dds <- DESeqDataSetFromMatrix(countData = mat,
                               colData = coldata,
                               design =  ~ condition)
-dds2 <- DESeq(dds)
+dds2 <- DESeq(dds,fitType='local')
 DEGs <- results(dds2, contrast = c("condition", "S", "CTRL"))
 DEGsDf <- na.exclude(as.data.frame(DEGs))
 saveRDS(DEGsDf, "S vs CTRL.rds")
@@ -395,7 +326,7 @@ DEGsDf$padj[DEGsDf$padj == 0] <- min(DEGsDf$padj[DEGsDf$padj > 0])
 p <- drawVolcanoPlot(DEGsDf[, c("padj", "log2FoldChange")])
 # Limit the scope of the drawing and add linear coordinates
 p <-
-  p + scale_y_continuous(limits = c(0, 162),
+  p + scale_y_continuous(limits = c(0, 123),
                          breaks = c(1.3, 10, 20, 40, 80, 160))
 # scale_y_break conflict with geom_hline and geom_vline
 # p<-p+ scale_y_break(c(40, 150))
@@ -412,11 +343,11 @@ mat <- round(mat / 1000)
 row.names(mat) <- df$`Majority protein IDs`
 mat <- mat[rowSums(mat) != 0, ]
 coldata <- data.frame(row.names = colnames(mat),
-                      condition = factor(colgroup$Treatments[c(1:3, 7:9)]))
+                      condition = factor(colgroup$Treatments[c(1:3,7:9)]))
 dds <- DESeqDataSetFromMatrix(countData = mat,
                               colData = coldata,
                               design =  ~ condition)
-dds2 <- DESeq(dds)
+dds2 <- DESeq(dds,fitType='local')
 DEGs <- results(dds2, contrast = c("condition", "COVID", "S"))
 DEGsDf <- na.exclude(as.data.frame(DEGs))
 saveRDS(DEGsDf, "COVID vs S.rds")
@@ -446,7 +377,7 @@ head(sort(log10(DEGsDf$padj)))
 DEGsDf$padj[DEGsDf$padj == 0] <- min(DEGsDf$padj[DEGsDf$padj > 0])
 p <- drawVolcanoPlot(DEGsDf[, c("padj", "log2FoldChange")])
 p <-
-  p + scale_y_continuous(limits = c(0, 220), breaks = c(1.3, 10, 20, 40, 80, 160))
+  p + scale_y_continuous(limits = c(0, 130), breaks = c(1.3, 10, 20, 40, 80, 160))
 p + ggsave("COVID vs S volcano plot.pdf",
            width = 8,
            height = 6)
@@ -455,10 +386,6 @@ p + ggsave("COVID vs S volcano plot.pdf",
 # get protein annotation
 
 ```{r}
-library(AnnotationHub)
-library(clusterProfiler)
-library(stringr)
-
 # refreshHub(hubClass="AnnotationHub")
 ah <- AnnotationHub()
 # job::job({display(ah)})
@@ -494,8 +421,8 @@ goMF <-
   )
 goMFdf <- as.data.frame(goMF)
 write.csv(goMFdf, "COVID vs CTRL MF enrich.csv", row.names = F)
-p <- dotplot(filter(goMF,qvalue<0.05), font.size = 10)
-p + ggsave("COVID vs CTRL MF enrich 0.05.pdf",
+p <- dotplot(filter(goMF,qvalue<0.2), font.size = 10)
+p + ggsave("COVID vs CTRL MF enrich 0.2.pdf",
            width = 8,
            height = 6)
 
@@ -524,8 +451,8 @@ goCC <-
   )
 goCCdf <- as.data.frame(goCC)
 write.csv(goCCdf, "COVID vs CTRL CC enrich.csv", row.names = F)
-p <- dotplot(filter(goCC,qvalue<0.05), font.size = 10)
-p + ggsave("COVID vs CTRL CC enrich 0.05.pdf",
+p <- dotplot(filter(goCC,qvalue<0.1), font.size = 10)
+p + ggsave("COVID vs CTRL CC enrich 0.1.pdf",
            width = 8,
            height = 6)
 
@@ -533,13 +460,13 @@ kegg <-
   enrichKEGG(
     gene = covidList,
     organism = "hsa",
-    keyType = "uniprot",
+    keyType = "UNIPROT",
     pvalueCutoff = 1
   )
 keggDf <- as.data.frame(kegg)
 write.csv(keggDf, "COVID vs CTRL KEGG enrich.csv", row.names = F)
-p <- dotplot(filter(kegg,qvalue<0.1), font.size = 10)
-p + ggsave("COVID vs CTRL KEGG enrich 0.1.pdf",
+p <- dotplot(filter(kegg,qvalue<0.2), font.size = 10)
+p + ggsave("COVID vs CTRL KEGG enrich 0.2.pdf",
            width = 8,
            height = 6)
 
@@ -560,7 +487,7 @@ goMF <-
   )
 goMFdf <- as.data.frame(goMF)
 write.csv(goMFdf, "S vs CTRL MF enrich.csv", row.names = F)
-p <- dotplot(dplyr::slice(goMF,n=1:10), font.size = 10)
+p <- dotplot(slice(goMF,n=1:10), font.size = 10)
 p + ggsave("S vs CTRL MF enrich 1-10.pdf",
            width = 8,
            height = 6)
@@ -575,7 +502,7 @@ goBP <-
   )
 goBPdf <- as.data.frame(goBP)
 write.csv(goBPdf, "S vs CTRL BP enrich.csv", row.names = F)
-p <- dotplot(dplyr::slice(goBP,n=1:10), font.size = 10)
+p <- dotplot(slice(goBP,n=1:10), font.size = 10)
 p + ggsave("S vs CTRL BP enrich 1-10.pdf",
            width = 8,
            height = 6)
@@ -590,7 +517,7 @@ goCC <-
   )
 goCCdf <- as.data.frame(goCC)
 write.csv(goCCdf, "S vs CTRL CC enrich.csv", row.names = F)
-p <- dotplot(dplyr::slice(goCC,n=1:10), font.size = 10)
+p <- dotplot(slice(goCC,n=1:10), font.size = 10)
 p + ggsave("S vs CTRL CC enrich 1-10.pdf",
            width = 8,
            height = 6)
@@ -604,7 +531,7 @@ kegg <-
   )
 keggDf <- as.data.frame(kegg)
 write.csv(keggDf, "S vs CTRL KEGG enrich.csv", row.names = F)
-p <- dotplot(dplyr::slice(kegg,n=1:10), font.size = 10)
+p <- dotplot(slice(kegg,n=1:10), font.size = 10)
 p + ggsave("S vs CTRL KEGG enrich 1-10.pdf",
            width = 8,
            height = 6)
@@ -625,11 +552,12 @@ goMF <-
     pvalueCutoff = 1
   )
 goMFdf <- as.data.frame(goMF)
-write.csv(goMFdf, "COVID vs S MF enrich.csv", row.names = F)
-p <- dotplot(dplyr::slice(goMF,n=1:10), font.size = 10)
-p + ggsave("COVID vs S MF enrich 1-10.pdf",
-           width = 8,
-           height = 6)
+## empty results
+# write.csv(goMFdf, "COVID vs S MF enrich.csv", row.names = F)
+# p <- dotplot(dplyr::slice(goMF,n=1:10), font.size = 10)
+# p + ggsave("COVID vs S MF enrich 1-10.pdf",
+#            width = 8,
+#            height = 6)
 
 goBP <-
   enrichGO(
@@ -656,11 +584,11 @@ goCC <-
   )
 goCCdf <- as.data.frame(goCC)
 # empty result
-# write.csv(goCCdf, "COVID vs S CC enrich.csv", row.names = F)
-# p <- dotplot(dplyr::slice(goCC,n=1:10), font.size = 10)
-# p + ggsave("COVID vs S CC enrich 1-10.pdf",
-#            width = 8,
-#            height = 6)
+write.csv(goCCdf, "COVID vs S CC enrich.csv", row.names = F)
+p <- dotplot(dplyr::slice(goCC,n=1:10), font.size = 10)
+p + ggsave("COVID vs S CC enrich 1-10.pdf",
+           width = 8,
+           height = 6)
 
 kegg <-
   enrichKEGG(
@@ -670,45 +598,10 @@ kegg <-
     pvalueCutoff = 1
   )
 keggDf <- as.data.frame(kegg)
-# empty result
+## empty result
 # write.csv(keggDf, "COVID vs S KEGG enrich.csv", row.names = F)
-# p <- dotplot(dplyr::slice(kegg,n=1:10), font.size = 10)
+# p <- dotplot(slice(kegg,n=1:10), font.size = 10)
 # p + ggsave("COVID vs S KEGG enrich 1-10.pdf",
 #            width = 8,
 #            height = 6)
 ```
-
-# sipros result
-
-```{r}
-library(ggvenn)
-siDf <- fread("Pan_050721.pro.txt", skip = 58)
-si <- siDf$ProteinID
-si <- si[!str_detect(si, "Rev2_")]
-si <- str_replace(si, "\\{", "")
-si <- str_replace(si, "\\}", "")
-si <- unlist(str_split(si, ","))
-mq <- read.csv("proteinGroupsFiltered.csv")
-mq <- mq$Majority.protein.IDs
-mq <- unlist(str_split(mq, ";"))
-# 3953
-sum(si %in% mq)
-p <- venn.diagram(
-  x = list(Sipros = si,
-           Maxquant = mq),
-  filename = NULL,
-  output = F ,
-  height = 1200 ,
-  width = 1200 ,
-  resolution = 30
-)
-pdf(file = "Sipros Maxquant venn.pdf")
-grid.draw(p)
-dev.off()
-
-a <- list(Sipros = si,
-          Maxquant = mq)
-p <- ggvenn(a, c("Sipros", "Maxquant"))
-p + ggsave("Sipros Maxquant venn2.pdf")
-```
-

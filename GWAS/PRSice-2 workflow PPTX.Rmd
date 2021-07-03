@@ -357,12 +357,20 @@ nohup plink2 \
 ## training data
 
 ```{bash, eval=FALSE, include=FALSE}
+# Error: Failed to compute SVD of Krylov matrix (DGESVD info=20199)
 nohup plink2 \
   --bfile train.autosome.filter \
   --pca approx 100 \
   --memory 204800 \
   --out train.autosome.filter.PCA \
   > PCA.log.txt 2>&1 &
+  
+nohup plink2 \
+  --bfile train.autosome.filter \
+  --pca approx 20 \
+  --memory 250000 \
+  --out train.autosome.filter.PCA20 \
+  > trainPCA20.log.txt 2>&1 &
 ```
 
 
