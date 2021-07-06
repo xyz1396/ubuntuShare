@@ -333,6 +333,17 @@ nohup plink \
  
 ## all data
 
+  useful results:
+
+  all.PCA20.eigenval
+  
+  all.PCA20.eigenvec
+  
+  all.PCA20.log
+  
+  allPCA20.log.txt
+  
+
 ```{bash, eval=FALSE, include=FALSE}
 # memory is not enough
 nohup plink2 \
@@ -352,9 +363,27 @@ nohup plink2 \
   --memory 250000 \
   --out all.PCA10 \
   > allPCA10.log.txt 2>&1 &
+
+# get 20 PC
+
+nohup plink2 \
+  --threads 30 \
+  --bfile all.autosome.filter \
+  --pca approx 20 \
+  --memory 250000 \
+  --out all.PCA20 \
+  > allPCA20.log.txt 2>&1 &
 ```
 
 ## training data
+
+  train.autosome.filter.PCA20.eigenval
+  
+  train.autosome.filter.PCA20.eigenvec
+  
+  train.autosome.filter.PCA20.log
+
+  trainPCA20.log.txt
 
 ```{bash, eval=FALSE, include=FALSE}
 # Error: Failed to compute SVD of Krylov matrix (DGESVD info=20199)
@@ -371,6 +400,92 @@ nohup plink2 \
   --memory 250000 \
   --out train.autosome.filter.PCA20 \
   > trainPCA20.log.txt 2>&1 &
+  
+ls *PCA20* -l^C awk '{print $9}'
 ```
 
+# Search shared SNP between UKB after QC and diagram
 
+```{r, eval=FALSE, include=FALSE}
+library(data.table)
+library(stringr)
+library(dplyr)
+dfDiagram <- readRDS("diagram.UKB.summaryStats.rds")
+dfAll <- fread("all.autosome.filter.bim.txt")
+# 13583103 SNPs in diagram
+dim(dfDiagram)
+# 337363 SNPs in UKB
+nrow(dfAll)
+diagramPostion <- str_c(dfDiagram$Chr, ":", dfDiagram$Pos)
+ukbPostion <- str_c(dfAll$V1, ":", dfAll$V4)
+# 334433 positions are the same
+samePos <- intersect(diagramPostion, ukbPostion)
+length(samePos)
+# 99.13% in ukb after QC can be found on diagram
+length(samePos) / nrow(dfAll) * 100
+dfDiagram$diagramPostion <- diagramPostion
+dfAll$ukbPostion <- ukbPostion
+
+#### get the unique match of SNP considering allele ####
+
+dfDiagramSame <- dfDiagram[dfDiagram$diagramPostion %in% samePos, ]
+dfDiagramSame <- arrange(dfDiagramSame, diagramPostion)
+dfAllSame <- dfAll[dfAll$ukbPostion %in% samePos, ]
+dfAllSame <- arrange(dfAllSame, ukbPostion)
+dfDiagramSame$diagramPostionAllele <-
+  str_c(dfDiagramSame$diagramPostion,
+        dfDiagramSame$EA,
+        dfDiagramSame$NEA)
+dfAllSame$ukbPostionAllele1 <-
+  str_c(dfAllSame$ukbPostion, dfAllSame$V5, dfAllSame$V6)
+dfAllSame$ukbPostionAllele2 <-
+  str_c(dfAllSame$ukbPostion, dfAllSame$V6, dfAllSame$V5)
+# 334347
+sum((
+  dfAllSame$ukbPostionAllele1 %in% dfDiagramSame$diagramPostionAllele
+) + (
+  dfAllSame$ukbPostionAllele2 %in% dfDiagramSame$diagramPostionAllele
+)
+)
+P <- dfDiagramSame[, c(4, 5, 12, 7, 9)]
+# convert odd ratio
+P$Beta <- exp(P$Beta)
+dfP <-
+  left_join(dfAllSame,
+            P,
+            by = c("ukbPostionAllele1" = "diagramPostionAllele"))
+dfP <-
+  left_join(dfP, P, by = c("ukbPostionAllele2" = "diagramPostionAllele"))
+# no row is matched twice
+unique(rowSums(is.na(dfP)))
+P <- dfDiagramSame[, c(12, 7, 9)]
+P$Beta <- exp(P$Beta)
+dfP <-
+  left_join(dfAllSame,
+            P,
+            by = c("ukbPostionAllele1" = "diagramPostionAllele"))
+dfP <-
+  left_join(dfP, P, by = c("ukbPostionAllele2" = "diagramPostionAllele"))
+dfP <- dfP[rowSums(is.na(dfP)) != 4, ]
+dfP[is.na(dfP)] <- 0
+dfP$Pvalue <- dfP$Pvalue.x + dfP$Pvalue.y
+dfP$Beta <- dfP$Beta.x + dfP$Beta.y
+dfP <- data.frame(
+  CHR = dfP$V1,
+  SNP = dfP$V2,
+  BP = dfP$V4,
+  A1 = dfP$V5,
+  A2 = dfP$V6,
+  OR = dfP$Beta,
+  P = dfP$Pvalue
+)
+# 28773
+sum(dfP$P <= 0.05)
+write.table(
+  dfP,
+  "UKBdiagramShareSNPafterQC.tsv",
+  sep = "\t",
+  quote = F,
+  row.names = F
+)
+```

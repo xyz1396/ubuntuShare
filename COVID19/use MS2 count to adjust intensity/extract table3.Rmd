@@ -155,12 +155,12 @@ KOdf <- data.frame(id = names(KO), term = KO)
 KOdf$id <- str_sub(KOdf$id, 9)
 
 addAnnotation <- function(filePath) {
-  SvsCTRL <-
+  pDF <-
     read.csv(filePath, check.names = F)
-  colnames(SvsCTRL)[1] <- "ID"
-  SvsCTRL <- separate_rows(SvsCTRL, ID, sep = ";")
-  id <- unlist(str_split(SvsCTRL$ID, "\\|", simplify = T)[, 2])
-  SvsCTRL$UNIPROT <- id
+  colnames(pDF)[1] <- "ID"
+  pDF <- separate_rows(pDF, ID, sep = ";")
+  id <- unlist(str_split(pDF$ID, "\\|", simplify = T)[, 2])
+  pDF$UNIPROT <- id
   annoDf <-
     AnnotationDbi::select(
       hm,
@@ -185,7 +185,7 @@ addAnnotation <- function(filePath) {
   annoDf <-
     summarise(annoDf, across(GENENAME:KEGG_annotation, pasteSemi))
   annoDf <-
-    left_join(SvsCTRL, annoDf, by = c("UNIPROT" = "UNIPROT"))
+    left_join(pDF, annoDf, by = c("UNIPROT" = "UNIPROT"))
   return(annoDf)
 }
 
@@ -197,13 +197,13 @@ write.csv(SvsCTRL,
 COVIDvsCTRL <-
   addAnnotation("Protein with different abundance COVID vs CTRL.csv")
 write.csv(
-  SvsCTRL,
+  COVIDvsCTRL,
   "Protein with different abundance with annotation COVID vs CTRL.csv",
   row.names = F
 )
 COVIDvsS <-
   addAnnotation("Protein with different abundance COVID vs S.csv")
-write.csv(SvsCTRL,
+write.csv(COVIDvsS,
           "Protein with different abundance with annotation COVID vs S.csv",
           row.names = F)
 ```
