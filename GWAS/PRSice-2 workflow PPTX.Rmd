@@ -202,6 +202,7 @@ write.table(
 
 ```{r, eval=FALSE, include=FALSE}
 library(data.table)
+install.packages("optparse")
 covariate <- fread("prsiceDemo/EUR.cov")
 pcs <- fread("prsiceDemo/EUR.eigenvec", header=F)
 colnames(pcs) <- c("FID","IID", paste0("PC",1:6))
@@ -406,6 +407,16 @@ ls *PCA20* -l^C awk '{print $9}'
 
 # Search shared SNP between UKB after QC and diagram
 
+  13583103 SNPs in diagram
+  
+  337363 SNPs in UKB
+  
+  334433 positions are the same
+  
+  99.13% in ukb after QC can be found on diagram
+   
+  28773 SNPs p <= 0.05
+
 ```{r, eval=FALSE, include=FALSE}
 library(data.table)
 library(stringr)
@@ -489,3 +500,42 @@ write.table(
   row.names = F
 )
 ```
+
+# make input file on server
+
+```{r eval=FALSE, include=FALSE}
+library(data.table)
+covariate <- fread("all.autosome.filter.fam")
+all.diabetes <- covariate[, c(1, 2, 6)]
+colnames(all.diabetes) <- c("FID", "IID", "Diabetes")
+all.diabetes$Diabetes[all.diabetes$Diabetes == -9] <- 0
+fwrite(all.diabetes, "all.diabetes", sep = "\t")
+covariate <- covariate[, c(1, 2, 5)]
+colnames(covariate) <- c("FID", "IID", "Sex")
+pcs <- fread("all.PCA20.eigenvec", header = F, skip = 1)
+pcs <- pcs[, 1:12]
+colnames(pcs) <- c("FID", "IID", paste0("PC", 1:10))
+cov <- merge(covariate, pcs)
+fwrite(cov, "all.covariate", sep = "\t")
+```
+
+# run PRSice
+
+```{bash, eval=FALSE, include=FALSE}
+conda install -c conda-forge r-optparse
+nohup Rscript PRSice.R \
+    --prsice PRSice_linux \
+    --base UKBdiagramShareSNPafterQC.tsv \
+    --target all.autosome.filter \
+    --binary-target T \
+    --pheno all.diabetes \
+    --cov all.covariate \
+    --stat OR \
+    --or \
+    --thread 20 \
+    --out allPR \
+     > allPR.log.txt 2>&1 &
+```
+
+
+

@@ -19,6 +19,9 @@ library(pheatmap)
 library(KEGGREST)
 library(tidyr)
 library(GO.db)
+library(ReactomePA)
+library(AnnotationHub)
+library(clusterProfiler)
 ```
 
 # identified proteins in repeats
@@ -208,4 +211,40 @@ write.csv(COVIDvsS,
           row.names = F)
 ```
 
+# get reactome annotation
+
+[reactome annotation tool](https://reactome.org/PathwayBrowser/#TOOL=AT)
+
+```{r}
+df <-
+  read.csv("Protein with different abundance with annotation COVID vs CTRL.csv",
+           row.names = 1)
+write.csv(df[df$significance == "up",],
+          "Protein with different abundance with annotation COVID vs CTRL UP.csv")
+write.csv(df[df$significance == "down",],
+          "Protein with different abundance with annotation COVID vs CTRL Down.csv")
+df <-
+  read.csv("Protein with different abundance with annotation S vs CTRL.csv",
+           row.names = 1)
+write.csv(df[df$significance == "up",],
+          "Protein with different abundance with annotation S vs CTRL UP.csv")
+write.csv(df[df$significance == "down",],
+          "Protein with different abundance with annotation S vs CTRL Down.csv")
+
+df <-
+  read.csv("Protein with different abundance with annotation COVID vs CTRL.csv",
+           row.names = 1)
+df <- df[df$significance == "up", ]
+ids <-
+  bitr(
+    df$UNIPROT,
+    fromType = "UNIPROT",
+    toType = c("ENTREZID"),
+    OrgDb = "org.Hs.eg.db"
+  )
+x <-
+  enrichPathway(gene = ids$ENTREZID,
+                pvalueCutoff = 0.05,
+                readable = TRUE)
+```
 
