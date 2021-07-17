@@ -537,5 +537,21 @@ nohup Rscript PRSice.R \
      > allPR.log.txt 2>&1 &
 ```
 
+```{bash}
+nohup Rscript PRSice.R \
+--prsice PRSice_linux \
+--base UKBdiagramShareSNPafterQC.tsv \
+--target  train.autosome.filter \
+--binary-target T \
+--pheno /work/omicsbio/adbadre/Paper3/PRSice/train.diabetes \
+--cov all.covariate \
+--stat OR \
+--or \
+--thread 20 \
+--out all.train.PR \
+> all.train.PR.log.txt 2>&1 &
+
+
+```
 
 

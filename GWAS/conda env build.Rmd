@@ -1,0 +1,27 @@
+---
+title: "conda env build"
+author: "xyz"
+date: "2021/7/14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[An introduction to Conda](https://astrobiomike.github.io/unix/conda-intro)
+
+```{bash}
+wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh
+bash Miniconda3-py39_4.9.2-Linux-x86_64.sh
+conda create -n gwas
+conda activate gwas
+conda install -c bioconda plink2
+conda install -c conda-forge r-base
+conda install -c conda-forge r-optparse
+
+# in sbatch run this for activate
+source ~/miniconda3/etc/profile.d/conda.sh
+conda activate gwas
+```
+

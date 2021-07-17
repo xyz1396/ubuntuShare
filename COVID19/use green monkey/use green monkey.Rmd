@@ -1,0 +1,44 @@
+---
+title: "use green monkey"
+author: "xyz"
+date: "2021/7/14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# database
+
+Quantitative Proteomics Reveals Changes in Vero Cells in Response to Porcine Epidemic Diarrhea Virus
+
+Protein identification and quantitation were performed with MaxQuant (Max-Planck-Institute of Biochemistry, version 1.1.1.2) and Mascot (Matrix Science, version 2.2) by searching against a concatenated forward–reverse database from the UniProt database (http://www.uniprot.org/taxonomy/9528, November 12, 2013, containing 148 822 sequences) and PEDV prototype strain CV777 (http://www.uniprot.org/taxonomy/229032, January 8, 2014, containing seven entities).
+
+
+Quantitative Proteomics Using Stable Isotope Labeling with Amino Acids in Cell Culture Reveals Changes in the Cytoplasmic, Nuclear, and Nucleolar Proteomes in Vero Cells Infected with the Coronavirus Infectious Bronchitis Virus*
+
+The derived peak list was searched with the Mascot search engine (version 2.1.04; Matrix Science, London, UK) against a concatenated database combining 80,412 proteins from the International Protein Index (IPI) human protein database version 3.6 (forward database) and the reversed sequences of all proteins (reverse database). 
+
+
+Proteome analysis of porcine epidemic diarrhea virus (PEDV)-infected Vero cells
+
+The acquired MS raw data files were converted into MGF files by using 5600 ms converter and the MGF files were further searched. MS/MS data were searched against the monkey sequence database from the NCBInr database (release April 2013, containing 29 736 sequences) and the proteins were identified using MASCOT search engine (Matrix Science, London, UK; version 2.3.02).
+
+[Chlorocebus sabaeus (Green monkey)](https://www.uniprot.org/proteomes/UP000029965)
+
+format  type     num_seqs     sum_len  min_len  avg_len  max_len
+FASTA   Protein    19,229  10,437,685       18    542.8   35,229
+
+```{bash}
+seqkit stat Green_Monkey_uniprot-proteome_UP000029965.fasta 
+seqkit seq Green_Monkey_uniprot-proteome_UP000029965.fasta \
+  '../only use Swiss-prot proteins/uniprot-proteome_UP000006710+reviewed_yes.fasta' \
+  '../only use Swiss-prot proteins/uniprot-proteome_UP000464024+reviewed_yes.fasta' \
+  > monkeyCOVIDdb.fasta
+  
+cd /scratch/yixiong/COVID19/maxquantOutPut20210716
+conda activate openmpi
+nohup maxquant monkeyCOVID.xml > maxquantLog.txt 2>&1 &
+```
+
