@@ -1,6 +1,10 @@
 # JGI Pathway Analysis
 
+<<<<<<< HEAD
 ![](sample_world_map.png)
+=======
+![](sample world map.png)
+>>>>>>> 612860f2475dc59e89d508a11c9913bc35fe7c69
 
 Microorganisms play a dominant role in the biogeochemical cycles  of nutrient elements like carbon, nitrogen, and sulfur[1]. Almost all microorganisms across the globe can mineralize organic carbon into inorganic forms[2]. Microorganisms are an essential factor in regulating soil carbon dynamics and are involved in biosphere processes associated with greenhouse gases[3]. Microbial reactions control the oxidation state of nitrogen, which is essential for the availability of this relatively rare growth-limiting nutrient in many ecosystems[4]. Some microbial genera are specialists of cycling nitrogen and encode genes involved in the pathway among habitat types in soil ecosystems[5]. The microbial activities dependent transformation of organic and inorganic sulfur compounds influences the biosphere's geochemical properties[6]. Sulfate reduction is strongly linked with the oxidation of organic carbon in the anaerobic environment, but relatively few microbial lineages are involved in this progress[7]. Only a minority of microorganisms in the aquifer system can conduct full steps of redox activity of elements, and more microbes are linked by transferring redox products from one to another[1].
 
