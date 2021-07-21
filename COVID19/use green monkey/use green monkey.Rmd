@@ -26,6 +26,7 @@ Proteome analysis of porcine epidemic diarrhea virus (PEDV)-infected Vero cells
 The acquired MS raw data files were converted into MGF files by using 5600 ms converter and the MGF files were further searched. MS/MS data were searched against the monkey sequence database from the NCBInr database (release April 2013, containing 29 736 sequences) and the proteins were identified using MASCOT search engine (Matrix Science, London, UK; version 2.3.02).
 
 [Chlorocebus sabaeus (Green monkey)](https://www.uniprot.org/proteomes/UP000029965)
+[Chlorocebus sabaeus Ensembl](https://asia.ensembl.org/Chlorocebus_sabaeus/Info/Index)
 
 format  type     num_seqs     sum_len  min_len  avg_len  max_len
 FASTA   Protein    19,229  10,437,685       18    542.8   35,229
