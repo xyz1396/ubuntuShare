@@ -517,9 +517,12 @@ pcs <- pcs[, 1:12]
 colnames(pcs) <- c("FID", "IID", paste0("PC", 1:10))
 cov <- merge(covariate, pcs)
 fwrite(cov, "all.covariate", sep = "\t")
+fwrite(covariate, "all.covariate.noPCA", sep = "\t")
 ```
 
 # run PRSice
+
+## all
 
 ```{bash, eval=FALSE, include=FALSE}
 conda install -c conda-forge r-optparse
@@ -537,7 +540,26 @@ nohup Rscript PRSice.R \
      > allPR.log.txt 2>&1 &
 ```
 
-```{bash}
+## all no PCA
+
+```{bash eval=FALSE, include=FALSE}
+nohup Rscript PRSice.R \
+    --prsice PRSice_linux \
+    --base UKBdiagramShareSNPafterQC.tsv \
+    --target all.autosome.filter \
+    --binary-target T \
+    --pheno all.diabetes \
+    --cov all.covariate.noPCA \
+    --stat OR \
+    --or \
+    --thread 20 \
+    --out allPRnoPCA \
+     > allPRnoPCA.log.txt 2>&1 &
+```
+
+## train
+
+```{bash eval=FALSE, include=FALSE}
 nohup Rscript PRSice.R \
 --prsice PRSice_linux \
 --base UKBdiagramShareSNPafterQC.tsv \
@@ -550,8 +572,6 @@ nohup Rscript PRSice.R \
 --thread 20 \
 --out all.train.PR \
 > all.train.PR.log.txt 2>&1 &
-
-
 ```
 
 

@@ -26,7 +26,7 @@ Proteome analysis of porcine epidemic diarrhea virus (PEDV)-infected Vero cells
 The acquired MS raw data files were converted into MGF files by using 5600 ms converter and the MGF files were further searched. MS/MS data were searched against the monkey sequence database from the NCBInr database (release April 2013, containing 29 736 sequences) and the proteins were identified using MASCOT search engine (Matrix Science, London, UK; version 2.3.02).
 
 [Chlorocebus sabaeus (Green monkey)](https://www.uniprot.org/proteomes/UP000029965)
-[Chlorocebus sabaeus Ensembl](https://asia.ensembl.org/Chlorocebus_sabaeus/Info/Index)
+[Chlorocebus sabaeus Vervet-AGM Ensembl](https://asia.ensembl.org/Chlorocebus_sabaeus/Info/Index)
 
 format  type     num_seqs     sum_len  min_len  avg_len  max_len
 FASTA   Protein    19,229  10,437,685       18    542.8   35,229
@@ -69,6 +69,8 @@ library(dplyr)
 library(DESeq2)
 library(AnnotationForge)
 library(RSQLite)
+library(biomaRt)
+library(KEGGREST)
 ```
 
 ```{r}
@@ -448,7 +450,139 @@ p + ggsave("COVID vs S volcano plot.pdf",
            height = 6)
 ```
 
-# get protein annotation
+# use biomart download annotation
+
+[biomart webpage](http://uswest.ensembl.org/biomart/martview/)
+
+```{r}
+listMarts()
+ensembl.base <- useMart(biomart = "ENSEMBL_MART_ENSEMBL")
+df <- listDatasets(ensembl.base)
+GMbase <-
+  useDataset(mart = ensembl.base, dataset = "csabaeus_gene_ensembl")
+View(listAttributes(GMbase))
+# UniProtKB/TrEMBL ID, Gene name, GO term accession, GO term name, GO term definition, GO term evidence code, GO domain
+geneName <-
+  getBM(
+    attributes = c("uniprotsptrembl",
+                   "uniprot_gn_symbol",
+                   "description"),
+    mart = GMbase
+  )
+geneName <- geneName[geneName$uniprotsptrembl != "", ]
+saveRDS(geneName, "geneName.rds")
+GO <-
+  getBM(
+    attributes = c(
+      "uniprotsptrembl",
+      "go_id",
+      "name_1006",
+      "definition_1006",
+      "go_linkage_type",
+      "namespace_1003"
+    ),
+    mart = GMbase
+  )
+GO <- GO[GO$uniprotsptrembl != "", ]
+colnames(GO)[-1] <-
+  c("GO_ID",
+    "GO_Term",
+    "GO_Term_Definition",
+    "GO_Evidence_Code",
+    "GO_Domain")
+saveRDS(GO, "GO.rds")
+kegg <-
+  getBM(attributes = c("kegg_enzyme",
+                       "uniprotsptrembl"),
+        mart = GMbase)
+kegg <- kegg[kegg$uniprotsptrembl != "", ]
+kegg <- kegg[!is.na(kegg$kegg_enzyme), ]
+kegg$kegg_enzyme <- sprintf("K%05d", kegg$kegg_enzyme)
+colnames(kegg)[2] <- "KEGG_KO"
+KO <- keggList("ko")
+KOdf <- data.frame(id = names(KO), term = KO)
+KOdf$id <- str_sub(KOdf$id, 4)
+KOtoPathway <- keggLink("ko", "pathway")
+KOtoPathway <- data.frame(ko = str_sub(KOtoPathway, 4),
+                          path = str_sub(names(KOtoPathway), 6))
+KOtoPathway <- KOtoPathway[!str_detect(KOtoPathway$path, "ko"), ]
+pathway <- keggList("pathway")
+pathwaydf <- data.frame(id = names(pathway), term = pathway)
+pathwaydf$id <- str_sub(pathwaydf$id, 6)
+keggAnnotation <- left_join(KOdf, KOtoPathway, by = c("id" = "ko"))
+keggAnnotation <-
+  left_join(keggAnnotation, pathwaydf, by = c("path" = "id"))
+colnames(keggAnnotation) <- c("KO", "KO_TERM", "PATH", "PATH_TERM")
+saveRDS(keggAnnotation, "keggAnnotation.rds")
+gmKegg <- left_join(kegg, keggAnnotation, by = c("KEGG_KO" = "KO"))
+saveRDS(gmKegg, "gmKegg.rds")
+```
+
+## add annotation to protein
+
+```{r}
+GO<-readRDS("gmProteinGO.rds")
+
+KO <- keggList("pathway")
+KOdf <- data.frame(id = names(KO), term = KO)
+KOdf$id <- str_sub(KOdf$id, 9)
+
+addAnnotation <- function(filePath) {
+  pDF <-
+    read.csv(filePath, check.names = F)
+  colnames(pDF)[1] <- "ID"
+  pDF <- separate_rows(pDF, ID, sep = ";")
+  id <- unlist(str_split(pDF$ID, "\\|", simplify = T)[, 2])
+  pDF$UNIPROT <- id
+  annoDf <-
+    AnnotationDbi::select(
+      hm,
+      keys = id,
+      keytype = "UNIPROT",
+      columns = c("UNIPROT", "GENENAME", "GO", "PATH", "ENZYME")
+    )
+  goName <-
+    AnnotationDbi::select(GO.db,
+                          keys = annoDf$GO,
+                          keytype = "GOID",
+                          columns = "TERM")
+  kName <- KOdf$term[match(annoDf$PATH, KOdf$id)]
+  annoDf <- cbind(annoDf,
+                  GO_annotation = goName$TERM,
+                  KEGG_annotation = kName)
+  annoDf <- as_tibble(annoDf)
+  annoDf <- group_by(annoDf, UNIPROT)
+  # merge rows by same value in one column
+  pasteSemi <- function(x)
+    paste(unique(x), collapse = " | ")
+  annoDf <-
+    summarise(annoDf, across(GENENAME:KEGG_annotation, pasteSemi))
+  annoDf <-
+    left_join(pDF, annoDf, by = c("UNIPROT" = "UNIPROT"))
+  return(annoDf)
+}
+
+SvsCTRL <-
+  addAnnotation("Protein with different abundance S vs CTRL.csv")
+write.csv(SvsCTRL,
+          "Protein with different abundance with annotation S vs CTRL.csv",
+          row.names = F)
+COVIDvsCTRL <-
+  addAnnotation("Protein with different abundance COVID vs CTRL.csv")
+write.csv(
+  COVIDvsCTRL,
+  "Protein with different abundance with annotation COVID vs CTRL.csv",
+  row.names = F
+)
+COVIDvsS <-
+  addAnnotation("Protein with different abundance COVID vs S.csv")
+write.csv(COVIDvsS,
+          "Protein with different abundance with annotation COVID vs S.csv",
+          row.names = F)
+```
+
+
+# get protein annotation from OrgDb
 
 [Easy way to turn OrgDb object from AnnotationHub into package](https://support.bioconductor.org/p/92004/)
 
@@ -480,220 +614,9 @@ file.copy(gm, "./org.greenMonkey.eg.sqlite")
 # makeAnnDbPkg(seed, "./org.greenMonkey.eg.sqlite")
 
 con = dbConnect(SQLite(), "org.greenMonkey.eg.sqlite")
+dbListTables(con)
 gm = dbGetQuery(con,"select * from METADATA")
-gmDf <-
-  AnnotationDbi::select(gm,
-                        keys = keys(gm),
-                        columns = c("UNIPROT", "GO", "PATH", "ENZYME"))
-gmDf <- gmDf[!is.na(gmDf$UNIPROT), ]
-goName <-
-  AnnotationDbi::select(
-    x = GO.db::GO.db,
-    keys = gmDf$GO,
-    keytype = "GOID",
-    columns = "TERM"
-  )
-
-#### COVID ####
-
-covid <-
-  read.csv("Protein with different abundance COVID vs CTRL.csv")
-covidList <- unlist(str_split(covid$X, ";"))
-covidList <- unlist(str_split(covidList, "\\|", simplify = T)[, 2])
-
-goMF <-
-  enrichGO(
-    gene = covidList,
-    OrgDb = gm,
-    keyType = "UNIPROT",
-    ont = "MF",
-    pvalueCutoff = 1
-  )
-goMFdf <- as.data.frame(goMF)
-write.csv(goMFdf, "COVID vs CTRL MF enrich.csv", row.names = F)
-p <- dotplot(filter(goMF,qvalue<0.2), font.size = 10)
-p + ggsave("COVID vs CTRL MF enrich 0.2.pdf",
-           width = 8,
-           height = 6)
-
-goBP <-
-  enrichGO(
-    gene = covidList,
-    OrgDb = gm,
-    keyType = "UNIPROT",
-    ont = "BP",
-    pvalueCutoff = 1
-  )
-goBPdf <- as.data.frame(goBP)
-write.csv(goBPdf, "COVID vs CTRL BP enrich.csv", row.names = F)
-p <- dotplot(filter(goBP,qvalue<0.2), font.size = 10)
-p + ggsave("COVID vs CTRL BP enrich 0.2.pdf",
-           width = 8,
-           height = 6)
-
-goCC <-
-  enrichGO(
-    gene = covidList,
-    OrgDb = gm,
-    keyType = "UNIPROT",
-    ont = "CC",
-    pvalueCutoff = 1
-  )
-goCCdf <- as.data.frame(goCC)
-write.csv(goCCdf, "COVID vs CTRL CC enrich.csv", row.names = F)
-p <- dotplot(filter(goCC,qvalue<0.1), font.size = 10)
-p + ggsave("COVID vs CTRL CC enrich 0.1.pdf",
-           width = 8,
-           height = 6)
-
-kegg <-
-  enrichKEGG(
-    gene = covidList,
-    organism = "hsa",
-    keyType = "UNIPROT",
-    pvalueCutoff = 1
-  )
-keggDf <- as.data.frame(kegg)
-write.csv(keggDf, "COVID vs CTRL KEGG enrich.csv", row.names = F)
-p <- dotplot(filter(kegg,qvalue<0.2), font.size = 10)
-p + ggsave("COVID vs CTRL KEGG enrich 0.2.pdf",
-           width = 8,
-           height = 6)
-
-#### S ####
-
-S <-
-  read.csv("Protein with different abundance S vs CTRL.csv")
-SList <- unlist(str_split(S$X, ";"))
-SList <- unlist(str_split(SList, "\\|", simplify = T)[, 2])
-
-goMF <-
-  enrichGO(
-    gene = SList,
-    OrgDb = gm,
-    keyType = "UNIPROT",
-    ont = "MF",
-    pvalueCutoff = 1
-  )
-goMFdf <- as.data.frame(goMF)
-write.csv(goMFdf, "S vs CTRL MF enrich.csv", row.names = F)
-p <- dotplot(slice(goMF,n=1:10), font.size = 10)
-p + ggsave("S vs CTRL MF enrich 1-10.pdf",
-           width = 8,
-           height = 6)
-
-goBP <-
-  enrichGO(
-    gene = SList,
-    OrgDb = gm,
-    keyType = "UNIPROT",
-    ont = "BP",
-    pvalueCutoff = 1
-  )
-goBPdf <- as.data.frame(goBP)
-write.csv(goBPdf, "S vs CTRL BP enrich.csv", row.names = F)
-p <- dotplot(slice(goBP,n=1:10), font.size = 10)
-p + ggsave("S vs CTRL BP enrich 1-10.pdf",
-           width = 8,
-           height = 6)
-
-goCC <-
-  enrichGO(
-    gene = SList,
-    OrgDb = gm,
-    keyType = "UNIPROT",
-    ont = "CC",
-    pvalueCutoff = 1
-  )
-goCCdf <- as.data.frame(goCC)
-write.csv(goCCdf, "S vs CTRL CC enrich.csv", row.names = F)
-p <- dotplot(slice(goCC,n=1:10), font.size = 10)
-p + ggsave("S vs CTRL CC enrich 1-10.pdf",
-           width = 8,
-           height = 6)
-
-kegg <-
-  enrichKEGG(
-    gene = SList,
-    organism = "hsa",
-    keyType = "uniprot",
-    pvalueCutoff = 1
-  )
-keggDf <- as.data.frame(kegg)
-write.csv(keggDf, "S vs CTRL KEGG enrich.csv", row.names = F)
-p <- dotplot(slice(kegg,n=1:10), font.size = 10)
-p + ggsave("S vs CTRL KEGG enrich 1-10.pdf",
-           width = 8,
-           height = 6)
-
-#### COVID vs S ####
-
-covid <-
-  read.csv("Protein with different abundance COVID vs S.csv")
-covidList <- unlist(str_split(covid$X, ";"))
-covidList <- unlist(str_split(covidList, "\\|", simplify = T)[, 2])
-
-goMF <-
-  enrichGO(
-    gene = covidList,
-    OrgDb = gm,
-    keyType = "UNIPROT",
-    ont = "MF",
-    pvalueCutoff = 1
-  )
-goMFdf <- as.data.frame(goMF)
-## empty results
-# write.csv(goMFdf, "COVID vs S MF enrich.csv", row.names = F)
-# p <- dotplot(dplyr::slice(goMF,n=1:10), font.size = 10)
-# p + ggsave("COVID vs S MF enrich 1-10.pdf",
-#            width = 8,
-#            height = 6)
-
-goBP <-
-  enrichGO(
-    gene = covidList,
-    OrgDb = gm,
-    keyType = "UNIPROT",
-    ont = "BP",
-    pvalueCutoff = 1
-  )
-goBPdf <- as.data.frame(goBP)
-write.csv(goBPdf, "COVID vs S BP enrich.csv", row.names = F)
-p <- dotplot(dplyr::slice(goBP,n=1:10), font.size = 10)
-p + ggsave("COVID vs S BP enrich 1-10.pdf",
-           width = 8,
-           height = 6)
-
-goCC <-
-  enrichGO(
-    gene = covidList,
-    OrgDb = gm,
-    keyType = "UNIPROT",
-    ont = "CC",
-    pvalueCutoff = 1
-  )
-goCCdf <- as.data.frame(goCC)
-# empty result
-write.csv(goCCdf, "COVID vs S CC enrich.csv", row.names = F)
-p <- dotplot(dplyr::slice(goCC,n=1:10), font.size = 10)
-p + ggsave("COVID vs S CC enrich 1-10.pdf",
-           width = 8,
-           height = 6)
-
-kegg <-
-  enrichKEGG(
-    gene = covidList,
-    organism = "hsa",
-    keyType = "uniprot",
-    pvalueCutoff = 1
-  )
-keggDf <- as.data.frame(kegg)
-## empty result
-# write.csv(keggDf, "COVID vs S KEGG enrich.csv", row.names = F)
-# p <- dotplot(slice(kegg,n=1:10), font.size = 10)
-# p + ggsave("COVID vs S KEGG enrich 1-10.pdf",
-#            width = 8,
-#            height = 6)
+gm = dbGetQuery(con,"select * from DATA")
 ```
 
 
