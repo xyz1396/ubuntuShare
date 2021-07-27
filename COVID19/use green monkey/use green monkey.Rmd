@@ -65,7 +65,9 @@ library(ggvenn)
 library(AnnotationHub)
 library(clusterProfiler)
 library(stringr)
+library(plyr)
 library(dplyr)
+library(tidyr)
 library(DESeq2)
 library(AnnotationForge)
 library(RSQLite)
@@ -498,6 +500,9 @@ kegg <-
 kegg <- kegg[kegg$uniprotsptrembl != "", ]
 kegg <- kegg[!is.na(kegg$kegg_enzyme), ]
 kegg$kegg_enzyme <- sprintf("K%05d", kegg$kegg_enzyme)
+K04714<-kegg[kegg$kegg_enzyme=="K04714",]
+# 7086 protein has K04714, kegg annotation is not accurate
+length(unique(K04714$uniprotsptrembl))
 colnames(kegg)[2] <- "KEGG_KO"
 KO <- keggList("ko")
 KOdf <- data.frame(id = names(KO), term = KO)
@@ -521,11 +526,33 @@ saveRDS(gmKegg, "gmKegg.rds")
 ## add annotation to protein
 
 ```{r}
-GO<-readRDS("gmProteinGO.rds")
+geneName<-readRDS("geneName.rds")
+geneName <- as_tibble(geneName)
+geneName <- group_by(geneName, uniprotsptrembl)
+# merge rows by same value in one column
+pasteSemi <- function(x)
+  paste(unique(x), collapse = " | ")
+geneName <-
+  summarise(geneName, across(uniprot_gn_symbol:description, pasteSemi))
 
-KO <- keggList("pathway")
-KOdf <- data.frame(id = names(KO), term = KO)
-KOdf$id <- str_sub(KOdf$id, 9)
+GO<-readRDS("GO.rds")
+GO <- as_tibble(GO)
+GO <- group_by(GO, uniprotsptrembl)
+pasteSemi <- function(x)
+  paste(unique(x), collapse = " | ")
+GO <-
+  summarise(GO, across(GO_ID:GO_Domain, pasteSemi))
+
+kegg<-readRDS("gmKegg.rds")
+kegg <- as_tibble(kegg)
+kegg <- group_by(kegg, uniprotsptrembl)
+pasteSemi <- function(x)
+  paste(unique(x), collapse = " | ")
+kegg <-
+  dplyr::summarise(kegg, across(KEGG_KO:PATH_TERM, pasteSemi))
+
+# annoDf<-join_all(list(geneName=geneName,GO=GO,kegg=kegg),by="uniprotsptrembl")
+annoDf<-join_all(list(geneName=geneName,GO=GO),by="uniprotsptrembl")
 
 addAnnotation <- function(filePath) {
   pDF <-
@@ -535,30 +562,7 @@ addAnnotation <- function(filePath) {
   id <- unlist(str_split(pDF$ID, "\\|", simplify = T)[, 2])
   pDF$UNIPROT <- id
   annoDf <-
-    AnnotationDbi::select(
-      hm,
-      keys = id,
-      keytype = "UNIPROT",
-      columns = c("UNIPROT", "GENENAME", "GO", "PATH", "ENZYME")
-    )
-  goName <-
-    AnnotationDbi::select(GO.db,
-                          keys = annoDf$GO,
-                          keytype = "GOID",
-                          columns = "TERM")
-  kName <- KOdf$term[match(annoDf$PATH, KOdf$id)]
-  annoDf <- cbind(annoDf,
-                  GO_annotation = goName$TERM,
-                  KEGG_annotation = kName)
-  annoDf <- as_tibble(annoDf)
-  annoDf <- group_by(annoDf, UNIPROT)
-  # merge rows by same value in one column
-  pasteSemi <- function(x)
-    paste(unique(x), collapse = " | ")
-  annoDf <-
-    summarise(annoDf, across(GENENAME:KEGG_annotation, pasteSemi))
-  annoDf <-
-    left_join(pDF, annoDf, by = c("UNIPROT" = "UNIPROT"))
+    left_join(pDF, annoDf, by = c("UNIPROT" = "uniprotsptrembl"))
   return(annoDf)
 }
 
