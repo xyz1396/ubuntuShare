@@ -1,0 +1,337 @@
+---
+title: "teddy species cluster"
+author: "xyz"
+date: "2021/7/31"
+output: html_document
+---
+
+
+```{r}
+data <- read.table("time_merge.rpkm.tsv",head=T,sep="\t",stringsAsFactors = F)
+head(data)
+library(pheatmap)
+```
+
+
+```{r}
+row.names(data) <- data$species
+df_num <- as.matrix(data[,2:9])
+
+#remove rows include NA or 0
+df_num[df_num == 0] <- NA
+df_num <- df_num[complete.cases(df_num), ]
+
+#df_num$sum <- rowSums(df_num)
+
+#df_num_scale = scale(df_num)
+#pheatmap(df_num_scale,main = "pheatmap default",cluster_cols = F)
+
+log_df <- log10(df_num)
+pheatmap(log_df,main = "pheatmap default",scale = "row", clustering_distance_rows = "correlation",cluster_cols = F,show_rownames = F)
+```
+
+#hclust
+```{r}
+pheatmap(log_df,main = "pheatmap default",cluster_cols = F,show_rownames = F)
+```
+
+```{r}
+df_num_scale = scale(df_num)
+pheatmap(df_num_scale,main = "pheatmap default",cluster_cols = F,show_rownames = F)
+```
+
+```{r}
+pheatmap(log_df,main = "pheatmap default",cluster_cols = F,kmeans_k = 15)
+```
+
+```{r}
+res <- pheatmap(log_df,main = "pheatmap default",cluster_cols = F)
+time.clust <- cbind(log_df, 
+                      cluster = cutree(res$tree_row, 
+                                       k = 30))
+```
+
+
+```{r}
+library(ggplot2)
+library(reshape2)
+each_cluster <- as.data.frame(time.clust)
+cluster1<- subset(each_cluster,each_cluster$cluster == 2)
+cluster1$group <- row.names(cluster1)
+
+y <- melt(cluster1,id="group")
+
+# Everything on the same plot
+ggplot(y, aes(variable,value, col=group)) + 
+  geom_point() + 
+  stat_smooth() 
+
+# Separate plots
+ggplot(y, aes(variable,value)) + 
+  geom_point() + 
+  stat_smooth(method = "loess") +
+  facet_wrap(~group)
+```
+
+```{r}
+library(ggplot2)
+library(reshape2)
+each_cluster <- as.data.frame(time.clust)
+cluster1<- subset(each_cluster,each_cluster$cluster == 2)
+tt <- melt(cluster1)
+p<-ggplot(tt, aes(variable,value)) + geom_point()
+p+  geom_smooth(method = "lm",formula =value~variable)
+```
+
+
+```{r}
+s <- 
+"A       B        C       G       Xax
+0.451   0.333   0.034   0.173   0.22        
+0.491   0.270   0.033   0.207   0.34    
+0.389   0.249   0.084   0.271   0.54    
+0.425   0.819   0.077   0.281   0.34
+0.457   0.429   0.053   0.386   0.53    
+0.436   0.524   0.049   0.249   0.12    
+0.423   0.270   0.093   0.279   0.61    
+0.463   0.315   0.019   0.204   0.23
+"
+d <- read.delim(textConnection(s), sep="")
+
+library(ggplot2)
+library(reshape2)
+d <- melt(d, id.vars="Xax")
+
+# Everything on the same plot
+ggplot(d, aes(Xax,value, col=variable)) + 
+  geom_point() + 
+  stat_smooth() 
+
+# Separate plots
+ggplot(d, aes(Xax,value)) + 
+  geom_point() + 
+  stat_smooth() +
+  facet_wrap(~variable)
+```
+```{r}
+library(Mfuzz)   
+```
+
+```{r}
+data <- read.table("time_merge.rpkm.tsv",head=T,sep="\t",stringsAsFactors = F,row.names = 1)
+
+#转化为矩阵格式
+rt <- as.matrix(data)
+
+#构建对象
+eset <- new("ExpressionSet",exprs = rt )
+
+#NA
+eset.r <- filter.NA(eset,thres=0.25) 
+eset.f <- fill.NA(eset.r,mode="mean")
+# 根据标准差去除样本间差异太小的基因
+eset.f <- filter.std(eset.f,min.std=0)
+
+eset.s <- standardise(eset.f)
+
+# 聚类个数
+c <- 6
+#  评估出最佳的m值
+m <- mestimate(eset.s)
+# 聚类
+cl <- mfuzz(eset.s, c = c, m = m)
+```
+
+
+```{r}
+# 查看每个cluster中的基因个数
+cl$size
+# 提取某个cluster下的基因
+#cl$cluster[cl$cluster == 1]
+# 查看基因和cluster之间的membership
+cl$membership
+pdf("6cluster_0.5.pdf")
+mfuzz.plot(
+eset.s,
+cl,
+mfrow=c(2,3),
+new.window= FALSE,min.mem=0.5)
+dev.off()
+
+cl_tmp <- cl
+cl_tmp$cluster[cl_tmp$cluster == 2] = 7
+cl_tmp$cluster[cl_tmp$cluster == 3] = 8
+cl_tmp$cluster[cl_tmp$cluster == 4] = 9
+cl_tmp$cluster[cl_tmp$cluster == 5] = 4
+
+cl_tmp$cluster[cl_tmp$cluster == 7] = 3
+cl_tmp$cluster[cl_tmp$cluster == 8] = 2
+cl_tmp$cluster[cl_tmp$cluster == 9] = 5
+
+summary(cl_tmp$cluster)
+pdf("sort_6cluster_0.5.pdf")
+mfuzz.plot(
+eset.s,
+cl_tmp,
+mfrow=c(2,3),
+new.window= FALSE,min.mem=0.5)
+dev.off()
+
+```
+
+# cluster 8
+
+```{r}
+# 聚类个数
+n <- 8
+#  评估出最佳的m值
+m <- mestimate(eset.s)
+# 聚类
+cl2 <- mfuzz(eset.s, c = n, m = m)
+# 查看每个cluster中的基因个数
+cl2$size
+# 提取某个cluster下的基因
+cl2$cluster[cl2$cluster == 1]
+# 查看基因和cluster之间的membership
+cl2$membership
+
+mfuzz.plot(
+eset.s,
+cl2,
+mfrow=c(2,4),
+new.window= FALSE,min.mem=0.5)
+
+```
+# taxonomy
+```{r}
+each_species <- read.table("883Species_with_subject_split_taxon.tsv",head=T,sep="\t",stringsAsFactors = F)
+head(each_species)
+
+N6_cluster <- read.table("cluster_n6.tsv",head=T,sep="\t")
+head(N6_cluster)
+
+N6_taxon <- merge(N6_cluster,each_species,by="species")
+head(N6_taxon)
+
+N6_order <- subset(N6_taxon,select= c("species","Ncluster","order"))
+
+
+c1<-subset(N6_order,N6_order$Ncluster == 'c1')
+s1 <- sort(table(c1$order)/nrow(c1)*100,decreasing = TRUE)
+ds1 <-  as.data.frame(s1)
+names(ds1) <- c("order","percent1")
+
+c2<-subset(N6_order,N6_order$Ncluster == 'c2')
+s2 <- sort(table(c2$order)/nrow(c2)*100,decreasing = TRUE)
+ds2 <-  as.data.frame(s2)
+names(ds2) <- c("order","percent2")
+
+c3<-subset(N6_order,N6_order$Ncluster == 'c3')
+s3 <- sort(table(c3$order)/nrow(c3)*100,decreasing = TRUE)
+ds3 <-  as.data.frame(s3)
+names(ds3) <- c("order","percent3")
+
+c4<-subset(N6_order,N6_order$Ncluster == 'c4')
+s4 <- sort(table(c4$order)/nrow(c4)*100,decreasing = TRUE)
+ds4 <-  as.data.frame(s4)
+names(ds4) <- c("order","percent4")
+
+c5<-subset(N6_order,N6_order$Ncluster == 'c5')
+s5 <- sort(table(c5$order)/nrow(c5)*100,decreasing = TRUE)
+ds5 <-  as.data.frame(s5)
+names(ds5) <- c("order","percent5")
+
+c6<-subset(N6_order,N6_order$Ncluster == 'c6')
+s6 <- sort(table(c6$order)/nrow(c6)*100,decreasing = TRUE)
+ds6 <-  as.data.frame(s6)
+names(ds6) <- c("order","percent6")
+
+tmp1 <- merge(ds1,ds2,by="order",all = TRUE)
+tmp2 <- merge(tmp1,ds3,by="order",all = TRUE)
+tmp3 <- merge(tmp2,ds4,by="order",all = TRUE)
+tmp4 <- merge(tmp3,ds5,by="order",all = TRUE)
+final <- merge(tmp4,ds6,by="order",all = TRUE)
+write.table(final,"taxonomy_distribution.tsv",sep="\t",quote=F,row.names = F)
+
+
+top5_order<-sort(table(each_species$order),decreasing = TRUE)[1:5]
+
+library(ggplot2)
+ggplot(N6_order,aes(x=Ncluster,y=order))
+
+```
+
+
+
+```{r}
+dheat <- read.table("heatmap.txt",head=T,sep="\t",row.names = 1)
+head(dheat)
+data <- as.matrix(dheat)
+heatmap(data, Colv = NA, Rowv = NA, scale="column")
+library("pheatmap")
+pheatmap(data,cluster_cols = FALSE,cluster_rows = FALSE)
+```
+
+```{r}
+dpie <- read.table("piechart.txt",head=T,sep="\t",stringsAsFactors = F)
+head(dpie)
+
+
+library(ggplot2)
+ggplot(dpie,aes(x=groups,y=percentage,fill=order)) +
+  geom_bar(stat="identity")+
+  coord_polar("y",start=0)+
+  theme_void()
+#+geom_text(aes(y = percentage, label = percentage), color = "white", size=6)
+
+ggplot(dpie, aes(x=groups,y=percentage,fill=order)) +
+  geom_col()
+```
+```{r}
+require(gridExtra)
+
+c1 <- subset(dpie,dpie$groups == 'cluster1')
+c2 <- subset(dpie,dpie$groups == 'cluster2')
+c3 <- subset(dpie,dpie$groups == 'cluster3')
+c4 <- subset(dpie,dpie$groups == 'cluster4')
+c5 <- subset(dpie,dpie$groups == 'cluster5')
+c6 <- subset(dpie,dpie$groups == 'cluster6')
+plot1 <- ggplot(c1,aes(x=groups,y=percentage,fill=order)) +
+  geom_bar(stat="identity")+
+  coord_polar("y",start=0)+
+  theme_void()+
+  theme(legend.position="none") +
+  ggtitle("cluster1")
+plot2 <- ggplot(c2,aes(x=groups,y=percentage,fill=order)) +
+  geom_bar(stat="identity")+
+  coord_polar("y",start=0)+
+  theme_void()+
+  theme(legend.position="none") +
+  ggtitle("cluster2")
+plot3 <- ggplot(c3,aes(x=groups,y=percentage,fill=order)) +
+  geom_bar(stat="identity")+
+  coord_polar("y",start=0)+
+  theme_void()+
+  theme(legend.position="none") +
+  ggtitle("cluster3")
+plot4 <- ggplot(c4,aes(x=groups,y=percentage,fill=order)) +
+  geom_bar(stat="identity")+
+  coord_polar("y",start=0)+
+  theme_void()+
+  theme(legend.position="none") +
+  ggtitle("cluster4")
+plot5 <- ggplot(c5,aes(x=groups,y=percentage,fill=order)) +
+  geom_bar(stat="identity")+
+  coord_polar("y",start=0)+
+  theme_void()+
+  theme(legend.position="none") +
+  ggtitle("cluster5")
+plot6 <- ggplot(c6,aes(x=groups,y=percentage,fill=order)) +
+  geom_bar(stat="identity")+
+  coord_polar("y",start=0)+
+  theme_void()+
+  theme(legend.position="none") +
+  ggtitle("cluster6")
+grid.arrange(plot1,plot2,plot3,plot4,plot5,plot6,ncol=3)
+```
+
