@@ -1,0 +1,90 @@
+---
+title: "get the best cluster number"
+author: "xyz"
+date: "2021/8/1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Deep longitudinal multiomics pro ﬁ ling reveals two biological seasonal patterns in California
+
+Subsequently, we performed Elbow and Silhouette criteria to identify the optimum number of clusters based on C-means clustering for every single ome as well as all omes combined. The sil-houette coefﬁcient estimates the average distance between clusters. 
+
+[silhouette plot in r](https://stackoverflow.com/questions/33999224/silhouette-plot-in-r)
+
+```{r}
+library(Mfuzz)
+library(vegan)
+library(cluster)
+library(ggplot2)
+library(factoextra)
+```
+
+# silhouette width
+
+```{r}
+data <-
+  read.table(
+    "old_version/time_merge.rpkm.tsv",
+    head = T,
+    sep = "\t",
+    stringsAsFactors = F,
+    row.names = 1
+  )
+rt <- as.matrix(data)
+eset <- new("ExpressionSet", exprs = rt)
+eset.r <- filter.NA(eset, thres = 0.25)
+eset.f <- fill.NA(eset.r, mode = "mean")
+eset.f <- filter.std(eset.f, min.std = 0)
+eset.s <- standardise(eset.f)
+eset.m <- t(as.data.frame(eset.s))
+
+m <- mestimate(eset.s)
+dis <- dist(eset.m) ^ 2
+meanSilWidth <- c()
+for (c in 2:20) {
+  cl <- mfuzz(eset.s, c = c, m = m)
+  sil <- silhouette (cl$cluster, dis)
+  meanSilWidth <- c(meanSilWidth, mean(sil[, 3]))
+}
+
+df<-data.frame(x=1:20,y=c(0,meanSilWidth))
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  geom_point()+
+  xlab("Number of clusters")+
+  ylab("Average silhouette width")+
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    ))
+p+ggsave("Average silhouette width.pdf",width = 8,height = 6)
+```
+
+# kmeans elbow silhouette
+
+[Fuzzy cMeans clustering of RNAseq data using mFuzz](https://2-bitbio.com/post/fuzzy-cmeans-clustering-of-rnaseq-data-using-mfuzz/)
+
+[k-means elbow method](https://statsandr.com/blog/clustering-analysis-k-means-and-hierarchical-clustering-by-hand-and-in-r/)
+
+[Deep longitudinal multiomics pro ﬁ ling reveals two biological seasonal patterns in   California](https://github.com/aametwally/ipop_seasonal/blob/master/code/clustering.R)
+
+NbClust
+
+```{r}
+Dmin(eset.s, m=m, crange=seq(2,22,1), repeats=3, visu=TRUE)
+p<-fviz_nbclust(eset.m, kmeans, method = "wss")
+p+ggsave("kmeans elbow.pdf",width = 8,height = 6)
+p<-fviz_nbclust(eset.m, kmeans, method = "silhouette")
+p+ggsave("kmeans silhouette.pdf",width = 8,height = 6)
+```
+
