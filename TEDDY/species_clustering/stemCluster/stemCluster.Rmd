@@ -1,0 +1,67 @@
+---
+title: "stemCluster"
+author: "xyz"
+date: "2021/8/2"
+output: html_document
+---
+
+```{r}
+library(Mfuzz)
+library(vegan)
+library(cluster)
+library(ggplot2)
+library(factoextra)
+library(stringr)
+```
+
+```{r}
+data <-
+  read.table(
+    "../old_version/time_merge.rpkm.tsv",
+    head = T,
+    sep = "\t",
+    stringsAsFactors = F,
+    row.names = 1
+  )
+rt <- as.matrix(data)
+eset <- new("ExpressionSet", exprs = rt)
+eset.r <- filter.NA(eset, thres = 0.25)
+eset.f <- fill.NA(eset.r, mode = "mean")
+eset.f <- filter.std(eset.f, min.std = 0)
+eset.s <- standardise(eset.f)
+eset.m <- t(as.data.frame(eset.s))
+
+df<-read.table("3.txt",skip = 2)
+eset.m<-eset.m[df$V1,]
+dfName<-dir("./",".txt")
+dfName<-dfName[-1]
+m <- mestimate(eset.s)
+dis <- dist(eset.m) ^ 2
+meanSilWidth <- c()
+for (name in dfName) {
+  df <- read.table(name,skip = 2)
+  sil <- silhouette (df$V3, dis)
+  meanSilWidth <- c(meanSilWidth, mean(sil[, 3]))
+}
+
+clusterNumber <-as.numeric(str_split(dfName,"\\.",simplify = T)[,1])
+clusterNumber <-c(1,clusterNumber)
+df<-data.frame(x=clusterNumber,y=c(0,meanSilWidth))
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  geom_point()+
+  xlab("Number of clusters")+
+  ylab("Average silhouette width")+
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    ))
+p+ggsave("stem Average silhouette width.pdf",width = 8,height = 6)
+```
+

@@ -1,0 +1,87 @@
+---
+title: "get Best Cluster Number by clusterCrit"
+author: "xyz"
+date: "2021/8/3"
+output: html_document
+---
+
+  [clusterCrit tutorial](https://cran.r-project.org/web/packages/clusterCrit/vignettes/clusterCrit.pdf)  
+  
+  [dtwclust Time Series Clustering](https://github.com/asardaes/dtwclust)
+
+```{r}
+library(Mfuzz)
+library(vegan)
+library(ggplot2)
+library(clusterCrit)
+```
+
+# silhouette width
+
+```{r}
+data <-
+  read.table(
+    "old_version/time_merge.rpkm.tsv",
+    head = T,
+    sep = "\t",
+    stringsAsFactors = F,
+    row.names = 1
+  )
+rt <- as.matrix(data)
+eset <- new("ExpressionSet", exprs = rt)
+eset.r <- filter.NA(eset, thres = 0.25)
+eset.f <- fill.NA(eset.r, mode = "mean")
+eset.f <- filter.std(eset.f, min.std = 0)
+eset.s <- standardise(eset.f)
+eset.m <- t(as.data.frame(eset.s))
+
+m <- mestimate(eset.s)
+ixs <- c()
+for (c in 2:20) {
+  set.seed(9527)
+  cl <- mfuzz(eset.s, c = c, m = m)
+  ix <- unlist(intCriteria(eset.m,cl$cluster,"all"))
+  ixs <- c(ixs, ix)
+}
+ixname<-names(ixs[1:42])
+ixs<-matrix(ixs,nrow = 19,byrow = T)
+colnames(ixs)<-ixname
+ixs<-as.data.frame(ixs)
+
+
+df<-data.frame(x=2:20,y=c(ixs$ball_hall))
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  geom_point()+
+  xlab("Number of clusters")+
+  ylab("Ball Hall Index")+
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    ))
+p+ggsave("Ball Hall Index.pdf",width = 8,height = 6)
+
+df<-data.frame(x=2:20,y=c(ixs$c_index))
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  geom_point()+
+  xlab("Number of clusters")+
+  ylab("C Index")+
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    ))
+p+ggsave("C Index.pdf",width = 8,height = 6)
+```
