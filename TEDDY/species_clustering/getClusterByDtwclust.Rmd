@@ -1,0 +1,164 @@
+---
+title: "getClusterByDtwclust"
+author: "xyz"
+date: "2021/8/4"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(Mfuzz)
+library(ggplot2)
+library(clusterCrit)
+library(dtwclust)
+```
+
+  hierarchical cluster by Dynamic Time Warping (DTW) Distance  
+
+  Ball Hall max diff
+  
+  C index min
+  
+  Dunn max
+
+```{r}
+data <-
+  read.table(
+    "old_version/time_merge.rpkm.tsv",
+    head = T,
+    sep = "\t",
+    stringsAsFactors = F,
+    row.names = 1
+  )
+rt <- as.matrix(data)
+eset <- new("ExpressionSet", exprs = rt)
+eset.r <- filter.NA(eset, thres = 0.25)
+eset.f <- fill.NA(eset.r, mode = "mean")
+eset.f <- filter.std(eset.f, min.std = 0)
+eset.s <- standardise(eset.f)
+eset.m <- t(as.data.frame(eset.s))
+
+set.seed(9527)
+hc <- tsclust(
+  eset.m,
+  type = "hierarchical",
+  k = 4L,
+  distance = "dtw_basic",
+  trace = TRUE,
+  control = hierarchical_control(method = "ward.D2")
+)
+p <- plot(hc, type = "sc")
+p <-
+  p + scale_x_continuous(breaks = 1:8,
+                         labels = colnames(eset.m),
+                         name = "Time")
+p <- p + ylab("Abundance")
+p <- p + theme(
+  text = element_text(size = 15),
+  panel.background = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank()
+)
+p + ggsave("DTW Cluster.pdf", width = 12, height = 6)
+table(hc@cluster)
+
+pc <- tsclust(
+  CharTraj,
+  type = "partitional",
+  k = 4L,
+  distance = "dtw_basic",
+  centroid = "pam",
+  seed = 3247L,
+  trace = TRUE,
+  args = tsclust_args(dist = list(window.size = 4L))
+)
+plot(hc, type = "sc")
+table(hc@cluster)
+
+# # HierarchicalTSClusters
+# class(hc)
+# methods(class = class(hc))
+# attr(methods(class = class(hc)), 'info')
+# showMethods(plot)
+# getMethod("plot", c("TSClusters", "missing"))
+
+ixs <- c()
+for (c in 2:20) {
+  set.seed(9527)
+  cl <- tsclust(
+    eset.m,
+    type = "hierarchical",
+    k = c,
+    distance = "dtw_basic",
+    trace = TRUE,
+    control = hierarchical_control(method = "ward.D2")
+  )
+  ix <- unlist(intCriteria(eset.m, cl@cluster, "all"))
+  ixs <- c(ixs, ix)
+}
+ixname <- names(ixs[1:42])
+ixs <- matrix(ixs, nrow = 19, byrow = T)
+colnames(ixs) <- ixname
+ixs <- as.data.frame(ixs)
+
+
+df <- data.frame(x = 2:20, y = c(ixs$ball_hall))
+p <- ggplot(df, aes(x = x, y = y)) +
+  geom_line() +
+  geom_point() +
+  xlab("Number of clusters") +
+  ylab("Ball Hall Index") +
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    )
+  )
+p + ggsave("DTW Ball Hall Index.pdf", width = 8, height = 6)
+
+df <- data.frame(x = 2:20, y = c(ixs$c_index))
+p <- ggplot(df, aes(x = x, y = y)) +
+  geom_line() +
+  geom_point() +
+  xlab("Number of clusters") +
+  ylab("C Index") +
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    )
+  )
+p + ggsave("DTW C Index.pdf", width = 8, height = 6)
+
+df <- data.frame(x = 2:20, y = c(ixs$dunn))
+p <- ggplot(df, aes(x = x, y = y)) +
+  geom_line() +
+  geom_point() +
+  xlab("Number of clusters") +
+  ylab("Dunn Index") +
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    )
+  )
+p + ggsave("DTW Dunn Index.pdf", width = 8, height = 6)
+```

@@ -8,6 +8,8 @@ output: html_document
   [clusterCrit tutorial](https://cran.r-project.org/web/packages/clusterCrit/vignettes/clusterCrit.pdf)  
   
   [dtwclust Time Series Clustering](https://github.com/asardaes/dtwclust)
+  
+  [TMixClust](https://www.bioconductor.org/packages/release/bioc/html/TMixClust.html)
 
 ```{r}
 library(Mfuzz)
