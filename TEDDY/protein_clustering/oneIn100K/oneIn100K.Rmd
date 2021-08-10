@@ -1,0 +1,192 @@
+---
+title: "get Best Cluster Number by clusterCrit"
+author: "xyz"
+date: "2021/8/9"
+output: html_document
+---
+
+```{r}
+library(Mfuzz)
+library(ggplot2)
+library(clusterCrit)
+library(tidyr)
+library(readxl)
+```
+
+
+```{r}
+data <-
+  read.table(
+    "../final_age_8stages_rpkm_0801.txt",
+    head = T,
+    sep = "\t",
+    stringsAsFactors = F,
+    row.names = 1
+  )
+rt <- as.matrix(data)
+rt.abundance<-rowSums(rt)
+rt.abundance<-rt.abundance/sum(rt.abundance)*100
+rt<-rt[rt.abundance>0.001,]
+eset <- new("ExpressionSet", exprs = rt)
+eset.r <- filter.NA(eset, thres = 0.25)
+eset.f <- fill.NA(eset.r, mode = "mean")
+eset.f <- filter.std(eset.f, min.std = 0)
+eset.s <- standardise(eset.f)
+eset.m <- t(as.data.frame(eset.s))
+
+m <- mestimate(eset.s)
+ixs <- c()
+for (c in 2:20) {
+  set.seed(9527)
+  cl <- mfuzz(eset.s, c = c, m = m)
+  print(paste(c,"mfuzz done"))
+  ix <- unlist(intCriteria(eset.m,cl$cluster,"all"))
+  print(paste(c,"index done"))
+  ixs <- c(ixs, ix)
+}
+ixname <- names(ixs[1:42])
+ixs <- matrix(ixs, nrow = 19, byrow = T)
+colnames(ixs) <- ixname
+ixs <- as.data.frame(ixs)
+bestK<-c()
+for (i in ixname){
+  bestK<-c(bestK,bestCriterion(ixs[,i],i))
+}
+bestK<-bestK+1
+names(bestK)<-ixname
+
+#         ball_hall   banfeld_raftery           c_index calinski_harabasz    davies_bouldin 
+#                 3                20                 2                 2                10 
+#         det_ratio              dunn             gamma            g_plus             gdi11 
+#                19                 3                19                20                 3 
+#             gdi12             gdi13             gdi21             gdi22             gdi23 
+#                 3                 3                 3                10                10 
+#             gdi31             gdi32             gdi33             gdi41             gdi42 
+#                 2                 2                 2                 2                 2 
+#             gdi43             gdi51             gdi52             gdi53          ksq_detw 
+#                 2                 2                 2                 2                 4 
+#     log_det_ratio      log_ss_ratio       mcclain_rao               pbm    point_biserial 
+#               NaN                 3                20                 2                20 
+#          ray_turi   ratkowsky_lance      scott_symons           sd_scat            sd_dis 
+#                 2                 2               NaN                20                 2 
+#             s_dbw        silhouette               tau           trace_w         trace_wib 
+#               NaN                 2                 2                 3                 8 
+# wemmert_gancarski          xie_beni 
+#                 2                 3 
+bestK
+
+ixs <- as.data.frame(scale(ixs))
+ixsLong <- cbind(x = 2:20, ixs)
+ixsLong <- pivot_longer(ixsLong, -x, names_to = "Index", values_to = "y")
+
+p <- ggplot(ixsLong, aes(x = x, y = y)) +
+  geom_line() +
+  geom_point() +
+  xlab("Number of clusters") +
+  ylab("Index") +
+  scale_x_continuous(breaks = seq(2,20,by=2))+
+  facet_wrap(vars(Index), ncol = 5) +
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    )
+  )
+
+p+ggsave("All Indexes.pdf",width = 12,height = 12)
+
+df<-data.frame(x=2:20,y=c(ixs$davies_bouldin))
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  geom_point()+
+  xlab("Number of clusters")+
+  ylab("Davies Bouldin Index")+
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    ))
+p+ggsave("davies_bouldin Index.pdf",width = 8,height = 6)
+
+df<-data.frame(x=2:20,y=c(ixs$gdi22))
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  geom_point()+
+  xlab("Number of clusters")+
+  ylab("gdi22 Index")+
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    ))
+p+ggsave("gdi22.pdf",width = 8,height = 6)
+
+df<-data.frame(x=2:20,y=c(ixs$trace_wib))
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  geom_point()+
+  xlab("Number of clusters")+
+  ylab("trace_wib Index")+
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    ))
+p+ggsave("trace_wib.pdf",width = 8,height = 6)
+```
+
+```{r}
+cl <- mfuzz(eset.s, c = 3, m = m)
+pdf("mfuzz clust 3.pdf",width = 15,height = 9)
+mfuzz.plot(
+  eset.s,
+  cl,
+  mfrow = c(1, 3),
+  new.window = FALSE,
+  min.mem = 0.5
+)
+dev.off()
+
+cl <- mfuzz(eset.s, c = 8, m = m)
+pdf("mfuzz clust 8.pdf",width = 15,height = 9)
+mfuzz.plot(
+  eset.s,
+  cl,
+  mfrow = c(2, 4),
+  new.window = FALSE,
+  min.mem = 0.5
+)
+dev.off()
+
+cl <- mfuzz(eset.s, c = 10, m = m)
+pdf("mfuzz clust 10.pdf",width = 15,height = 9)
+mfuzz.plot(
+  eset.s,
+  cl,
+  mfrow = c(2, 5),
+  new.window = FALSE,
+  min.mem = 0.5
+)
+dev.off()
+```
+
