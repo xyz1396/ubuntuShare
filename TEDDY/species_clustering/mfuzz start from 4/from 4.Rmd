@@ -149,6 +149,7 @@ p+ggsave("trace_wib.pdf",width = 8,height = 6)
 ```
 
 ```{r}
+set.seed(9527)
 cl <- mfuzz(eset.s, c = 8, m = m)
 pdf("mfuzz clust 8.pdf",width = 15,height = 9)
 mfuzz.plot(
@@ -159,5 +160,8 @@ mfuzz.plot(
   min.mem = 0.5
 )
 dev.off()
+proteinCluster8<-cl$cluster
+proteinCluster8<-data.frame(Protein=names(proteinCluster8),Cluster=proteinCluster8)
+saveRDS(proteinCluster8,"proteinCluster8.rds")
 ```
 

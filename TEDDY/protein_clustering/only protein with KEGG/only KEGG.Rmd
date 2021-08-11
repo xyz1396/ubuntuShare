@@ -36,8 +36,12 @@ eset.f <- fill.NA(eset.r, mode = "mean")
 eset.f <- filter.std(eset.f, min.std = 0)
 eset.s <- standardise(eset.f)
 eset.m <- t(as.data.frame(eset.s))
-
 m <- mestimate(eset.s)
+```
+
+# get 42 indexes
+
+```{r}
 ixs <- c()
 for (c in 2:20) {
   set.seed(9527)
@@ -48,10 +52,11 @@ for (c in 2:20) {
   ixs <- c(ixs, ix)
 }
 ixname <- names(ixs[1:42])
-ixs <- matrix(ixs, nrow = 19, byrow = T)
-colnames(ixs) <- ixname
-ixs <- as.data.frame(ixs)
+```
 
+# get best k from 2
+
+```{r}
 ixs <-readRDS("ixs.rds")
 ixname <- colnames(ixs)
 bestK<-c()
@@ -78,22 +83,45 @@ names(bestK)<-ixname
 #             s_dbw        silhouette               tau           trace_w         trace_wib 
 #               NaN                 2                 2                 3                13 
 # wemmert_gancarski          xie_beni 
-#                 2                 2 
+#                 2                 2  
 bestK
+```
 
-# start from 4
-# ixs <-readRDS("ixs.rds")
-# ixname <- colnames(ixs)
-# ixs <-ixs[-1:-2,]
-# bestK<-c()
-# for (i in ixname){
-#   bestK<-c(bestK,bestCriterion(ixs[,i],i))
-# }
-# bestK<-bestK+3
-# names(bestK)<-ixname
+# get best k from 4
 
-ixs <- as.data.frame(scale(ixs))
-ixsLong <- cbind(x = 2:20, ixs)
+```{r}
+ixs <-readRDS("ixs.rds")
+ixname <- colnames(ixs)
+ixs <-ixs[-1:-2,]
+bestK<-c()
+for (i in ixname){
+  bestK<-c(bestK,bestCriterion(ixs[,i],i))
+}
+bestK<-bestK+3
+names(bestK)<-ixname
+
+#         ball_hall   banfeld_raftery           c_index calinski_harabasz    davies_bouldin 
+#                10                20                 4                 4                 4 
+#         det_ratio              dunn             gamma            g_plus             gdi11 
+#                19                14                 4                20                14 
+#             gdi12             gdi13             gdi21             gdi22             gdi23 
+#                10                10                 4                 8                10 
+#             gdi31             gdi32             gdi33             gdi41             gdi42 
+#                 4                 4                 4                 4                 4 
+#             gdi43             gdi51             gdi52             gdi53          ksq_detw 
+#                 4                 4                 4                 4                 8 
+#     log_det_ratio      log_ss_ratio       mcclain_rao               pbm    point_biserial 
+#               NaN                11                20                 4                18 
+#          ray_turi   ratkowsky_lance      scott_symons           sd_scat            sd_dis 
+#                 4                 4               NaN                20                 4 
+#             s_dbw        silhouette               tau           trace_w         trace_wib 
+#               NaN                 4                 4                 5                13 
+# wemmert_gancarski          xie_beni 
+#                 4                14 
+bestK                
+
+ixsLong <- as.data.frame(scale(ixs))
+ixsLong <- cbind(x = 4:20, ixsLong)
 ixsLong <- pivot_longer(ixsLong, -x, names_to = "Index", values_to = "y")
 
 p <- ggplot(ixsLong, aes(x = x, y = y)) +
@@ -114,15 +142,14 @@ p <- ggplot(ixsLong, aes(x = x, y = y)) +
       size = 1.
     )
   )
-
 p+ggsave("All Indexes.pdf",width = 12,height = 12)
 
-df<-data.frame(x=2:20,y=c(ixs$ball_hall))
+df<-data.frame(x=4:20,y=c(ixs$sd_dis))
 p<-ggplot(df,aes(x=x,y=y))+
   geom_line()+
   geom_point()+
   xlab("Number of clusters")+
-  ylab("Ball Hall Index")+
+  ylab("SD Dis Index")+
   theme(
     text = element_text(size = 15),
     panel.grid = element_blank(),
@@ -133,14 +160,14 @@ p<-ggplot(df,aes(x=x,y=y))+
       linetype = 1,
       size = 1.
     ))
-p+ggsave("ball_hall Index.pdf",width = 8,height = 6)
+p+ggsave("sd_dis Index.pdf",width = 8,height = 6)
 
-df<-data.frame(x=2:20,y=c(ixs$c_index))
+df<-data.frame(x=4:20,y=c(ixs$silhouette))
 p<-ggplot(df,aes(x=x,y=y))+
   geom_line()+
   geom_point()+
   xlab("Number of clusters")+
-  ylab("C Index")+
+  ylab("Silhouette Index")+
   theme(
     text = element_text(size = 15),
     panel.grid = element_blank(),
@@ -151,14 +178,14 @@ p<-ggplot(df,aes(x=x,y=y))+
       linetype = 1,
       size = 1.
     ))
-p+ggsave("c_index.pdf",width = 8,height = 6)
+p+ggsave("silhouette.pdf",width = 8,height = 6)
 
-df<-data.frame(x=2:20,y=c(ixs$gamma))
+df<-data.frame(x=4:20,y=c(ixs$trace_wib))
 p<-ggplot(df,aes(x=x,y=y))+
   geom_line()+
   geom_point()+
   xlab("Number of clusters")+
-  ylab("Gamma Index")+
+  ylab("trace_wib Index")+
   theme(
     text = element_text(size = 15),
     panel.grid = element_blank(),
@@ -169,8 +196,10 @@ p<-ggplot(df,aes(x=x,y=y))+
       linetype = 1,
       size = 1.
     ))
-p+ggsave("gamma.pdf",width = 8,height = 6)
+p+ggsave("trace_wib.pdf",width = 8,height = 6)
 ```
+
+# draw cluster
 
 ```{r}
 set.seed(9527)
@@ -184,5 +213,22 @@ mfuzz.plot(
   min.mem = 0.5
 )
 dev.off()
-```
+proteinCluster3<-cl$cluster
+proteinCluster3<-data.frame(Protein=names(proteinCluster3),Cluster=proteinCluster3)
+saveRDS(proteinCluster3,"proteinCluster3.rds")
 
+set.seed(9527)
+cl <- mfuzz(eset.s, c = 4, m = m)
+pdf("mfuzz clust 4.pdf",width = 15,height = 9)
+mfuzz.plot(
+  eset.s,
+  cl,
+  mfrow = c(2, 2),
+  new.window = FALSE,
+  min.mem = 0.5
+)
+dev.off()
+proteinCluster4<-cl$cluster
+proteinCluster4<-data.frame(Protein=names(proteinCluster4),Cluster=proteinCluster4)
+saveRDS(proteinCluster4,"proteinCluster4.rds")
+```
