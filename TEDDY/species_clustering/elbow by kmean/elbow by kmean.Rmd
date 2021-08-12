@@ -1,0 +1,137 @@
+---
+title: "elbow by kmean"
+author: "xyz"
+date: "2021/8/9"
+output: html_document
+---
+
+```{r}
+library(Mfuzz)
+library(ggplot2)
+library(clusterCrit)
+library(tidyr)
+library(readxl)
+```
+
+
+```{r}
+data <-
+  read.table(
+    "../old_version/time_merge.rpkm.tsv",
+    head = T,
+    sep = "\t",
+    stringsAsFactors = F,
+    row.names = 1
+  )
+rt <- as.matrix(data)
+eset <- new("ExpressionSet", exprs = rt)
+eset.r <- filter.NA(eset, thres = 0.25)
+eset.f <- fill.NA(eset.r, mode = "mean")
+eset.f <- filter.std(eset.f, min.std = 0)
+eset.s <- standardise(eset.f)
+eset.m <- t(as.data.frame(eset.s))
+m <- mestimate(eset.s)
+```
+
+# get elbow indexes
+
+```{r}
+ixs <- c()
+for (c in 2:20) {
+  set.seed(9527)
+  cl <- mfuzz(eset.s, c = c, m = m)
+  set.seed(9527)
+  kmm <- kmeans(eset.m,c,nstart = 50,iter.max = 15)
+  print(paste(c,"mfuzz done"))
+  ix <- kmm$tot.withinss
+  print(paste(c,"index done"))
+  ixs <- c(ixs, ix)
+}
+saveRDS(ixs,"ixs.rds")
+```
+
+# get best k 
+
+```{r}
+ixs <-readRDS("ixs.rds")
+# from 2
+# 3
+bestCriterion(ixs,"ball_hall")+1
+
+df<-data.frame(x=2:20,y=ixs)
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  geom_point()+
+  xlab("Number of clusters")+
+  ylab("Total within-clusters sum of squares")+
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    ))
+p+ggsave("elblow.pdf",width = 8,height = 6)
+
+# from 4
+ixs <-readRDS("ixs.rds")
+ixs <-ixs[-1:-2]
+# 6
+bestCriterion(ixs,"ball_hall")+3
+
+df<-data.frame(x=4:20,y=ixs)
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  geom_point()+
+  xlab("Number of clusters")+
+  ylab("Total within-clusters sum of squares")+
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    ))
+p+ggsave("elblow4.pdf",width = 8,height = 6)
+```
+
+# draw cluster
+
+```{r}
+set.seed(9527)
+cl <- mfuzz(eset.s, c = 3, m = m)
+pdf("mfuzz clust 3.pdf",width = 15,height = 5)
+mfuzz.plot(
+  eset.s,
+  cl,
+  mfrow = c(1, 3),
+  new.window = FALSE,
+  min.mem = 0.5
+)
+dev.off()
+proteinCluster3<-cl$cluster
+proteinCluster3<-data.frame(Protein=names(proteinCluster3),Cluster=proteinCluster3)
+saveRDS(proteinCluster3,"proteinCluster3.rds")
+
+set.seed(9527)
+cl <- mfuzz(eset.s, c = 6, m = m)
+pdf("mfuzz clust 6.pdf",width = 15,height = 9)
+mfuzz.plot(
+  eset.s,
+  cl,
+  mfrow = c(2, 3),
+  new.window = FALSE,
+  min.mem = 0.5
+)
+dev.off()
+proteinCluster6<-cl$cluster
+proteinCluster6<-data.frame(Protein=names(proteinCluster6),Cluster=proteinCluster6)
+saveRDS(proteinCluster6,"proteinCluster5.rds")
+```
+
