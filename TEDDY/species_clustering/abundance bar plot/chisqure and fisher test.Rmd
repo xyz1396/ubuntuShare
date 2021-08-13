@@ -1,0 +1,24 @@
+---
+title: "chisqure and fisher test"
+author: "xyz"
+date: "2021/8/12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+df<-read.table("../old_version/heatmap.txt",header = T)
+df.prop<-prop.table(as.matrix(df[,-1]),2)*100
+
+# Pearson's Chi-squared test
+# 
+# data:  df.prop
+# X-squared = 186.61, df = 50, p-value < 2.2e-16
+chisq.test(df.prop)
+
+chisq.test(df[,-1])
+```
+
