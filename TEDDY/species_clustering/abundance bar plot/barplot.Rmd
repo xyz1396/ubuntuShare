@@ -91,6 +91,8 @@ p <- ggplot(drawDf) +
       size = 1.
     )
   )
-p+ggsave("species cluster abundance barplot.pdf",width = 8,height = 6)
+p + ggsave("species cluster abundance barplot.pdf",
+           width = 8,
+           height = 6)
 ```
 

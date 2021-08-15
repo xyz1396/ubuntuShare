@@ -1,0 +1,63 @@
+---
+title: "KEGG Map id enrich"
+author: "xyz"
+date: "2021/8/15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(stringr)
+library(tidyr)
+library(clusterProfiler)
+```
+
+```{r}
+eset.f <- readRDS("eset.f.rds")
+abundance <- rowSums(eset.f)
+abundance <-
+  data.frame(Protein = rownames(eset.f), Abundance = abundance)
+
+clusterDf <- readRDS("proteinCluster10.rds")
+
+speciesDf <-
+  read_xlsx("../SuppTable 5 Protein Family Annotation(1).xlsx")
+speciesDf <-
+  data.frame(Protein = speciesDf[-1:-2, 1, drop = TRUE],
+             Tax = speciesDf[-1:-2, 5, drop = TRUE])
+
+drawDf <-
+  left_join(clusterDf, speciesDf, by = c("Protein" = "Protein"))
+drawDf <-
+  left_join(drawDf, abundance, by = c("Protein" = "Protein"))
+drawDf <- separate_rows(drawDf, Tax, sep = ",")
+drawDf <- drawDf[drawDf$Tax != "NA", ]
+
+pathwaydf <-
+  read.table("map_title.tab",
+             sep = "\t",
+             colClasses = c("character", "character"))
+colnames(pathwaydf) <- c("id", "term")
+pathwaydf$id <- paste0("map", pathwaydf$id)
+
+TERM2GENE <- data.frame(TERM = drawDf$Tax, Gene = drawDf$Protein)
+TERM2NAME <- pathwaydf
+colnames(TERM2NAME) <- c("TERM", "NAME")
+
+c1 <- clusterDf$Protein[clusterDf$Cluster == 3]
+c1mapEnrich <- enricher(
+  c1,
+  TERM2GENE = TERM2GENE,
+  TERM2NAME = TERM2NAME,
+  pvalueCutoff = 1,
+  qvalueCutoff = 1
+)
+View(as.data.frame(c1mapEnrich))
+```
+
