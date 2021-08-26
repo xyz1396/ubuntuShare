@@ -20,5 +20,8 @@ df.prop<-prop.table(as.matrix(df[,-1]),2)*100
 chisq.test(df.prop)
 
 chisq.test(df[,-1])
+
+# 1.229822e-17
+chisq.test(df[,-1])$p.value
 ```
 

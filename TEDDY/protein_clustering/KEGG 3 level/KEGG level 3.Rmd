@@ -1,0 +1,65 @@
+---
+title: "KEGG level3"
+author: "xyz"
+date: "2021/8/19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### get level3 annotation
+
+https://www.genome.jp/kegg-bin/get_htext?ko00001.keg
+
+```{r}
+library(rjson)
+library(stringr)
+library(foreach)
+library(parallel)
+library(doParallel)
+library(KEGGREST)
+```
+
+```{r}
+brite <- fromJSON(file = "ko00001.json")
+pathway <- keggList("KO")
+pathwaydf <- data.frame(id=names(pathway),term=pathway)
+pathwaydf$id <- str_sub(pathwaydf$id,start = 4)
+ko <- pathwaydf$id
+traverse <- function(leafId,
+                     nodes = brite,
+                     path = c()) {
+  results <- data.frame()
+  traverse2 <- function(leafId, nodes, path = c()) {
+    if (length(path) == 0) {
+      path <- c(path, nodes$name)
+    }
+    for (i in nodes$children) {
+      tmpPath <- c(path, i$name)
+      if (leafId == str_sub(i$name, 1, 6)) {
+        results <<- rbind(results, tmpPath)
+      }
+      if (!is.null(i$children)) {
+        traverse2(leafId, i, tmpPath)
+      }
+    }
+  }
+  traverse2(leafId, nodes = nodes)
+  colnames(results) <-
+    c("level0", "level1", "level2", "level3", "level4")
+  return(results)
+}
+# multithreads
+cl <- makePSOCKcluster(6)
+registerDoParallel(cl)
+results <-
+  foreach(leafId = ko,
+          .packages = 'stringr',
+          .combine = 'rbind') %dopar% traverse(leafId)
+stopCluster(cl)
+saveRDS(results, "KEGG 4 level results.rds")
+results <- readRDS("KEGG 4 level results.rds")
+```
+

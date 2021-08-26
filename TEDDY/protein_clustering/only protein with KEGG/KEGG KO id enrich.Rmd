@@ -1,0 +1,84 @@
+---
+title: "KEGG KO id enrich"
+author: "xyz"
+date: "2021/8/16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(readxl)
+library(stringr)
+library(tidyr)
+library(clusterProfiler)
+library(xlsx)
+library(KEGGREST)
+```
+
+```{r}
+eset.f <- readRDS("eset.f.rds")
+abundance <- rowSums(eset.f)
+abundance <-
+  data.frame(Protein = rownames(eset.f), Abundance = abundance)
+
+clusterDf <- readRDS("proteinCluster10.rds")
+
+speciesDf <-
+  read_xlsx("../SuppTable 5 Protein Family Annotation(1).xlsx")
+speciesDf <-
+  data.frame(Protein = speciesDf[-1:-2, 1, drop = TRUE],
+             Tax = speciesDf[-1:-2, 4, drop = TRUE])
+
+drawDf <-
+  left_join(clusterDf, speciesDf, by = c("Protein" = "Protein"))
+drawDf <-
+  left_join(drawDf, abundance, by = c("Protein" = "Protein"))
+drawDf <- separate_rows(drawDf, Tax, sep = ",")
+drawDf <- drawDf[drawDf$Tax != "NA", ]
+
+# pathway <- keggList("KO")
+# saveRDS(pathway,"pathway.rds")
+pathway <- readRDS("pathway.rds")
+pathwaydf <- data.frame(id=names(pathway),term=pathway)
+pathwaydf$id <- str_sub(pathwaydf$id,start = 4)
+
+TERM2GENE <- data.frame(TERM = drawDf$Tax, Gene = drawDf$Protein)
+TERM2NAME <- pathwaydf
+colnames(TERM2NAME) <- c("TERM", "NAME")
+
+getEnrichDf <- function(clusterID) {
+  proteinID <- clusterDf$Protein[clusterDf$Cluster == clusterID]
+  enrichResult <- enricher(
+    proteinID,
+    TERM2GENE = TERM2GENE,
+    TERM2NAME = TERM2NAME,
+    pvalueCutoff = 0.05,
+    qvalueCutoff = 0.05
+  )
+  as.data.frame(enrichResult)
+}
+
+wb <- createWorkbook(type = "xlsx")
+for (i in 1:10) {
+  enrichResult <- getEnrichDf(i)
+  if (nrow(enrichResult) > 0) {
+    Sheet <- createSheet(wb, sheetName = paste0("Cluster", i))
+    addDataFrame(
+      enrichResult,
+      Sheet,
+      startRow = 1,
+      startColumn = 1,
+      row.names = F,
+      col.names = T
+    )
+  }
+}
+
+saveWorkbook(wb,"KEGG KO id enrich.xlsx")
+```
+

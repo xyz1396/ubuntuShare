@@ -1,0 +1,43 @@
+---
+title: "from 4 write membership to xlsx"
+author: "xyz"
+date: "2021/8/19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyr)
+```
+
+```{r}
+data <-
+  read.table(
+    "../old_version/time_merge.rpkm.tsv",
+    head = T,
+    sep = "\t",
+    stringsAsFactors = F,
+    row.names = 1
+  )
+rt <- as.matrix(data)
+eset <- new("ExpressionSet", exprs = rt)
+eset.r <- filter.NA(eset, thres = 0.25)
+eset.f <- fill.NA(eset.r, mode = "mean")
+eset.f <- filter.std(eset.f, min.std = 0)
+eset.s <- standardise(eset.f)
+eset.m <- t(as.data.frame(eset.s))
+m <- mestimate(eset.s)
+
+set.seed(9527)
+cl <- mfuzz(eset.s, c = 7, m = m)
+proteinCluster7<-cl$cluster
+proteinCluster7<-data.frame(Protein=names(proteinCluster7),Cluster=proteinCluster7)
+sum(rownames(cl$membership)==proteinCluster7$Protein)
+proteinCluster7<-cbind(proteinCluster7,cl$membership)
+proteinCluster7$MaxMembership<-apply(proteinCluster7[,-1:-2],1,max)
+write.csv(proteinCluster7,"speciesCluster7.csv",row.names = F)
+```
+

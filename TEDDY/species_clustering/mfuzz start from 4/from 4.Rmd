@@ -110,6 +110,44 @@ p<-ggplot(df,aes(x=x,y=y))+
       size = 1.
     ))
 p+ggsave("ball_hall Index.pdf",width = 8,height = 6)
+
+df<-data.frame(x=5:19,y=diff(diff(ixs$ball_hall)))
+xintercept <- 7
+yintercept <- df[df$x==7,2]
+noteLineDf <-
+  data.frame(
+    x1 = c(xintercept, -Inf),
+    x2 = c(xintercept,xintercept),
+    y1 = c(-Inf, yintercept),
+    y2 = c(yintercept, yintercept)
+  )
+p <- ggplot(df, aes(x = x, y = y)) +
+  geom_line() +
+  geom_point() +
+  xlab("Number of clusters") +
+  ylab("Slope difference of Ball Hall Index") +
+  geom_segment(aes(
+    x = x1,
+    y = y1,
+    xend = x2,
+    yend = y2,
+  ),
+  data = noteLineDf,
+  linetype = 4) +
+  scale_x_continuous(breaks = c(5, xintercept , 8, 12, 16, 19)) +
+  scale_y_continuous(breaks = round(c(0, 0.05, 0.1, 0.15, yintercept),2)) +
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    )
+  )
+p+ggsave("ball_hall Index Second difference.pdf",width = 8,height = 6)
 ```
 
 ```{r}
