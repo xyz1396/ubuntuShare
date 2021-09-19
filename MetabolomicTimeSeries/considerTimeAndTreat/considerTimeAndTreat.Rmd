@@ -86,28 +86,28 @@ for (i in ixname){
 bestK<-bestK+1
 names(bestK)<-ixname
 
-#         ball_hall   banfeld_raftery           c_index calinski_harabasz 
-#                 3                20                19                 2 
+# ball_hall   banfeld_raftery           c_index calinski_harabasz 
+#                 3                20                20                 3 
 #    davies_bouldin         det_ratio              dunn             gamma 
-#                 8                15                 2                20 
+#                10                18                 5                20 
 #            g_plus             gdi11             gdi12             gdi13 
-#                20                 2                 2                 2 
+#                20                 5                 5                 5 
 #             gdi21             gdi22             gdi23             gdi31 
-#                 7                13                13                 2 
+#                 7                 9                 9                 2 
 #             gdi32             gdi33             gdi41             gdi42 
-#                 6                 6                 7                 7 
+#                 7                 7                 7                 7 
 #             gdi43             gdi51             gdi52             gdi53 
 #                 7                 2                 2                 2 
 #          ksq_detw     log_det_ratio      log_ss_ratio       mcclain_rao 
 #                 3               NaN                 3                20 
 #               pbm    point_biserial          ray_turi   ratkowsky_lance 
-#                 2                 2                 7                 3 
+#                 3                 2                 7                 3 
 #      scott_symons           sd_scat            sd_dis             s_dbw 
 #               NaN                20                 7               NaN 
 #        silhouette               tau           trace_w         trace_wib 
-#                13                 4                 3                15 
+#                 3                 3                 3                18 
 # wemmert_gancarski          xie_beni 
-#                 8                 3 
+#                11                 5
 bestK
 
 ixsLong <- as.data.frame(scale(ixs))
@@ -166,15 +166,15 @@ mfuzz.plot(
   min.mem = 0.5
 )
 dev.off()
-cl7<-cl$cluster
-cl7<-data.frame(Protein=names(cl7),Cluster=cl7)
-saveRDS(cl7,"cl.rds")
+cl3<-cl$cluster
+cl3<-data.frame(Metabolite=names(cl3),Cluster=cl3)
+saveRDS(cl3,"cl.rds")
 
-Cluster7<-cl$cluster
-Cluster7<-data.frame(Protein=names(Cluster7),Cluster=Cluster7)
-sum(rownames(cl$membership)==Cluster7$Protein)
-Cluster7<-cbind(Cluster7,cl$membership)
-Cluster7$MaxMembership<-apply(Cluster7[,-1:-2],1,max)
-write.csv(Cluster7,"speciesCluster7.csv",row.names = F)
+Cluster3<-cl$cluster
+Cluster3<-data.frame(Metabolite=names(Cluster3),Cluster=Cluster3)
+sum(rownames(cl$membership)==Cluster3$Metabolite)
+Cluster3<-cbind(Cluster3,cl$membership)
+Cluster3$MaxMembership<-apply(Cluster3[,-1:-2],1,max)
+write.csv(Cluster3,"MetaboliteCluster3.csv",row.names = F)
 ```
 

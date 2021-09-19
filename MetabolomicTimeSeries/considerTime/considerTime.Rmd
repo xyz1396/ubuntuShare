@@ -14,19 +14,39 @@ library(Mfuzz)
 library(ggplot2)
 library(clusterCrit)
 library(tidyr)
+library(dplyr)
 ```
 
 ```{r}
-df<-read.csv("Biomarkers Full Data Set_quant_BlkRemoved_missedinjRemoved_misslabeledRemoved_T_wMeta_TIC_urine_20210520.csv")
+df<-read.csv("../Biomarkers Full Data Set_quant_BlkRemoved_missedinjRemoved_misslabeledRemoved_T_wMeta_TIC_urine_20210520.csv")
 meta<-df[,1:10]
 meta<-cbind(ID=paste0("X",1:nrow(meta)),meta)
 data<-df[,-1:-10]
 rownames(data)<-meta$ID
 
-rt <- as.matrix(t(data))
+data<-prop.table(as.matrix(data),1)
+Time<-meta$ATTRIBUTE_month_day
+TimeLevel<-rep(0,length(Time))
+TimeLevel[Time=="Sept_10"]<-1
+TimeLevel[Time=="Sept_16"]<-2
+TimeLevel[Time=="Sept_23"]<-3
+TimeLevel[Time=="Sept_30"]<-4
+TimeLevel[Time=="Oct_7"]<-5
+TimeLevel[Time=="Oct_21"]<-6
+TimeLevel[Time=="Oct_28"]<-7
+TimeLevel[Time=="Nov_12"]<-8
+TimeLevel[Time=="Nov_25"]<-9
+data<-cbind.data.frame(Time=TimeLevel,data)
+data<-arrange(data,Time)
+data<-group_by(data,Time)
+data<-summarise(data,across(everything(),mean))
+data<-as.matrix(data)
+data[data==0]<-NA
+
+rt <- as.matrix(t(data[,-1]))
 eset <- new("ExpressionSet", exprs = rt)
-eset.r <- filter.NA(eset, thres = 0.25)
-eset.f <- fill.NA(eset.r, mode = "mean")
+eset.r <- filter.NA(eset, thres = 0.5)
+eset.f <- fill.NA(eset.r, mode = "knnw")
 eset.f <- filter.std(eset.f, min.std = 0.00001)
 eset.s <- standardise(eset.f)
 eset.m <- t(as.data.frame(eset.s))
@@ -51,24 +71,24 @@ for (i in ixname){
 bestK<-bestK+1
 names(bestK)<-ixname
 
-#  ball_hall   banfeld_raftery           c_index calinski_harabasz    davies_bouldin 
-#                 9                20                20                 2                20 
+#   ball_hall   banfeld_raftery           c_index calinski_harabasz    davies_bouldin 
+#                 3                20                10                 3                 3 
 #         det_ratio              dunn             gamma            g_plus             gdi11 
-#               NaN                18                20                20                18 
+#                17                 3                19                19                 3 
 #             gdi12             gdi13             gdi21             gdi22             gdi23 
-#                18                18                 2                 2                 2 
+#                 3                 3                 6                 6                 6 
 #             gdi31             gdi32             gdi33             gdi41             gdi42 
-#                 6                 2                 2                20                 5 
+#                 2                 3                 3                 2                 3 
 #             gdi43             gdi51             gdi52             gdi53          ksq_detw 
-#                 5                 2                 2                 2                NA 
+#                 3                 2                 2                 2                 3 
 #     log_det_ratio      log_ss_ratio       mcclain_rao               pbm    point_biserial 
-#               NaN                 3                20                 2                 2 
+#               NaN                 3                19                 2                20 
 #          ray_turi   ratkowsky_lance      scott_symons           sd_scat            sd_dis 
-#                 5                 3               NaN                17                 5 
+#                 3                 3               NaN                20                 3 
 #             s_dbw        silhouette               tau           trace_w         trace_wib 
-#               NaN                14                 5                 3                19 
+#               NaN                 3                 3                 3                 8 
 # wemmert_gancarski          xie_beni 
-#                20                18 
+#                 3                 3 
 bestK
 
 ixsLong <- as.data.frame(scale(ixs))
@@ -94,7 +114,7 @@ p <- ggplot(ixsLong, aes(x = x, y = y)) +
     )
   )
 
-p+ggsave("All Indexes.pdf",width = 12,height = 12)
+p+ggsave("All Indexes Merge Time.pdf",width = 12,height = 12)
 
 df<-data.frame(x=2:20,y=c(ixs$ball_hall))
 p<-ggplot(df,aes(x=x,y=y))+
@@ -112,23 +132,30 @@ p<-ggplot(df,aes(x=x,y=y))+
       linetype = 1,
       size = 1.
     ))
-p+ggsave("ball_hall Index.pdf",width = 8,height = 6)
+p+ggsave("ball_hall Index Merge Time.pdf",width = 8,height = 6)
 ```
 
 ```{r}
 set.seed(9527)
-cl <- mfuzz(eset.s, c = 9, m = m)
-pdf("mfuzz clust 9 all samples.pdf",width = 18,height = 9)
+cl <- mfuzz(eset.s, c = 3, m = m)
+pdf("mfuzz clust 3.pdf",width = 12,height = 4)
 mfuzz.plot(
   eset.s,
   cl,
-  mfrow = c(2, 5),
+  mfrow = c(1, 3),
   new.window = FALSE,
   min.mem = 0.5
 )
 dev.off()
-cl7<-cl$cluster
-cl7<-data.frame(Protein=names(cl7),Cluster=cl7)
-saveRDS(cl7,"cl7.rds")
+cl3<-cl$cluster
+cl3<-data.frame(Metabolite=names(cl3),Cluster=cl3)
+saveRDS(cl3,"cl.rds")
+
+Cluster3<-cl$cluster
+Cluster3<-data.frame(Metabolite=names(Cluster3),Cluster=Cluster3)
+sum(rownames(cl$membership)==Cluster3$Metabolite)
+Cluster3<-cbind(Cluster3,cl$membership)
+Cluster3$MaxMembership<-apply(Cluster3[,-1:-2],1,max)
+write.csv(Cluster3,"MetaboliteCluster3.csv",row.names = F)
 ```
 
