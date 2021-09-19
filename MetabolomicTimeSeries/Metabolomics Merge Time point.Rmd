@@ -1,0 +1,134 @@
+---
+title: "Metabolomics all samples"
+author: "xyz"
+date: "2021/9/15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(Mfuzz)
+library(ggplot2)
+library(clusterCrit)
+library(tidyr)
+```
+
+```{r}
+df<-read.csv("Biomarkers Full Data Set_quant_BlkRemoved_missedinjRemoved_misslabeledRemoved_T_wMeta_TIC_urine_20210520.csv")
+meta<-df[,1:10]
+meta<-cbind(ID=paste0("X",1:nrow(meta)),meta)
+data<-df[,-1:-10]
+rownames(data)<-meta$ID
+
+rt <- as.matrix(t(data))
+eset <- new("ExpressionSet", exprs = rt)
+eset.r <- filter.NA(eset, thres = 0.25)
+eset.f <- fill.NA(eset.r, mode = "mean")
+eset.f <- filter.std(eset.f, min.std = 0.00001)
+eset.s <- standardise(eset.f)
+eset.m <- t(as.data.frame(eset.s))
+dim(eset.m)
+
+m <- mestimate(eset.s)
+ixs <- c()
+for (c in 2:20) {
+  set.seed(9527)
+  cl <- mfuzz(eset.s, c = c, m = m)
+  ix <- unlist(intCriteria(eset.m,cl$cluster,"all"))
+  ixs <- c(ixs, ix)
+}
+ixname <- names(ixs[1:42])
+ixs <- matrix(ixs, ncol = 42, byrow = T)
+colnames(ixs) <- ixname
+ixs <- as.data.frame(ixs)
+bestK<-c()
+for (i in ixname){
+  bestK<-c(bestK,bestCriterion(ixs[,i],i))
+}
+bestK<-bestK+1
+names(bestK)<-ixname
+
+#  ball_hall   banfeld_raftery           c_index calinski_harabasz    davies_bouldin 
+#                 9                20                20                 2                20 
+#         det_ratio              dunn             gamma            g_plus             gdi11 
+#               NaN                18                20                20                18 
+#             gdi12             gdi13             gdi21             gdi22             gdi23 
+#                18                18                 2                 2                 2 
+#             gdi31             gdi32             gdi33             gdi41             gdi42 
+#                 6                 2                 2                20                 5 
+#             gdi43             gdi51             gdi52             gdi53          ksq_detw 
+#                 5                 2                 2                 2                NA 
+#     log_det_ratio      log_ss_ratio       mcclain_rao               pbm    point_biserial 
+#               NaN                 3                20                 2                 2 
+#          ray_turi   ratkowsky_lance      scott_symons           sd_scat            sd_dis 
+#                 5                 3               NaN                17                 5 
+#             s_dbw        silhouette               tau           trace_w         trace_wib 
+#               NaN                14                 5                 3                19 
+# wemmert_gancarski          xie_beni 
+#                20                18 
+bestK
+
+ixsLong <- as.data.frame(scale(ixs))
+ixsLong <- cbind(x = 2:20, ixsLong)
+ixsLong <- pivot_longer(ixsLong, -x, names_to = "Index", values_to = "y")
+
+p <- ggplot(ixsLong, aes(x = x, y = y)) +
+  geom_line() +
+  geom_point() +
+  xlab("Number of clusters") +
+  ylab("Index") +
+  scale_x_continuous(breaks = seq(2,20,by=2))+
+  facet_wrap(vars(Index), ncol = 5) +
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    )
+  )
+
+p+ggsave("All Indexes.pdf",width = 12,height = 12)
+
+df<-data.frame(x=2:20,y=c(ixs$ball_hall))
+p<-ggplot(df,aes(x=x,y=y))+
+  geom_line()+
+  geom_point()+
+  xlab("Number of clusters")+
+  ylab("Total within-clusters sum of squares")+
+  theme(
+    text = element_text(size = 15),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    panel.border = element_rect(
+      fill = NA,
+      color = "grey10",
+      linetype = 1,
+      size = 1.
+    ))
+p+ggsave("ball_hall Index.pdf",width = 8,height = 6)
+```
+
+```{r}
+set.seed(9527)
+cl <- mfuzz(eset.s, c = 9, m = m)
+pdf("mfuzz clust 9 all samples.pdf",width = 18,height = 9)
+mfuzz.plot(
+  eset.s,
+  cl,
+  mfrow = c(2, 5),
+  new.window = FALSE,
+  min.mem = 0.5
+)
+dev.off()
+cl7<-cl$cluster
+cl7<-data.frame(Protein=names(cl7),Cluster=cl7)
+saveRDS(cl7,"cl7.rds")
+```
+

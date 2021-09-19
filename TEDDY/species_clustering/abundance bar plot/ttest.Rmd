@@ -1,0 +1,38 @@
+---
+title: "ttest"
+author: "xyz"
+date: "2021/9/10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The Lachnospirales order, the Coriobacteriales order and Bacteroidales order were present in all six clusters with relatively high levels (accounts for 10.56%, 23.44% and 15.47%). The abundance of Lactobacillales were much higher in clusters 1-3 than the other clusters (P=0.03 by T test). Oscillospirales had increased abundances in clusters 4-7 compared with clusters 1-3 (P=0.01 by T test).
+
+3274651
+1234567
+
+```{r}
+df<-read.csv("cluster7table.csv")
+mat<-df[,-1]
+mat<-mat[,c(3,2,7,4,6,5,1)]
+colnames(mat)<-colnames(df[,-1])
+df[,-1]<-mat
+top3 <- df[df$Order %in% c("o__Lachnospirales",
+                           "o__Coriobacteriales",
+                           "o__Bacteroidales"), ]
+# 10.56 23.44 15.47
+round(rowMeans(top3[,-1]),2)
+# p-value = 0.02929
+t.test(df[df$Order=="o__Lactobacillales",2:4],df[df$Order=="o__Lactobacillales",5:8])
+# p-value = 0.007173
+t.test(df[df$Order=="o__Oscillospirales",2:4],df[df$Order=="o__Oscillospirales",5:8])
+
+# p-value = 0.05714
+wilcox.test(unlist(df[df$Order=="o__Lactobacillales",2:4]),unlist(df[df$Order=="o__Lactobacillales",5:8]))
+# p-value = 0.05714
+wilcox.test(unlist(df[df$Order=="o__Oscillospirales",2:4]),unlist(df[df$Order=="o__Oscillospirales",5:8]))
+```
+

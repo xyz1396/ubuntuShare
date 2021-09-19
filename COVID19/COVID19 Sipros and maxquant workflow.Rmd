@@ -12,9 +12,10 @@ knitr::opts_chunk$set(echo = TRUE)
 # install Sipros
 
 ```{bash}
-conda create -n openmpi numpy scipy scikit-learn lxml python=2.7
+conda create -n openmpi gxx_linux-64 \
+  openmpi numpy scipy scikit-learn lxml python=2.7 \
+  -c conda-forge 
 conda activate openmpi
-conda install -c conda-forge openmpi
 git clone https://github.com/guo-xuan/Sipros-Ensemble.git
 cd Sipros-Ensemble/
 vim compiler.mk
