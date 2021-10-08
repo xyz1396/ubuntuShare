@@ -159,3 +159,17 @@ Cluster3$MaxMembership<-apply(Cluster3[,-1:-2],1,max)
 write.csv(Cluster3,"MetaboliteCluster3.csv",row.names = F)
 ```
 
+```{r}
+set.seed(9527)
+cl <- mfuzz(eset.s, c = 11, m = m)
+pdf("mfuzz clust 11.pdf",width = 12,height = 4)
+mfuzz.plot(
+  eset.s,
+  cl,
+  mfrow = c(2, 6),
+  new.window = FALSE,
+  min.mem = 0.5
+)
+```
+
+
