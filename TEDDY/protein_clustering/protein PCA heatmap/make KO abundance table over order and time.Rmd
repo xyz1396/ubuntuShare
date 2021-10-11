@@ -112,3 +112,17 @@ mrpp(t(abundanceDf), meta$Order, distance = 'bray', permutations = 999)
 mrpp(t(abundanceDf), meta$Time, distance = 'bray', permutations = 999)
 ```
 
+# species dist
+
+```{r}
+Clostridiales<-tempDf[tempDf$Order=="Clostridiales",]
+cloDist<-as.numeric(dist(Clostridiales[,1:2]))
+Enterobacterales<-tempDf[tempDf$Order=="Enterobacterales",]
+enDist<-as.numeric(dist(Enterobacterales[,1:2]))
+Bifidobacteriales<-tempDf[tempDf$Order=="Bifidobacteriales",]
+biDist<-as.numeric(dist(Bifidobacteriales[,1:2]))
+# p-value = 1.027e-08
+t.test(cloDist,biDist)
+```
+
+
