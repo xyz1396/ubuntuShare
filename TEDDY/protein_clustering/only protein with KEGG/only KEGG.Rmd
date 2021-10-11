@@ -177,7 +177,7 @@ p <- ggplot(df, aes(x = x, y = y)) +
   geom_line() +
   geom_point() +
   xlab("Number of clusters") +
-  ylab("Slope difference of Ball Hall Index") +
+  ylab("Ball Hall index") +
   geom_segment(aes(
     x = x1,
     y = y1,

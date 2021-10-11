@@ -77,8 +77,8 @@ p <- ggplot(tempDf,
             )) +
   scale_shape_manual(values = 1:10, name = "KEGG level 3") +
   geom_point(size = 3) +
-  xlab(paste0("PC1(", round(importance[2, 1] * 100, 2), "%)")) +
-  ylab(paste0("PC2(", round(importance[2, 2] * 100, 2), "%)")) +
+  xlab(paste0("Taxonomic Profile PC1(", round(importance[2, 1] * 100, 2), "%)")) +
+  ylab(paste0("Taxonomic Profile PC2(", round(importance[2, 2] * 100, 2), "%)")) +
   theme(text = element_text(size = 15))
 p + ggsave("Order over time and KEGG PCA.pdf",width = 10, height = 6)
 ```
