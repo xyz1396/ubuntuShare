@@ -51,6 +51,7 @@ data <- arrange(data, Time, RatID,Condition)
 data <- data[data$Condition!="isoproterenol",]
 data$Time<-as.factor(data$Time)
 data$RatID<-as.factor(data$RatID)
+write.csv(data,"normalizedAbundance.csv",row.names = F)
 ```
 
 # run model
