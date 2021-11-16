@@ -20,6 +20,8 @@ abundance <- read.csv("normalizedAbundance.csv")
 sig <- read.csv("glmmArModel.csv")
 sigExtrem <- sig[sig$qOrFDR<=0.01,]
 sigExtrem <- arrange(sigExtrem,qOrFDR)
+write.csv(sigExtrem,"sigExtrem.csv",row.names = F)
+nrow(sigExtrem)
 
 for (i in 1:nrow(sigExtrem)) {
   metabolite <- sigExtrem$metabolite[i]
@@ -58,4 +60,11 @@ for (i in 1:nrow(sigExtrem)) {
   )
 }
 ```
+
+# check zero
+
+```{r}
+zero<-abundance[,c("X302.1593_0.8","X202.1073_0.98","X136.0616_0.97","X180.0655_1.98")]
+```
+
 

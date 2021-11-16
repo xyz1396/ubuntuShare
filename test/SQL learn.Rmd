@@ -1,0 +1,38 @@
+---
+title: "SQL learn"
+author: "xyz"
+date: "2021/11/14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+[accessing-mysql-through-r](https://www.r-bloggers.com/2011/05/accessing-mysql-through-r/)
+
+[libgen sql db](https://libgen.rs/dbdumps/)
+
+[libgen torrents](http://libgen.li/torrents/libgen/)
+
+
+```{r}
+library(RMySQL)
+```
+
+```{r}
+mydb <-
+  dbConnect(
+    MySQL(),
+    user = 'xyz',
+    password = '112233xyz',
+    dbname = 'book',
+    host = 'localhost'
+  )
+dbListTables(mydb)
+fiction <- dbGetQuery(mydb,"select * from fiction")
+fiction_description <- dbGetQuery(mydb,"select * from fiction_description")
+fiction_hashes <- dbGetQuery(mydb,"select * from fiction_hashes")
+```
+
+

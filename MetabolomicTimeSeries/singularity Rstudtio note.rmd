@@ -1,0 +1,37 @@
+
+# cannot install xml2 package
+
+[rocker singularity](https://www.rocker-project.org/use/singularity/)
+
+```{bash}
+cd /scratch/yixiong/Rstudio/
+singularity pull ./Rstudio.sif docker://rocker/rstudio:4.0.4
+
+singularity exec \
+  --bind run:/run,var-lib-rstudio-server:/var/lib/rstudio-server,database.conf:/etc/rstudio/database.conf,/scratch/yixiong/,tmp:/tmp \
+  Rstudio4.0.4.sif \
+  rserver --www-port 8787
+```
+
+# use package in lmod
+
+[R 3.6.2](https://github.com/nickjer/singularity-rstudio)
+
+```{bash}
+nohup singularity run \
+  --bind /scratch/yixiong/,tmp:/tmp \
+  /opt/oscer/software/Rstudio-singularity/3.6.2/singularity-rstudio-3.6.2.simg \
+>> rstudio.log 2>&1 &
+```
+
+# oscerRstudio.vbs on windows
+
+```{vbs}
+Set ssh = CreateObject("Wscript.Shell")
+ssh.run "ssh -N -f -L 9527:c651:8787 yixiong@schooner.oscer.ou.edu"
+Set rstudio = WScript.CreateObject("WScript.Shell")
+rstudio.Run "http://127.0.0.1:9527", vbhide
+```
+
+  
+
