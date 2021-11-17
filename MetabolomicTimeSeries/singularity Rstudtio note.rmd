@@ -19,7 +19,7 @@ singularity exec \
 
 ```{bash}
 nohup singularity run \
-  --bind /scratch/yixiong/,tmp:/tmp \
+  --bind /scratch/yixiong/,/opt/oscer/software/,tmp:/tmp \
   /opt/oscer/software/Rstudio-singularity/3.6.2/singularity-rstudio-3.6.2.simg \
 >> rstudio.log 2>&1 &
 ```
