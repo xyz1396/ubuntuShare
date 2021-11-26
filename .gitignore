@@ -19,3 +19,4 @@
 *.binary
 *.raw
 /GWAS/prsiceDemo/*
+*.DS_Store
