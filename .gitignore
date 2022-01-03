@@ -20,3 +20,5 @@
 *.raw
 /GWAS/prsiceDemo/*
 *.DS_Store
+*.xz
+

@@ -1,0 +1,109 @@
+---
+title: "get KEGG annotation of bacteria strain"
+author: "xyz"
+date: "2021/12/30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(KEGGREST)
+library(stringr)
+library(dplyr)
+library(clusterProfiler)
+```
+
+```{r}
+listDatabases()
+org <- keggList("organism")
+
+KOID <- keggList("KO")
+KOID <- data.frame(KO = names(KOID), Term = KOID)
+KOID$KO <- str_sub(KOID$KO, 4)
+
+PathID <- keggList("pathway")
+PathID <- data.frame(Path = names(PathID), Term = PathID)
+PathID$Path <- str_sub(PathID$Path, 6)
+```
+
+Clostridium cellulolyticum : cce
+Methanospirillum hungatei : mhu
+Methanosaeta concilii : Methanothrix soehngenii GP6 (Methanosaeta concilii GP6) : mcj
+Desulfovibrio vulgaris : Desulfovibrio vulgaris Hildenborough : dvu
+
+```{r}
+getKO <- function(strain, fileName) {
+  KO <- keggLink("ko", strain)
+  KO <- data.frame(Gene = names(KO), KO = KO)
+  KO$Gene <- str_sub(KO$Gene, 5)
+  KO$KO <- str_sub(KO$KO, 4)
+  KO <- left_join(KO, KOID, by = c("KO" = "KO"))
+  write.csv(KO,
+            fileName,
+            row.names = F)
+}
+
+getPath <- function(strain, fileName) {
+  Path <- keggLink("pathway", strain)
+  Path <- data.frame(Gene = names(Path), Path = Path)
+  Path$Gene <- str_sub(Path$Gene, 5)
+  Path$Path <- str_sub(Path$Path, 9)
+  Path$Path <- paste0("map",Path$Path)
+  Path <- left_join(Path, PathID, by = c("Path" = "Path"))
+  write.csv(Path,
+            fileName,
+            row.names = F)
+}
+
+getKO("cce", "Clostridium cellulolyticum KO.csv")
+getKO("mhu", "Methanospirillum hungatei KO.csv")
+getKO("mcj", "Methanosaeta concilii KO.csv")
+getKO("dvu", "Desulfovibrio vulgaris KO.csv")
+
+getPath("cce", "Clostridium cellulolyticum Path.csv")
+getPath("mhu", "Methanospirillum hungatei Path.csv")
+getPath("mcj", "Methanosaeta concilii Path.csv")
+getPath("dvu", "Desulfovibrio vulgaris Path.csv")
+```
+
+# enrich
+
+```{r}
+df<-read.csv("Clostridium cellulolyticum KO.csv")
+TERM2GENE <- data.frame(TERM = df$KO, GENE = df$Gene)
+TERM2GENE <- unique(TERM2GENE)
+TERM2NAME <- data.frame(TERM = df$KO, NAME = df$Term)
+TERM2NAME <- unique(TERM2NAME)
+
+geneList<-read.csv("Compare_cc.csv")
+geneList<-geneList[!is.na(geneList$padj),]
+geneList<-geneList[geneList$padj<=0.05,]
+geneList<-str_sub(geneList$KEGG_gene,5) 
+
+enrichResult <- enricher(
+    geneList,
+    minGSSize = 1,
+    TERM2GENE = TERM2GENE,
+    TERM2NAME = TERM2NAME,
+    pvalueCutoff = 1,
+    qvalueCutoff = 1
+  )
+
+df<-read.csv("Clostridium cellulolyticum Path.csv")
+TERM2GENE <- data.frame(TERM = df$Path, GENE = df$Gene)
+TERM2GENE <- unique(TERM2GENE)
+TERM2NAME <- data.frame(TERM = df$Path, NAME = df$Term)
+TERM2NAME <- unique(TERM2NAME)
+
+enrichResult <- enricher(
+    geneList,
+    TERM2GENE = TERM2GENE,
+    TERM2NAME = TERM2NAME,
+    pvalueCutoff = 1,
+    qvalueCutoff = 1
+  )
+```
+
