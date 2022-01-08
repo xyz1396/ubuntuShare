@@ -18,11 +18,12 @@ singularity exec \
 [R 3.6.2](https://github.com/nickjer/singularity-rstudio)
 
 ```{bash}
-cd /ourdisk/hpc/prebiotics/yixiong/auto_archive/Rstudio
-nohup singularity run \
+singularity run \
   --bind /scratch/yixiong/,/opt/oscer/software/,/ourdisk/hpc/prebiotics/yixiong/auto_archive:/prebiotics,tmp:/tmp \
-  /opt/oscer/software/Rstudio-singularity/3.6.2/singularity-rstudio-3.6.2.simg \
-  >> rstudio.log 2>&1 &
+  /opt/oscer/software/Rstudio-singularity/3.6.2/singularity-rstudio-3.6.2.simg
+
+# cd /scratch/yixiong/Rstudio
+# nohup ./Rstudio.sh >> rstudio.log 2>&1 &
 ```
 
 
