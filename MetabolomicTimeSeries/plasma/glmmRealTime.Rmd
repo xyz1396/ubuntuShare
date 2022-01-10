@@ -1,0 +1,143 @@
+---
+title: "glmm"
+author: "xyz"
+date: "2021/10/8"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+library(glmmTMB)
+library(foreach)
+library(doParallel)
+library(mice)
+```
+
+# clean data
+
+```{r}
+df <-
+  read.csv(
+    "Biomarkers Full Data Set_quant_BlkRemoved_missedinjRemoved_misslabeledRemoved_T_wMeta_TIC_plasma_20210520.csv",
+    stringsAsFactors = F
+  )
+df <- df[df$ATTRIBUTE_condition != "isoproterenol",]
+df <- df[df$ATTRIBUTE_Days_post_infection != 80,]
+meta <- df[, 1:11]
+meta <- cbind(ID = paste0("X", 1:nrow(meta)), meta)
+data <- df[, -1:-11]
+rownames(data) <- meta$ID
+
+removedData <- data[, colSums(data) == 0]
+data <- data[rowSums(data) > 0, colSums(data) > 0]
+# data <- prop.table(as.matrix(data), 1)
+# data <- prop.table(data, 2)
+data[data == 0] <- NA
+colNA <- colSums(is.na(data)) / nrow(data)
+removedData <- cbind(removedData, data[, colNA > 0.8])
+data <- data[, colNA <= 0.8]
+
+Time <- meta$ATTRIBUTE_Days_post_infection
+data <-
+  cbind.data.frame(
+    Time = Time,
+    Condition = meta$ATTRIBUTE_condition,
+    RatID = meta$ATTRIBUTE_mouse_number,
+    data
+  )
+data <- arrange(data, Time, RatID, Condition)
+# data <- data[data$Condition!="isoproterenol",]
+# data$Time<-as.factor(data$Time)
+data$RatID <- as.factor(data$RatID)
+# data<-mice(data, maxit = 5, m = 5, seed = 1)
+# stripplot(data, Autotrophic, pch = 19, xlab = "Imputation number")
+# stripplot(data, Heterotrophic, pch = 19, xlab = "Imputation number")
+# data<-complete(data)
+
+write.csv(data, "normalizedAbundance.csv", row.names = F)
+
+removedData <-
+  cbind.data.frame(
+    Time = Time,
+    Condition = meta$ATTRIBUTE_condition,
+    RatID = meta$ATTRIBUTE_mouse_number,
+    removedData
+  )
+removedData <- arrange(removedData, Time, RatID, Condition)
+removedData$RatID <- as.factor(removedData$RatID)
+write.csv(removedData, "removedData.csv", row.names = F)
+```
+
+# run model
+
+```{r}
+# wrap function to decrease parameters
+getGlmmResult <- function(data, formula) {
+  data <- data
+  formula <- formula
+  getSummary <- function(data, metabolite, formula) {
+    df <- cbind(metabolite = data[, metabolite], data[, 1:3])
+    model <-
+      glmmTMB(formula = formula,
+              data = df,
+              family = gaussian())
+    results <- summary(model)
+    return(results)
+  }
+  getGlmmResult <- function(metabolite) {
+    tryCatch({
+      results <- getSummary(data, metabolite, formula)
+      AIC <- results[["AICtab"]][["AIC"]]
+      coefficients <- results[["coefficients"]][["cond"]]
+      ENV <- rownames(coefficients)
+      rownames(coefficients) <- NULL
+      results <- cbind(
+        metabolite = metabolite,
+        ENV = ENV,
+        AIC = AIC,
+        coefficients
+      )
+      return(results)
+    },
+    error = function(e) {
+      print(paste(e, "error"))
+      return(NA)
+    })
+  }
+  return(getGlmmResult)
+}
+
+formula1 <-
+  formula(metabolite ~ Time + Condition + (1 | RatID))
+# formula2 <-
+#   formula(metabolite ~ ar1(Time + 0 | RatID) + Condition)
+getGlmmResultArModel <- getGlmmResult(data, formula1)
+
+cl <- makeCluster(44)
+registerDoParallel(cl)
+results1 <- foreach(metabolite = colnames(data[,-1:-3]),
+                    .packages = c("glmmTMB")) %dopar%
+  getGlmmResultArModel(metabolite)
+stopCluster(cl)
+saveRDS(results1, "glmmAR1Result.rds")
+results1<-readRDS("glmmAR1Result.rds")
+
+results3 <- as.data.frame(do.call(rbind, results1))
+# 804.0839
+mean(as.numeric(results3$AIC), na.rm = T)
+rownames(results3) <- NULL
+results3 <- dplyr::filter(results3, ENV != "(Intercept)", ENV != "Time")
+results3 <- results3[, -2]
+results3 <-
+  results3[!is.na(results3$AIC) & results3$`Pr(>|z|)` != "NaN",]
+results3 <-
+  cbind(results3, qOrFDR = p.adjust(as.numeric(as.character(
+    results3$`Pr(>|z|)`
+  )), "BH"))
+write.csv(results3, "glmmArModel.csv", row.names = F)
+```
+
