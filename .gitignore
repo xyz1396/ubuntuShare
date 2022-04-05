@@ -2,6 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
+*.FT1
+*.FT2
+*.sip
 *.tar
 *.gz
 *.csv
