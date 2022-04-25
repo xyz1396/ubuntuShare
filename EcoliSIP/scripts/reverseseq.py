@@ -48,7 +48,7 @@ def parse_options(argv):
 def ReverseSeq(inputFileName, outputFileName) :
     outputFile = open(outputFileName, "w")
     for record in SeqIO.parse(inputFileName, "fasta" ) :
-        currentSeq = record.seq.tostring()
+        currentSeq = str(record.seq)
         if not(currentSeq.isalpha()) :
             print "Remove non-alphabetic characters for sequence "+record.id
             currentSeq = re.sub(r'\W+', '', currentSeq)

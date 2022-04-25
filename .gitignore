@@ -24,4 +24,11 @@
 /GWAS/prsiceDemo/*
 *.DS_Store
 *.xz
+*.o
 
+# For cmake
+build/
+bin/
+
+*.cfg
+*.dll
