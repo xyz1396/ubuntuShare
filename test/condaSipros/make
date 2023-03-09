@@ -1,0 +1,50 @@
+#! /bin/sh
+# conda create -n mpi -c conda-forge openmpi gxx_linux-64 gcc_linux-64 cmake
+# compiler name x86_64-conda_cos6-linux-gnu-g++
+. ~/miniconda3/etc/profile.d/conda.sh
+conda activate mpi
+# run follows to load dynamic libs when running bin/SiprosV3omp bin/SiprosV3mpi bin/SiprosV3test
+# conda activate mpi
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CONDA_PREFIX}/lib
+case $1 in
+"load") ;;
+"clean")
+    rm -rf build
+    mkdir build
+    rm -rf bin
+    mkdir bin
+    ;;
+"build")
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$CONDA_PREFIX ..
+    make -j4
+    ;;
+"buildTick")
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release -DTicktock=Ticktock -DCMAKE_PREFIX_PATH=$CONDA_PREFIX ..
+    make -j4
+    ;;
+"debug")
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_PREFIX_PATH=$CONDA_PREFIX ..
+    make -j4
+    ;;
+"make")
+    cd build
+    make
+    ;;
+"run")
+    cd timeCompare
+    starttime=$(date +'%Y-%m-%d %H:%M:%S')
+    ../bin/SiprosV3omp -c ../../data/SiproConfig.N15_0Pct.cfg \
+        -f ../../data/AMD_DynamicSIP_SampleD_TimePoint0_BRmixed_WC_Velos_OrbiMS2_Run2_020210_09.FT2 \
+        -o . -s
+    endtime=$(date +'%Y-%m-%d %H:%M:%S')
+    start_seconds=$(date --date="$starttime" +%s)
+    end_seconds=$(date --date="$endtime" +%s)
+    echo "running time： "$((end_seconds - start_seconds))"s"
+    ;;
+*)
+    ./make "build"
+    ;;
+esac

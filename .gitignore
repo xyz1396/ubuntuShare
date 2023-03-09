@@ -4,6 +4,7 @@
 .Ruserdata
 *.FT1
 *.FT2
+*.tab
 *.sip
 *.tar
 *.gz

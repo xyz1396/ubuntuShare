@@ -1,0 +1,123 @@
+---
+title: "unlabelSearchCompareOthers"
+output: html_document
+date: "2022-11-22"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### refine unlabel search FDR
+
+```{bash}
+cd ../unlabel_data/
+refineFDR() {
+      src="/mnt/d/work/202208/AMXlabeledSearch"
+      cd $1
+      Rscript $src/refineProteinFDR.R \
+        -pro *.pro.txt \
+        -psm *.psm.txt \
+        -fdr 0.01 \
+        -o Sipros_searches
+      Rscript $src/getSpectraCountInEachFT.R \
+        -pro *.proRefineFDR.txt \
+        -psm *.psm.txt \
+        -o Sipros_searches
+    }
+files=(./pct*)
+for folder in ${files[@]}; do
+    refineFDR "$folder" &
+done
+wait
+```
+
+### protein count
+
+```{r}
+pros <-
+  list.files(
+    path = "../unlabel_data/",
+    pattern = ".*proRefineFDR.txt",
+    recursive = T,
+    full.names = T
+  )
+proDf <- data.frame()
+for (pro in pros)
+{
+  tempDf <- read.table(pro,
+                       sep = "\t",
+                       quote = "",
+                       header = T)
+  proNames  <- tempDf$ProteinID[stringr::str_detect(tempDf$ProteinID, "Rev2_",
+                                     negate = T)]
+  proNames  <- proNames[stringr::str_detect(proNames, "Con_",
+                                     negate = T)]
+  tempDf <-
+    data.frame(File=unlist(str_split(pro,"\\/"))[4],
+               ProteinCount=length(proNames))
+  proDf <-
+    rbind(proDf, tempDf)
+}
+write.csv(proDf,"../result/pct1-pct100UnlabelproteinCount.csv",row.names = F)
+```
+
+### peptides count
+
+```{r}
+peps <-
+  list.files(
+    path = "../unlabel_data/",
+    pattern = ".*pep.txt",
+    recursive = T,
+    full.names = T
+  )
+pepDf <- data.frame()
+for (pep in peps)
+{
+  tempDf <- read.table(pep,
+                       sep = "\t",
+                       quote = "",
+                       header = T)
+  pepNames  <- tempDf$ProteinNames[stringr::str_detect(tempDf$ProteinNames, "Rev2_",
+                                     negate = T)]
+  pepNames  <- pepNames[stringr::str_detect(pepNames, "Con_",
+                                     negate = T)]
+  tempDf <-
+    data.frame(File=unlist(str_split(pep,"\\/"))[4],
+               pepCount=length(pepNames))
+  pepDf <-
+    rbind(pepDf, tempDf)
+}
+write.csv(pepDf,"../result/pct1-pct100UnlabelpeptideCount.csv",row.names = F)
+```
+
+### PSM count
+
+```{r}
+psms <-
+  list.files(
+    path = "../unlabel_data/",
+    pattern = ".*psm.txt",
+    recursive = T,
+    full.names = T
+  )
+psmDf <- data.frame()
+for (psm in psms)
+{
+  tempDf <- read.table(psm,
+                       sep = "\t",
+                       quote = "",
+                       header = T)
+  psmNames  <- tempDf$ProteinNames[stringr::str_detect(tempDf$ProteinNames, "Rev2_",
+                                     negate = T)]
+  psmNames  <- psmNames[stringr::str_detect(psmNames, "Con_",
+                                     negate = T)]
+  tempDf <-
+    data.frame(File=unlist(str_split(psm,"\\/"))[4],
+               psmCount=length(psmNames))
+  psmDf <-
+    rbind(psmDf, tempDf)
+}
+write.csv(psmDf,"../result/pct1-pct100UnlabelPsmCount.csv",row.names = F)
+```

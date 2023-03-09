@@ -1,0 +1,465 @@
+---
+title: "drawPSMsDistribution"
+output: html_document
+date: "2022-10-31"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(stringr)
+library(dplyr)
+library(ggplot2)
+library(Aerith)
+library(patchwork)
+library(latex2exp)
+```
+
+### refine label search FDR
+
+```{bash}
+# cd ..
+# mkdir data script result temp
+cd ../data
+refineFDR() {
+      src="/mnt/d/work/202208/AMXlabeledSearch"
+      cd $1
+      Rscript $src/refineProteinFDR.R \
+        -pro *.pro.txt \
+        -psm *.psm.txt \
+        -fdr 0.01 \
+        -o Sipros_searches
+      Rscript $src/getSpectraCountInEachFT.R \
+        -pro *.proRefineFDR.txt \
+        -psm *.psm.txt \
+        -o Sipros_searches
+      Rscript $src/getLabelPCTinEachFT.R \
+        -pro *.proRefineFDR.txt \
+        -psm *.psm.txt \
+        -o Sipros_searches  
+    }
+files=(./pct*)
+for folder in ${files[@]}; do
+    refineFDR "$folder" &
+done
+wait
+```
+
+### PSMs SIP Distribution
+
+```{r}
+psms <- list.files(path ="../data",pattern = ".*psm.txt",recursive = T,full.names = T)
+psmDf <- data.frame()
+FDRdf <- data.frame(Pct=character(),FDR=double())
+for (psm in psms)
+{
+  tempDf <- read.table(
+            psm,
+            sep = "\t",
+            quote = "",
+            header = T
+          )
+  FDRdf <-
+    rbind(FDRdf,
+          data.frame(
+            Pct = unlist(str_split(psm, "\\/", simplify = T))[3],
+            FDR = sum(str_detect(tempDf$ProteinNames, "Rev_")) / nrow(tempDf) *
+              100
+          ))
+  psmDf <- rbind(psmDf, tempDf)
+}
+
+psmPct <- str_split(psmDf$SearchName,"_",simplify = T)[,2]
+psmPct <- str_sub(psmPct,1,-4)
+psmPct <- as.numeric(psmPct)
+psmDf$Pct <- psmPct/1000
+psmDf  <- psmDf[stringr::str_detect(psmDf$ProteinNames, "Rev_",
+                                     negate = T),]
+psmDf  <- psmDf[stringr::str_detect(psmDf$ProteinNames, "Con_",
+                                     negate = T),]
+
+x <- data.frame(Abundance = psmDf$Pct,FileName=as.factor(psmDf$Filename))
+p <-
+  ggplot2::ggplot(data = x,
+                  mapping = aes(x = Abundance)) +
+  ggplot2::geom_histogram(binwidth = 1,
+                          color = I("black")) +
+  xlab(TeX("$^{13}C\\,atom\\,abudance\\,(\\%)")) +
+  ylab("PSM Count") +
+  theme(text = element_text(size = 15))
+p <- p + facet_wrap(~ FileName, ncol = 3)
+p <- p + scale_x_continuous(breaks = seq(0, 100, 5))
+p
+ggsave("../result/pct1-pct100.pdf",width = 15, height = 20)
+x <- group_by(x, FileName)
+df <- summarise(x,mean = mean(Abundance), median = median(Abundance), n = n())
+df <- arrange(df, `median`)
+write.csv(df,"../result/pct1-pct100psmCount.csv",row.names = F)
+
+# get SD for each pct
+x2 <- data.frame(FileName=df$FileName, Pct=paste0("pct",round(df$median,0)))
+x2 <- left_join(x,x2,by=c("FileName"="FileName"))
+x2 <- x2[,-2]
+x2 <- group_by(x2, Pct)
+df <- summarise(x2,mean = mean(Abundance), median = median(Abundance), n = n(), SD=sd(Abundance))
+df <- arrange(df, `median`)
+df <- left_join(df,FDRdf,by=c("Pct"="Pct"))
+write.csv(df,"../result/pct1-pct100psmCountPCT.csv",row.names = F)
+```
+
+### peptide pct distribution
+
+```{r}
+peps <-
+  list.files(
+    path = "../data",
+    pattern = ".*pep.txt",
+    recursive = T,
+    full.names = T
+  )
+pepDf <- data.frame()
+for (pep in peps)
+{
+  tempDf <- read.table(pep,
+                       sep = "\t",
+                       quote = "",
+                       header = T)
+  tempDf <- cbind(Pct = unlist(str_split(pep,"\\/",simplify = T))[3], tempDf)
+  pepDf <-
+    rbind(pepDf, tempDf)
+}
+
+pepDf  <- pepDf[stringr::str_detect(pepDf$ProteinNames, "Rev_",
+                                     negate = T),]
+pepDf  <- pepDf[stringr::str_detect(pepDf$ProteinNames, "Con_",
+                                     negate = T),]
+
+pepPct <- str_sub(pepDf$SearchName, 2,-2)
+pepPct <- str_split(pepPct, ",")
+pepPct <- lapply(pepPct, str_sub, start = 5, end = -4)
+pepPct <- lapply(pepPct, function(x)
+  mean(as.numeric(x)) / 1000)
+pepPct <- unlist(pepPct)
+
+df  <- data.frame(Pct=pepDf$Pct, Abundance=pepPct)
+df <- group_by(df, Pct)
+df <- summarise(df,mean = mean(Abundance), median = median(Abundance), n = n(), SD=sd(Abundance))
+df <- arrange(df, `median`)
+write.csv(df,"../result/pct1-pct100peptideCountPCT.csv",row.names = F)
+```
+
+### protein pct distribution
+
+```{r}
+pros <-
+  list.files(
+    path = "../data",
+    pattern = ".*LabelPCTcount.txt",
+    recursive = T,
+    full.names = T
+  )
+proDf <- data.frame()
+for (pro in pros)
+{
+  tempDf <- read.table(pro,
+                       sep = "\t",
+                       quote = "",
+                       header = T)
+  Abundance <- tempDf[, str_detect(colnames(tempDf), "_PCTcount")]
+  Abundance <- apply(Abundance,
+                     1,
+                     str_split,
+                     pattern = ",",
+                     simplify = F)
+  Abundance <- lapply(Abundance, function(x)
+    mean(as.numeric(unlist(x)), na.rm = T))
+  Abundance <- unlist(Abundance)
+  tempDf <-
+    data.frame(Pct = unlist(str_split(pro, "\\/", simplify = T))[3],
+               Abundance = Abundance)
+  proDf <-
+    rbind(proDf, tempDf)
+}
+
+df <- group_by(proDf, Pct)
+df <- summarise(df,mean = mean(Abundance), median = median(Abundance), n = n(), SD=sd(Abundance))
+df <- arrange(df, `median`)
+write.csv(df,"../result/pct1-pct100proteinCountPCT.csv",row.names = F)
+```
+
+### draw PSM SIP distribution
+
+```{r}
+theme2 <- ggplot2::theme(
+  # axis.text = ggplot2::element_blank(),
+  # axis.ticks = ggplot2::element_blank(),
+  # axis.title = ggplot2::element_blank(),
+  panel.grid = ggplot2::element_blank(),
+  panel.background = ggplot2::element_blank(),
+  legend.key = ggplot2::element_blank(),
+  panel.border = ggplot2::element_rect(
+    fill = NA,
+    color = "grey10",
+    linetype = 1,
+    size = 0.5
+  ),
+  text = ggplot2::element_text(size = 20)
+)
+
+x1 <-
+  data.frame(Abundance = psmDf$Pct,
+             FileName = as.factor(psmDf$Filename))
+x <-
+  x1[str_detect(x1$FileName, "X1iso5") |
+       str_detect(x1$FileName, "X2iso5") |
+       str_detect(x1$FileName, "X3iso5"), ]
+p <-
+  ggplot2::ggplot(data = x,
+                  mapping = aes(x = Abundance)) +
+  ggplot2::geom_histogram(binwidth = 1,
+                          color = I("black")) +
+  xlab(TeX("$^{13}C\\,atom\\,abudance\\,(\\%)$")) +
+  ylab("PSM Count") + ggtitle(TeX("${1\\%}{\\,}^{13}C$")) +
+  theme2
+p1 <- p + scale_x_continuous(breaks = seq(0, 100, 5))
+p1
+ggsave("../result/pct1PSMsDistribution.pdf",
+       width = 12,
+       height = 8)
+
+x1 <-
+  data.frame(Abundance = psmDf$Pct,
+             FileName = as.factor(psmDf$Filename))
+x <-
+  x1[str_detect(x1$FileName, "X5.FT2") |
+       str_detect(x1$FileName, "X6.FT2") |
+       str_detect(x1$FileName, "X7.FT2"), ]
+p <-
+  ggplot2::ggplot(data = x,
+                  mapping = aes(x = Abundance)) +
+  ggplot2::geom_histogram(binwidth = 1,
+                          color = I("black")) +
+  xlab(TeX("$^{13}C\\,atom\\,abudance\\,(\\%)$")) + 
+  ylab("PSM Count") + ggtitle(TeX("${2\\%}{\\,}^{13}C$")) +
+  theme2
+p2 <- p + scale_x_continuous(breaks = seq(0, 100, 5))
+p2
+ggsave("../result/pct2PSMsDistribution.pdf",
+       width = 12,
+       height = 8)
+
+x1 <-
+  data.frame(Abundance = psmDf$Pct,
+             FileName = as.factor(psmDf$Filename))
+x <-
+  x1[str_detect(x1$FileName, "X19.FT2") |
+       str_detect(x1$FileName, "X21.FT2") |
+       str_detect(x1$FileName, "X32.FT2"), ]
+p <-
+  ggplot2::ggplot(data = x,
+                  mapping = aes(x = Abundance)) +
+  ggplot2::geom_histogram(binwidth = 1,
+                          color = I("black")) +
+  xlab(TeX("$^{13}C\\,atom\\,abudance\\,(\\%)$")) +
+  ylab("PSM Count") + ggtitle(TeX("${5\\%}{\\,}^{13}C$")) +
+  theme2
+p3 <- p + scale_x_continuous(breaks = seq(0, 100, 5))
+p3
+ggsave("../result/pct5PSMsDistribution.pdf",
+       width = 12,
+       height = 8)
+
+x1 <-
+  data.frame(Abundance = psmDf$Pct,
+             FileName = as.factor(psmDf$Filename))
+x <-
+  x1[str_detect(x1$FileName, "X09.FT2") |
+       str_detect(x1$FileName, "X10.FT2") |
+       str_detect(x1$FileName, "X11.FT2"), ]
+p <-
+  ggplot2::ggplot(data = x,
+                  mapping = aes(x = Abundance)) +
+  ggplot2::geom_histogram(binwidth = 1,
+                          color = I("black")) +
+  xlab(TeX("$^{13}C\\,atom\\,abudance\\,(\\%)$")) +
+  ylab("PSM Count") + ggtitle(TeX("${25\\%}{\\,}^{13}C$")) +
+  theme2
+p4 <- p + scale_x_continuous(breaks = seq(0, 100, 5))
+p4
+ggsave("../result/pct25PSMsDistribution.pdf",
+       width = 12,
+       height = 8)
+
+x1 <-
+  data.frame(Abundance = psmDf$Pct,
+             FileName = as.factor(psmDf$Filename))
+x <-
+  x1[str_detect(x1$FileName, "X13.FT2") |
+       str_detect(x1$FileName, "X14.FT2") |
+       str_detect(x1$FileName, "X15.FT2"), ]
+p <-
+  ggplot2::ggplot(data = x,
+                  mapping = aes(x = Abundance)) +
+  ggplot2::geom_histogram(binwidth = 1,
+                          color = I("black")) +
+  xlab(TeX("$^{13}C\\,atom\\,abudance\\,(\\%)$")) +
+  ylab("PSM Count") + ggtitle(TeX("${50\\%}{\\,}^{13}C$")) +
+  theme2
+p5 <- p + scale_x_continuous(breaks = seq(0, 100, 5))
+p5
+ggsave("../result/pct50PSMsDistribution.pdf",
+       width = 12,
+       height = 8)
+
+x1 <-
+  data.frame(Abundance = psmDf$Pct,
+             FileName = as.factor(psmDf$Filename))
+x <-
+  x1[str_detect(x1$FileName, "X46.FT2") |
+       str_detect(x1$FileName, "X47.FT2") |
+       str_detect(x1$FileName, "X48.FT2"), ]
+p <-
+  ggplot2::ggplot(data = x[x$Abundance>50,],
+                  mapping = aes(x = Abundance)) +
+  ggplot2::geom_histogram(binwidth = 1,
+                          color = I("black")) +
+  xlab(TeX("$^{13}C\\,atom\\,abudance\\,(\\%)$")) +
+  ylab("PSM Count") + ggtitle(TeX("${99\\%}{\\,}^{13}C$")) +
+  theme2
+p6 <- p + scale_x_continuous(breaks = seq(0, 100, 5))
+p6
+ggsave("../result/pct99PSMsDistribution.pdf",
+       width = 12,
+       height = 8)
+
+psmPlot <-
+  (p1 + p2 + p3 + p4 + p5 + p6 + plot_layout(ncol = 4)) / plot_spacer()
+psmPlot[[1]] <- psmPlot[[1]] + plot_layout(tag_level = 'new')
+psmPlot <-
+  psmPlot + plot_annotation(tag_levels = c('A', '1'), tag_sep = '.') &
+  theme(plot.tag.position = c(0, 1),
+        plot.tag = element_text(
+          size = 15,
+          hjust = 0,
+          vjust = 0
+        ))
+psmPlot
+ggsave("../result/pct1_100PSMsDistribution.pdf",
+       width = 25,
+       height = 10)
+```
+
+### draw one pct1 PSM
+
+```{r}
+psm <-
+  read.table(
+    "../data/pct1/Pan_062822_X.psm.txt",
+    header = T
+  )
+psm <- arrange(psm, Filename, desc(Score))
+ft2 <-
+  readAllScanMS2("../data/pct1/Pan_062822_X1iso5.FT2")
+
+# plot top 10
+psm <- psm[1:10, ]
+ftFileNames <- psm$Filename
+scanNumbers <- psm$ScanNumber
+proNames <- psm$ProteinNames
+charges <- psm$ParentCharge
+pep <- psm$OriginalPeptide
+pep <- str_sub(pep, 2, -2)
+pct <- psm$SearchName
+pct <-
+  as.numeric(str_sub(str_split(pct, "_", simplify = T)[, 2], 1,-4)) / 100/1000
+realScans <- getRealScans(ft2, scanNumbers)
+plotPSMs (
+  realScans,
+  charges,
+  "C13",
+  pct,
+  BYcharge = 1:2,
+  ftFileNames,
+  scanNumbers,
+  pep,
+  proNames,
+  "../result/pct1PSMtop10/"
+)
+
+# draw top 9th
+
+realScan <- realScans[[9]]
+BY <- getSipBYionSpectra(pep[9], "C13", pct[9], 1, charges[9])
+p10 <-
+  plot(BY) + plotRealScan(realScan) +
+  scale_x_continuous(breaks = seq(150, 2000, by = 100),
+                     limits = c(150, 2000)) +
+  plotSipBYionLabel(BY)+ ggtitle(TeX("${1\\%}{\\,}^{13}C$"))
+```
+
+### draw one pct50 PSM
+
+```{r}
+psm <-
+  read.table(
+    "../data/pct50/Pan_052322_X1.psm.txt",
+    header = T
+  )
+psm <- arrange(psm, Filename, desc(Score))
+ft2 <-
+  readAllScanMS2("../data/pct50/Pan_052322_X13.FT2")
+
+# plot top 10
+psm <- psm[1:10, ]
+ftFileNames <- psm$Filename
+scanNumbers <- psm$ScanNumber
+proNames <- psm$ProteinNames
+charges <- psm$ParentCharge
+pep <- psm$OriginalPeptide
+pep <- str_sub(pep, 2, -2)
+pct <- psm$SearchName
+pct <-
+  as.numeric(str_sub(str_split(pct, "_", simplify = T)[, 2], 1,-4)) / 100/1000
+realScans <- getRealScans(ft2, scanNumbers)
+plotPSMs (
+  realScans,
+  charges,
+  "C13",
+  pct,
+  BYcharge = 1:2,
+  ftFileNames,
+  scanNumbers,
+  pep,
+  proNames,
+  "../result/pct50PSMtop10/"
+)
+
+# draw top 3rd
+
+realScan <- realScans[[3]]
+BY <- getSipBYionSpectra(pep[3], "C13", pct[3], 1, charges[3])
+p9 <-
+  plot(BY) + plotRealScan(realScan) +
+  scale_x_continuous(breaks = seq(100, 1700, by = 100),
+                     limits = c(100, 1700)) +
+  plotSipBYionLabel(BY)+ ggtitle(TeX("${50\\%}{\\,}^{13}C$"))
+
+psmPlot <-
+  (p1 + p2 + p3 + p4 + p5 + p6 + plot_layout(ncol = 4)) / (p10+p9)
+psmPlot[[1]] <- psmPlot[[1]] + plot_layout(tag_level = 'new')
+psmPlot[[2]] <- psmPlot[[2]] + plot_layout(tag_level = 'new')
+psmPlot <-
+  psmPlot + plot_annotation(tag_levels = c('A', '1'), tag_sep = '.') &
+  theme(plot.tag.position = c(0, 1),
+        plot.tag = element_text(
+          size = 15,
+          hjust = 0,
+          vjust = 0
+        ))
+psmPlot
+ggsave("../result/pct1_100PSMsDistributionAndPCT50psm.pdf",width = 25, height = 10)
+```
+
+

@@ -1,0 +1,64 @@
+---
+title: "fordebug"
+output: html_document
+date: "2022-11-18"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+sp <- read.table(
+  "../data/methanolLabel/Isolife_MeSIP_Day.LabelPCTcount.txt",
+  sep = "\t",
+  quote = "",
+  header = T
+)
+sp$proteinNames <- str_remove(sp$proteinNames,"\\{")
+sp$proteinNames <- str_remove(sp$proteinNames,"\\}")
+
+spcl <- read.table(
+  "../data/methanolLabel/Isolife_MeSIP_Day.pro.cluster.txt",
+  sep = "\t",
+  quote = "",
+  header = T
+)
+spcl$ProteinID <- str_remove(spcl$ProteinID,"\\{")
+spcl$ProteinID <- str_remove(spcl$ProteinID,"\\}")
+spcl<- spcl[spcl$ProteinID %in% sp$proteinNames,]
+length(unique(spcl$ProteinID))
+spcl$AverageEnrichmentLevel <- spcl$AverageEnrichmentLevel/1000
+spcl<- spcl[spcl$AverageEnrichmentLevel>5,]
+length(unique(spcl$ProteinID))
+
+
+sp2 <- sp[, str_detect(colnames(sp), "_PCTcount")]
+sp2 <- apply(sp2,
+              1,
+              str_split,
+              pattern = ",",
+              simplify = F)
+
+spCount  <- lapply(sp2 , function(x) {
+  x <- unlist(x)
+  x <- na.omit(x)
+  x <- as.numeric(x)
+  x <- x[x > 5]
+  length(x)
+})
+spCount <- unlist(spCount)
+sp2 <- sp[spCount > 0,]
+spCount <- spCount[spCount > 0]
+length(unique(sp2$proteinNames))
+sp2 <- sp2[!(sp2$proteinNames %in% spcl$ProteinID),]
+
+psm <- read.table(
+  "../data/methanolLabel/Isolife_MeSIP_Day.psm.txt",
+  sep = "\t",
+  quote = "",
+  header = T
+)
+psm <- psm[psm$Filename=="Isolife_MeSIP_Day8Rep2_Elite_SIP_Run1_01.FT2",]
+```
+

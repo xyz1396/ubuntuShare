@@ -1,0 +1,144 @@
+---
+title: "enrichment analyse"
+output: html_document
+date: "2022-11-22"
+---
+
+```{r}
+library(stringr)
+library(dplyr)
+library(tidyr)
+library(ggvenn)
+options(java.parameters = "-Xmx8000m")
+library(xlsx)
+library(ggsignif)
+library(patchwork)
+library(latex2exp)
+library(readxl)
+library(tidyr)
+library(clusterProfiler)
+library(GO.db)
+library(AnnotationDbi)
+```
+
+### background
+
+```{r}
+anno <- read_xlsx("../result/proteinAnnotation.xlsx")
+bg <-  read.table(
+  "../data/methanolUnlabel/Isolife_MeSIP_Day.pro.txt",
+  sep = "\t",
+  quote = "",
+  header = T
+)
+bg <- str_remove(bg$ProteinID, "\\{")
+bg <- str_remove(bg, "\\}")
+bg <- unlist(str_split(bg,","))
+goTERM2GENE <- data.frame(TERM=anno$GOs[match(bg,anno$query_name)],GENE=bg)
+goTERM2GENE <- goTERM2GENE[!is.na(goTERM2GENE$TERM),]
+goTERM2GENE <- goTERM2GENE[goTERM2GENE$TERM!="-",]
+goTERM2GENE <- separate_rows(goTERM2GENE,TERM,sep=",")
+goTERM2NAME <- 
+  select(
+    x = GO.db,
+    keys = unique(goTERM2GENE$TERM),
+    keytype = "GOID",
+    columns = c("TERM","ONTOLOGY")
+  )
+BPgoTERM2NAME <- data.frame(TERM=goTERM2NAME$GOID[goTERM2NAME$ONTOLOGY=="BP"],
+                            NAME=goTERM2NAME$TERM[goTERM2NAME$ONTOLOGY=="BP"])
+MFgoTERM2NAME <- data.frame(TERM=goTERM2NAME$GOID[goTERM2NAME$ONTOLOGY=="MF"],
+                            NAME=goTERM2NAME$TERM[goTERM2NAME$ONTOLOGY=="MF"])
+CCgoTERM2NAME <- data.frame(TERM=goTERM2NAME$GOID[goTERM2NAME$ONTOLOGY=="CC"],
+                            NAME=goTERM2NAME$TERM[goTERM2NAME$ONTOLOGY=="CC"])
+BPgoTERM2GENE <- goTERM2GENE[goTERM2GENE$TERM %in% BPgoTERM2NAME$TERM,]
+MFgoTERM2GENE <- goTERM2GENE[goTERM2GENE$TERM %in% MFgoTERM2NAME$TERM,]
+CCgoTERM2GENE <- goTERM2GENE[goTERM2GENE$TERM %in% CCgoTERM2NAME$TERM,]
+
+koTERM2GENE <- data.frame()
+```
+
+
+### labeled protein annotation
+
+```{r}
+anno <- read_xlsx("../result/proteinAnnotation.xlsx")
+sp <- read.table(
+  "../data/methanolLabel/Isolife_MeSIP_Day.LabelPCTcount.txt",
+  sep = "\t",
+  quote = "",
+  header = T
+)
+proNames <- sp$proteinNames
+sp2 <- sp[, str_detect(colnames(sp), "_PCTcount")]
+sp2 <- apply(sp2,
+             1,
+             str_split,
+             pattern = ",",
+             simplify = F)
+sp2Mean  <- lapply(sp2 , function(x) {
+  x <- unlist(x)
+  x <- na.omit(x)
+  x <- as.numeric(x)
+  x <- x[x > 5]
+  mean(x)
+})
+sp2Count  <- lapply(sp2 , function(x) {
+  x <- unlist(x)
+  x <- na.omit(x)
+  x <- as.numeric(x)
+  x <- x[x > 5]
+  length(x)
+})
+sp2Mean <- unlist(sp2Mean)
+sp2Count <- unlist(sp2Count)
+sp2ProNames <- proNames[sp2Count > 0]
+sp2ProNames <- str_remove(sp2ProNames, "\\{")
+sp2ProNames <- str_remove(sp2ProNames, "\\}")
+sp2Count <- sp2Count[sp2Count > 0]
+sp2Mean <- sp2Mean[!is.na(sp2Mean)]
+sp2Df <-
+  data.frame(Proteins = sp2ProNames,
+             Abundance = sp2Mean,
+             Count = sp2Count)
+sp2Df <- separate_rows(sp2Df, Proteins, sep = ",")
+sp2Df <- left_join(sp2Df, anno, c("Proteins" = "query_name"))
+write.xlsx(as.data.frame(sp2Df),
+           "../result/LabeledProteinAnnotation.xlsx",
+           row.names = F)
+```
+
+### enrich
+
+```{r}
+labeledPro <- read_xlsx("../result/LabeledProteinAnnotation.xlsx")
+labeledPro <- arrange(labeledPro,desc(Abundance),desc(Count))
+Pro <- labeledPro$Proteins
+ProRank <- length(Pro):1
+names(ProRank) <- Pro
+bpRe <- enricher(
+  Pro,
+  pvalueCutoff = 0.05,
+  pAdjustMethod = "BH",
+  minGSSize = 10,
+  maxGSSize = 500,
+  qvalueCutoff = 0.01,
+  TERM2GENE=BPgoTERM2GENE,
+  TERM2NAME = BPgoTERM2NAME
+)
+bpRe@ontology <- "BP"
+goplot(bpRe)
+dotplot(bpRe)
+bpRe <- GSEA(
+  ProRank,
+  pvalueCutoff = 0.05,
+  pAdjustMethod = "BH",
+  minGSSize = 10,
+  maxGSSize = 500,
+  TERM2GENE=BPgoTERM2GENE,
+  TERM2NAME = BPgoTERM2NAME,
+  scoreType = "pos",
+  eps = 0
+)
+```
+
